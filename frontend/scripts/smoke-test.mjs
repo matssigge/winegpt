@@ -25,4 +25,12 @@ if (packageJson.scripts?.preview !== "vite preview") {
   throw new Error("Unexpected frontend preview script")
 }
 
+if (!packageJson.devDependencies?.tailwindcss) {
+  throw new Error("Missing tailwindcss dev dependency")
+}
+
+if (!packageJson.devDependencies?.["@tailwindcss/vite"]) {
+  throw new Error("Missing @tailwindcss/vite dev dependency")
+}
+
 console.log("frontend smoke test passed")

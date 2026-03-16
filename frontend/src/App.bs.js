@@ -4,23 +4,27 @@ import * as JsxRuntime from "react/jsx-runtime";
 
 function App(props) {
   return JsxRuntime.jsx("main", {
-              children: JsxRuntime.jsxs("div", {
-                    children: [
-                      JsxRuntime.jsx("p", {
-                            children: "Wine",
-                            className: "eyebrow"
-                          }),
-                      JsxRuntime.jsx("h1", {
-                            children: "Scaffold is wired up."
-                          }),
-                      JsxRuntime.jsx("p", {
-                            children: "Backend health endpoint: http://127.0.0.1:3000/api/health",
-                            className: "body"
-                          })
-                    ],
-                    className: "hero"
+              children: JsxRuntime.jsx("div", {
+                    children: JsxRuntime.jsxs("section", {
+                          children: [
+                            JsxRuntime.jsx("p", {
+                                  children: "Wine",
+                                  className: "mb-3 font-mono text-xs uppercase tracking-[0.35em] text-stone-600"
+                                }),
+                            JsxRuntime.jsx("h1", {
+                                  children: "Scaffold is wired up.",
+                                  className: "max-w-2xl font-serif text-5xl leading-none tracking-[-0.04em] text-stone-950 md:text-7xl"
+                                }),
+                            JsxRuntime.jsx("p", {
+                                  children: "Backend health endpoint: http://127.0.0.1:3000/api/health",
+                                  className: "mt-6 max-w-xl text-base leading-7 text-stone-700 md:text-lg"
+                                })
+                          ],
+                          className: "w-full max-w-3xl rounded-[2rem] border border-stone-900/10 bg-white/75 p-8 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur md:p-12"
+                        }),
+                    className: "mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center"
                   }),
-              className: "app-shell"
+              className: "min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950"
             });
 }
 

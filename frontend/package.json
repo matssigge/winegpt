@@ -16,7 +16,9 @@
   },
   "devDependencies": {
     "@jihchi/vite-plugin-rescript": "^6.0.0",
+    "@tailwindcss/vite": "^4.2.1",
     "rescript": "^11.1.4",
+    "tailwindcss": "^4.2.1",
     "vite": "^6.2.0"
   }
 }
