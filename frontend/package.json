@@ -1,0 +1,21 @@
+{
+  "name": "wine-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "rescript build && vite build",
+    "dev": "vite",
+    "test": "node ./scripts/smoke-test.mjs"
+  },
+  "dependencies": {
+    "@rescript/react": "^0.14.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@jihchi/vite-plugin-rescript": "^6.0.0",
+    "rescript": "^11.1.4",
+    "vite": "^6.2.0"
+  }
+}
