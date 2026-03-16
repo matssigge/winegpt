@@ -9,6 +9,12 @@ All Compose commands use the explicit project name `wine` to avoid collisions wi
 - `compose.yml`: local development and one-off test/build services
 - `compose.prod.yml`: runtime-oriented services
 
+## Services
+
+- `postgres`: private PostgreSQL service for backend state
+- `backend`: API service connected to PostgreSQL through `DATABASE_URL`
+- `frontend`: UI service
+
 ## Common commands
 
 - `just install`: build the Docker images used for local workflows
@@ -26,3 +32,5 @@ All Compose commands use the explicit project name `wine` to avoid collisions wi
 - Backend API: `http://127.0.0.1:3000`
 - Frontend dev server: `http://127.0.0.1:5273`
 - Frontend preview server: `http://127.0.0.1:4173`
+
+PostgreSQL is intentionally not published on a host port. Compose keeps its data in the named volume `postgres-data`.

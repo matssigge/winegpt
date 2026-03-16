@@ -20,9 +20,18 @@ pub fn backend_bind_address(bind_address: Option<&str>) -> Result<SocketAddr, Ad
         .parse::<SocketAddr>()
 }
 
+pub fn database_url(database_url: Option<&str>) -> Result<&str, ConfigError> {
+    database_url.ok_or(ConfigError::MissingDatabaseUrl)
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum ConfigError {
+    MissingDatabaseUrl,
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{backend_bind_address, health_response};
+    use super::{backend_bind_address, database_url, health_response, ConfigError};
 
     #[test]
     fn returns_expected_health_payload() {
@@ -45,5 +54,20 @@ mod tests {
             .expect("custom bind address should parse");
 
         assert_eq!(address, "0.0.0.0:4000".parse().unwrap());
+    }
+
+    #[test]
+    fn returns_database_url_from_config() {
+        let url = database_url(Some("postgres://wine:wine@postgres:5432/wine"))
+            .expect("database url should be present");
+
+        assert_eq!(url, "postgres://wine:wine@postgres:5432/wine");
+    }
+
+    #[test]
+    fn rejects_missing_database_url() {
+        let error = database_url(None).expect_err("missing database url should fail");
+
+        assert_eq!(error, ConfigError::MissingDatabaseUrl);
     }
 }
