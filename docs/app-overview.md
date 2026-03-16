@@ -1,0 +1,236 @@
+# App Overview
+
+## Purpose
+
+This application helps users keep a record of wines they have drunk.
+
+Users can record:
+- which wine they drank
+- when they drank it
+- where they drank it
+- what food or other context it was paired with
+- their own notes and impressions
+- photos of the bottle
+- photos of the pairing or meal
+
+Users can maintain their own records or share collections with other people such as spouses or partners.
+
+---
+
+## Goals
+
+The system should make it easy for a user to:
+
+- quickly log a wine from a mobile device
+- capture useful context at the moment of drinking
+- attach one or more photos
+- browse and search past wine entries
+- compare past experiences with the same wine
+- remember what a wine paired well with
+- maintain a shared wine history with a partner or household
+- mark a wine as a favorite
+
+The system should prioritize:
+
+- low operational complexity
+- simple deployment
+- fast and reliable everyday use
+- good mobile browser support
+- clear and maintainable domain modeling
+
+---
+
+## Core Capabilities
+
+### Entry capture
+
+Users can create a wine entry with structured and free-form information.
+
+A wine entry may include:
+
+- wine name
+- producer
+- vintage
+- grape or style
+- region or country
+- date and time consumed
+- venue or location
+- pairing notes
+- tasting notes
+- personal rating
+- bottle photo
+- pairing photo
+
+Entries belong to a **wine collection**.
+
+---
+
+### Collections
+
+A **Wine Collection** is a shared space where wine entries are stored.
+
+Examples:
+
+- a personal wine journal
+- a shared household wine record
+- a couple’s shared wine history
+
+A collection may have one or multiple users who can add entries.
+
+Typical use cases:
+
+- spouses sharing a wine record
+- partners logging wines they drink together
+- one person logging wines for a shared household
+
+Collections should be easy to create and share with another user.
+
+---
+
+### Entry history
+
+Users can browse wine entries within a collection.
+
+Entries should be sortable and filterable.
+
+---
+
+### Search and filtering
+
+Users can find entries by fields such as:
+
+- wine name
+- producer
+- vintage
+- date
+- venue
+- rating
+- pairing notes
+
+---
+
+### Repeated wines
+
+Users should be able to record the same wine multiple times on different occasions.
+
+Each drinking occasion should be preserved as a separate entry, but linked to the same wine.
+
+---
+
+### Photos
+
+Users can capture or upload photos from mobile browsers:
+
+- bottle photos
+- pairing or meal photos
+
+Camera access should work easily on mobile devices.
+
+---
+
+## Primary Users
+
+The primary users are individuals or small groups maintaining a shared wine journal.
+
+Typical scenarios:
+
+- a single user keeping a personal wine log
+- a couple sharing a wine collection
+- a small household tracking wines together
+
+The system is **not designed for large collaborative communities or public social feeds**.
+
+---
+
+## Architecture
+
+### Frontend
+
+Mobile-friendly web application built with ReScript and React.
+
+### Backend
+
+Rust service using Axum and SQLx.
+
+### Database
+
+PostgreSQL
+
+### Deployment
+
+Docker Compose on a single host.
+
+### Media handling
+
+Photos are uploaded through the web app and stored separately from structured entry data.
+
+---
+
+## Core User Flow
+
+Typical flow:
+
+1. User drinks a wine
+2. User opens the app
+3. User selects a collection
+4. User creates a new wine entry
+5. User records wine details
+6. User adds notes and pairing information
+7. User takes or uploads photos
+8. User saves the entry
+9. Users in the same collection can later view the entry
+
+The logging flow should be fast and forgiving.
+
+Users may not always know every structured detail about a wine.
+
+---
+
+## Design Principles
+
+- Optimize for quick capture on mobile
+- Prefer simple and explicit data models
+- Preserve user-entered history
+- Separate wine identity from drinking occasions
+- Treat photos as first-class supporting data
+- Keep sharing simple and predictable
+- Avoid complex permission systems
+
+---
+
+## Non-goals
+
+The system does not currently aim to provide:
+
+- public wine review platforms
+- social timelines
+- influencer features
+- wine marketplace integrations
+- professional cellar management
+- restaurant inventory systems
+- large-scale multi-tenant collaboration
+
+---
+
+## Constraints
+
+- Must work well in mobile browsers
+- Must support camera access easily
+- Must run well on low-end hardware
+- Must be deployable with a small number of containers
+- Must remain easy to understand and maintain
+
+---
+
+## Initial Scope
+
+Initial version should support:
+
+- user authentication
+- creating wine collections
+- inviting another user to a collection
+- creating wine entries in a collection
+- attaching photos
+- browsing entry history
+- basic search/filtering
+- editing entries
