@@ -24,5 +24,5 @@ All Compose commands use the explicit project name `wine` to avoid collisions wi
 ## Service ports
 
 - Backend API: `http://127.0.0.1:3000`
-- Frontend dev server: `http://127.0.0.1:5173`
+- Frontend dev server: `http://127.0.0.1:5273`
 - Frontend preview server: `http://127.0.0.1:4173`

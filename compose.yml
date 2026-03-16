@@ -21,7 +21,7 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       target: dev
-    command: npm run dev -- --host 0.0.0.0 --port 5173
+    command: npm run dev -- --host 0.0.0.0 --port 5273
     working_dir: /app/frontend
     depends_on:
       - backend
@@ -31,7 +31,7 @@ services:
       - ./frontend:/app/frontend
       - frontend-node-modules:/app/frontend/node_modules
     ports:
-      - "5173:5173"
+      - "5273:5273"
 
   backend-test:
     build:

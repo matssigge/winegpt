@@ -4,6 +4,6 @@ import rescript from "@jihchi/vite-plugin-rescript"
 export default defineConfig({
   plugins: [rescript()],
   server: {
-    port: 5173
+    port: 5273
   }
 })
