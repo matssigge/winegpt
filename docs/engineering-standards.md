@@ -194,6 +194,14 @@ Default choices unless there is a good reason otherwise:
 - Put async logic and browser API interaction into hooks/modules.
 - Lift state only when necessary.
 - Avoid deeply nested prop plumbing by introducing small local composition points, not global complexity by default.
+- Prefer composable components with children over configurable components with lots of props
+
+### Styling
+
+- Use Tailwind
+- Do extract markup to a new React component if a class list is reused for the same semantic purpose.
+- Don't extract markup to a component just to avoid duplicated class lists
+- Use clsx for conditional classes. Don't concatenate strings or use template strings.
 
 ### API Interaction
 
