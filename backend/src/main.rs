@@ -55,10 +55,14 @@ async fn connect_database() -> PgPool {
         .await
         .expect("connect to postgres");
 
-    sqlx::query_scalar::<_, i32>("SELECT 1")
-        .fetch_one(&database)
-        .await
-        .expect("ping postgres");
+    run_migrations(&database).await;
 
     database
+}
+
+async fn run_migrations(database: &PgPool) {
+    sqlx::migrate!("./migrations")
+        .run(database)
+        .await
+        .expect("run database migrations");
 }
