@@ -1,0 +1,6 @@
+.git
+.mise
+backend/target
+frontend/dist
+frontend/lib
+frontend/node_modules

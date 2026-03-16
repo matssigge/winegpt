@@ -1,4 +1,5 @@
 use serde::Serialize;
+use std::net::{AddrParseError, SocketAddr};
 
 #[derive(Debug, Serialize, PartialEq, Eq)]
 pub struct HealthResponse {
@@ -13,9 +14,15 @@ pub fn health_response() -> HealthResponse {
     }
 }
 
+pub fn backend_bind_address(bind_address: Option<&str>) -> Result<SocketAddr, AddrParseError> {
+    bind_address
+        .unwrap_or("127.0.0.1:3000")
+        .parse::<SocketAddr>()
+}
+
 #[cfg(test)]
 mod tests {
-    use super::health_response;
+    use super::{backend_bind_address, health_response};
 
     #[test]
     fn returns_expected_health_payload() {
@@ -23,5 +30,20 @@ mod tests {
 
         assert_eq!(response.status, "ok");
         assert_eq!(response.app, "wine");
+    }
+
+    #[test]
+    fn uses_default_bind_address() {
+        let address = backend_bind_address(None).expect("default bind address should parse");
+
+        assert_eq!(address, "127.0.0.1:3000".parse().unwrap());
+    }
+
+    #[test]
+    fn parses_custom_bind_address() {
+        let address = backend_bind_address(Some("0.0.0.0:4000"))
+            .expect("custom bind address should parse");
+
+        assert_eq!(address, "0.0.0.0:4000".parse().unwrap());
     }
 }

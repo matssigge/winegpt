@@ -21,4 +21,8 @@ if (packageJson.scripts?.build !== "rescript build && vite build") {
   throw new Error("Unexpected frontend build script")
 }
 
+if (packageJson.scripts?.preview !== "vite preview") {
+  throw new Error("Unexpected frontend preview script")
+}
+
 console.log("frontend smoke test passed")

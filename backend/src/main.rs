@@ -1,11 +1,11 @@
 use axum::{routing::get, Json, Router};
 use std::net::SocketAddr;
-use wine_backend::{health_response, HealthResponse};
+use wine_backend::{backend_bind_address, health_response, HealthResponse};
 
 #[tokio::main]
 async fn main() {
     let app = Router::new().route("/api/health", get(health));
-    let address = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let address = load_bind_address();
 
     println!("backend listening on http://{address}");
 
@@ -20,4 +20,10 @@ async fn main() {
 
 async fn health() -> Json<HealthResponse> {
     Json(health_response())
+}
+
+fn load_bind_address() -> SocketAddr {
+    let bind_address = std::env::var("BACKEND_BIND_ADDR").ok();
+
+    backend_bind_address(bind_address.as_deref()).expect("parse BACKEND_BIND_ADDR")
 }
