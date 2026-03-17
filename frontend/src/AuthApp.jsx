@@ -5,7 +5,7 @@ import {
   clearSelectedCollectionId,
   loadSelectedCollectionId,
   saveSelectedCollectionId
-} from "./collectionSelectionStorage.js"
+} from "./CollectionSelectionStorage.bs.js"
 import {
   clearSessionToken,
   loadSessionToken,
