@@ -1,3 +1,5 @@
+pub mod db;
+
 use serde::Serialize;
 use std::net::{AddrParseError, SocketAddr};
 

@@ -6,7 +6,9 @@ use axum::{
 };
 use sqlx::PgPool;
 use std::net::SocketAddr;
-use wine_backend::{backend_bind_address, database_url, health_response, HealthResponse};
+use wine_backend::{
+    backend_bind_address, database_url, db, health_response, HealthResponse,
+};
 
 #[tokio::main]
 async fn main() {
@@ -33,8 +35,7 @@ struct AppState {
 }
 
 async fn health(State(state): State<AppState>) -> Result<Json<HealthResponse>, StatusCode> {
-    sqlx::query_scalar::<_, i32>("SELECT 1")
-        .fetch_one(&state.database)
+    db::ping(&state.database)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
@@ -51,18 +52,7 @@ async fn connect_database() -> PgPool {
     let configured_database_url = std::env::var("DATABASE_URL").ok();
     let database_url =
         database_url(configured_database_url.as_deref()).expect("read DATABASE_URL");
-    let database = PgPool::connect(database_url)
-        .await
-        .expect("connect to postgres");
-
-    run_migrations(&database).await;
+    let database = db::connect(database_url).await.expect("connect to postgres");
 
     database
-}
-
-async fn run_migrations(database: &PgPool) {
-    sqlx::migrate!("./migrations")
-        .run(database)
-        .await
-        .expect("run database migrations");
 }
