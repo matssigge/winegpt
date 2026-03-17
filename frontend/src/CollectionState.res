@@ -12,25 +12,30 @@ type collectionForm = {
 let initialCollectionStatus = () => {
   "kind": "loading",
   "collections": [],
+  "message": "",
 }
 
 let emptyCollectionStatus = () => {
   "kind": "ready",
   "collections": [],
+  "message": "",
 }
 
 let loadingCollectionStatus = () => {
   "kind": "loading",
   "collections": [],
+  "message": "",
 }
 
 let readyCollectionStatus = collections => {
   "kind": "ready",
   "collections": collections,
+  "message": "",
 }
 
 let errorCollectionStatus = message => {
   "kind": "error",
+  "collections": [],
   "message": message,
 }
 

@@ -9,34 +9,39 @@ import * as AuthAppSupport from "./AuthAppSupport.bs.js";
 function initialCollectionStatus() {
   return {
           kind: "loading",
-          collections: []
+          collections: [],
+          message: ""
         };
 }
 
 function emptyCollectionStatus() {
   return {
           kind: "ready",
-          collections: []
+          collections: [],
+          message: ""
         };
 }
 
 function loadingCollectionStatus() {
   return {
           kind: "loading",
-          collections: []
+          collections: [],
+          message: ""
         };
 }
 
 function readyCollectionStatus(collections) {
   return {
           kind: "ready",
-          collections: collections
+          collections: collections,
+          message: ""
         };
 }
 
 function errorCollectionStatus(message) {
   return {
           kind: "error",
+          collections: [],
           message: message
         };
 }

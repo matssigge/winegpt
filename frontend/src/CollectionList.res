@@ -1,5 +1,9 @@
-type collection
-type status
+type collection = CollectionState.collection
+type status = {
+  "collections": array<collection>,
+  "kind": string,
+  "message": string,
+}
 
 @get
 external id: collection => int = "id"

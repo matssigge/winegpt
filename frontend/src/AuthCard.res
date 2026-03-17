@@ -1,8 +1,4 @@
-type form = {
-  email: string,
-  fullName: string,
-  password: string,
-}
+type form = AuthForm.form
 
 let loginButtonClasses =
   "rounded-2xl px-4 py-2 text-sm font-medium transition bg-white text-stone-950 shadow-sm"
@@ -13,7 +9,7 @@ let inactiveButtonClasses = "rounded-2xl px-4 py-2 text-sm font-medium transitio
 let make = (
   ~mode,
   ~onModeChange: string => unit,
-  ~form,
+  ~form: AuthForm.form,
   ~onFormChange: (. string, string) => unit,
   ~onSubmit: ReactEvent.Form.t => unit,
   ~isSubmitting,

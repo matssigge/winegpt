@@ -1,4 +1,4 @@
-type error
+type error = Js.Promise2.error
 
 @get
 external message: error => string = "message"
