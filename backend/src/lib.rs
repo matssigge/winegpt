@@ -1,5 +1,8 @@
 pub mod auth;
+pub mod collections;
 pub mod db;
+#[cfg(test)]
+pub mod test_support;
 
 use serde::Serialize;
 use std::net::{AddrParseError, SocketAddr};
