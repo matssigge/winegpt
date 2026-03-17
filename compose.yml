@@ -97,16 +97,17 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-      target: dev
-    command: sh -lc "PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npx playwright install --with-deps chromium && PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npm run test:e2e"
+      target: e2e
+    command: npm run test:e2e
     working_dir: /app/frontend
     depends_on:
       - backend
       - frontend
+    environment:
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
     volumes:
       - ./frontend:/app/frontend
       - frontend-node-modules:/app/frontend/node_modules
-      - playwright-cache:/ms-playwright
 
 volumes:
   backend-target:
@@ -114,4 +115,3 @@ volumes:
   cargo-registry:
   frontend-node-modules:
   postgres-data:
-  playwright-cache:

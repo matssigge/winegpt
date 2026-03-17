@@ -3,6 +3,10 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 
+FROM dev AS e2e
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN npx playwright install --with-deps chromium
+
 FROM node:22-bookworm-slim AS build
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
