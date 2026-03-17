@@ -95,6 +95,14 @@ function appendCollection(collections, collection) {
   return Belt_Array.concat(collections, [collection]);
 }
 
+function isReady(status) {
+  return status.kind === "ready";
+}
+
+function collections(status) {
+  return status.collections;
+}
+
 function resolveSelectedCollectionId(collections, selectedCollectionId, persistedCollectionId) {
   if (collections.length === 0) {
     return ;
@@ -138,6 +146,8 @@ export {
   listCollections ,
   createCollection ,
   appendCollection ,
+  isReady ,
+  collections ,
   resolveSelectedCollectionId ,
 }
 /* CollectionApi Not a pure module */

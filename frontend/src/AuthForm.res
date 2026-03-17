@@ -34,5 +34,8 @@ let submit = (mode, form) => {
       AuthApi.login(form.email, form.password)
     }
 
-  Js.Promise2.then(request, response => Js.Promise2.resolve(response->AuthAppSupport.parseJson))
+  Js.Promise2.then(
+    request,
+    response => Js.Promise2.resolve(response->AuthAppSupport.parseJson: AuthSession.authPayload),
+  )
 }

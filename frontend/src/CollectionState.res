@@ -64,6 +64,10 @@ let createCollection = (token, name) =>
 
 let appendCollection = (collections, collection) => Belt.Array.concat(collections, [collection])
 
+let isReady = status => status["kind"] == "ready"
+
+let collections = status => status["collections"]
+
 let resolveSelectedCollectionId = (collections, selectedCollectionId, persistedCollectionId) => {
   if Belt.Array.length(collections) == 0 {
     None

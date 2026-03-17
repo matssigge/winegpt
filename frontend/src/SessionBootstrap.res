@@ -1,8 +1,3 @@
-type restoredSession<'user> = {
-  sessionToken: string,
-  user: 'user,
-}
-
 let loadSessionToken = () => SessionStorage.loadSessionToken()
 
 let restoreSession = sessionToken =>
@@ -11,6 +6,6 @@ let restoreSession = sessionToken =>
     response =>
       Js.Promise2.resolve({
         sessionToken: sessionToken,
-        user: response->AuthAppSupport.parseJson,
-      }),
+        user: (response->AuthAppSupport.parseJson: AuthSession.user),
+      }: AuthSession.restoredSession),
   )
