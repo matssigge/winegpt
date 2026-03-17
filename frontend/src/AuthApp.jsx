@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react"
 import { login, me, register } from "./authApi.js"
 import { createCollection, listCollections } from "./collectionApi.js"
 import {
+  clearSelectedCollectionId,
+  loadSelectedCollectionId,
+  saveSelectedCollectionId
+} from "./collectionSelectionStorage.js"
+import {
   clearSessionToken,
   loadSessionToken,
   saveSessionToken
@@ -138,7 +143,7 @@ function AuthCard({
   )
 }
 
-function CollectionList({ status }) {
+function CollectionList({ status, selectedCollectionId, onSelectCollection }) {
   switch (status.kind) {
     case "loading":
       return (
@@ -171,14 +176,33 @@ function CollectionList({ status }) {
             {status.collections.map(collection => (
               <li
                 key={collection.id}
-                className="flex items-center justify-between rounded-2xl border border-stone-200 bg-white px-4 py-3"
+                className={`rounded-2xl border px-4 py-3 transition ${
+                  collection.id === selectedCollectionId
+                    ? "border-stone-950 bg-stone-950 text-white"
+                    : "border-stone-200 bg-white text-stone-950"
+                }`}
               >
-                <div>
-                  <p className="font-medium text-stone-950">{collection.name}</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.2em] text-stone-500">
-                    {collection.role}
-                  </p>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => onSelectCollection(collection.id)}
+                  className="flex w-full items-center justify-between text-left"
+                >
+                  <div>
+                    <p className="font-medium">{collection.name}</p>
+                    <p
+                      className={`mt-1 text-xs uppercase tracking-[0.2em] ${
+                        collection.id === selectedCollectionId ? "text-stone-300" : "text-stone-500"
+                      }`}
+                    >
+                      {collection.role}
+                    </p>
+                  </div>
+                  {collection.id === selectedCollectionId ? (
+                    <span className="rounded-full border border-white/20 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-100">
+                      Selected
+                    </span>
+                  ) : null}
+                </button>
               </li>
             ))}
           </ul>
@@ -193,8 +217,10 @@ function AppShell({
   user,
   collectionStatus,
   collectionForm,
+  selectedCollectionId,
   onCollectionFormChange,
   onCreateCollection,
+  onSelectCollection,
   onLogout
 }) {
   return (
@@ -246,7 +272,11 @@ function AppShell({
             </div>
           ) : null}
         </section>
-        <CollectionList status={collectionStatus} />
+        <CollectionList
+          status={collectionStatus}
+          selectedCollectionId={selectedCollectionId}
+          onSelectCollection={onSelectCollection}
+        />
       </div>
     </section>
   )
@@ -268,6 +298,7 @@ export default function AuthApp() {
     kind: "loading",
     collections: []
   })
+  const [selectedCollectionId, setSelectedCollectionId] = useState(null)
   const [collectionForm, setCollectionForm] = useState({
     name: "",
     isSubmitting: false,
@@ -283,6 +314,7 @@ export default function AuthApp() {
         kind: "ready",
         collections: []
       })
+      setSelectedCollectionId(null)
       setIsInitializing(false)
       return
     }
@@ -301,6 +333,7 @@ export default function AuthApp() {
           kind: "ready",
           collections: []
         })
+        setSelectedCollectionId(null)
         setIsInitializing(false)
       })
   }, [])
@@ -311,6 +344,7 @@ export default function AuthApp() {
         kind: "ready",
         collections: []
       })
+      setSelectedCollectionId(null)
       return
     }
 
@@ -333,6 +367,37 @@ export default function AuthApp() {
         })
       })
   }, [currentUser, sessionToken])
+
+  useEffect(() => {
+    if (collectionStatus.kind !== "ready") {
+      return
+    }
+
+    if (collectionStatus.collections.length === 0) {
+      setSelectedCollectionId(null)
+      clearSelectedCollectionId()
+      return
+    }
+
+    const persistedCollectionId = loadSelectedCollectionId()
+    const currentSelectionStillExists = collectionStatus.collections.some(
+      collection => collection.id === selectedCollectionId
+    )
+
+    if (currentSelectionStillExists) {
+      return
+    }
+
+    const persistedSelectionStillExists = collectionStatus.collections.some(
+      collection => collection.id === persistedCollectionId
+    )
+    const nextSelectedCollectionId = persistedSelectionStillExists
+      ? persistedCollectionId
+      : collectionStatus.collections[0].id
+
+    setSelectedCollectionId(nextSelectedCollectionId)
+    saveSelectedCollectionId(nextSelectedCollectionId)
+  }, [collectionStatus, selectedCollectionId])
 
   function updateForm(field, value) {
     setForm(current => ({
@@ -396,6 +461,8 @@ export default function AuthApp() {
       kind: "ready",
       collections: []
     })
+    setSelectedCollectionId(null)
+    clearSelectedCollectionId()
     setCollectionForm({
       name: "",
       isSubmitting: false,
@@ -420,6 +487,8 @@ export default function AuthApp() {
       .then(response => {
         const collection = parseJson(response)
 
+        setSelectedCollectionId(collection.id)
+        saveSelectedCollectionId(collection.id)
         setCollectionStatus(current => {
           const collections = current.kind === "ready" ? current.collections : []
 
@@ -443,6 +512,11 @@ export default function AuthApp() {
       })
   }
 
+  function handleSelectCollection(collectionId) {
+    setSelectedCollectionId(collectionId)
+    saveSelectedCollectionId(collectionId)
+  }
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950">
       <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center">
@@ -455,8 +529,10 @@ export default function AuthApp() {
             user={currentUser}
             collectionStatus={collectionStatus}
             collectionForm={collectionForm}
+            selectedCollectionId={selectedCollectionId}
             onCollectionFormChange={updateCollectionForm}
             onCreateCollection={handleCreateCollection}
+            onSelectCollection={handleSelectCollection}
             onLogout={handleLogout}
           />
         ) : (
