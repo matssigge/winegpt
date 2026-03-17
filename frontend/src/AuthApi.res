@@ -4,16 +4,16 @@ type getOptions
 type registerPayload
 type loginPayload
 
-@module("./apiClient.js")
+@module("./ApiClient.bs.js")
 external requestWithPost: (string, postOptions) => promise<string> = "request"
 
-@module("./apiClient.js")
+@module("./ApiClient.bs.js")
 external requestWithGet: (string, getOptions) => promise<string> = "request"
 
-@module("./apiClient.js")
+@module("./ApiClient.bs.js")
 external authHeaders: (string, headers) => headers = "authHeaders"
 
-@module("./apiClient.js")
+@module("./ApiClient.bs.js")
 external jsonHeaders: headers = "jsonHeaders"
 
 @obj
