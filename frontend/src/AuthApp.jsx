@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { login, me, register } from "./authApi.js"
+import { login, me, register } from "./AuthApi.bs.js"
 import { createCollection, listCollections } from "./collectionApi.js"
 import {
   clearSelectedCollectionId,
