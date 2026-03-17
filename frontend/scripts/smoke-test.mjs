@@ -3,6 +3,7 @@ import { resolve } from "node:path"
 
 const requiredFiles = [
   "index.html",
+  "playwright.config.mjs",
   "rescript.json",
   "src/App.res",
   "src/Main.res",
@@ -31,6 +32,20 @@ if (!packageJson.devDependencies?.tailwindcss) {
 
 if (!packageJson.devDependencies?.["@tailwindcss/vite"]) {
   throw new Error("Missing @tailwindcss/vite dev dependency")
+}
+
+if (!packageJson.devDependencies?.playwright) {
+  throw new Error("Missing playwright dev dependency")
+}
+
+if (packageJson.scripts?.["test:e2e"] !== "playwright test") {
+  throw new Error("Unexpected frontend e2e test script")
+}
+
+const playwrightConfig = readFileSync(resolve("playwright.config.mjs"), "utf8")
+
+if (!playwrightConfig.includes('outputDir: join(tmpdir(), "wine-playwright")')) {
+  throw new Error("Playwright artifacts should be written to a temp directory")
 }
 
 console.log("frontend smoke test passed")

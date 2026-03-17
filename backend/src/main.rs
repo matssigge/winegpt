@@ -7,19 +7,23 @@ use axum::{
 use serde::Serialize;
 use sqlx::PgPool;
 use std::net::SocketAddr;
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use wine_backend::{
     auth::{self, AuthError, AuthResponse, AuthUser, LoginInput, RegisterInput},
-    backend_bind_address, database_url, db, health_response, HealthResponse,
+    allowed_frontend_origins, backend_bind_address, database_url, db, health_response,
+    HealthResponse,
 };
 
 #[tokio::main]
 async fn main() {
     let database = connect_database().await;
+    let cors = load_cors();
     let app = Router::new()
         .route("/api/auth/login", post(login))
         .route("/api/auth/register", post(register))
         .route("/api/health", get(health))
         .route("/api/me", get(me))
+        .layer(cors)
         .with_state(AppState { database });
     let address = load_bind_address();
 
@@ -102,6 +106,19 @@ async fn connect_database() -> PgPool {
     let database = db::connect(database_url).await.expect("connect to postgres");
 
     database
+}
+
+fn load_cors() -> CorsLayer {
+    let configured_frontend_origins = std::env::var("FRONTEND_ORIGINS").ok();
+    let allowed_origins = allowed_frontend_origins(configured_frontend_origins.as_deref())
+        .into_iter()
+        .map(|origin| origin.parse().expect("parse FRONTEND_ORIGINS entry"))
+        .collect::<Vec<_>>();
+
+    CorsLayer::new()
+        .allow_methods([axum::http::Method::GET, axum::http::Method::POST])
+        .allow_headers([axum::http::header::AUTHORIZATION, axum::http::header::CONTENT_TYPE])
+        .allow_origin(AllowOrigin::list(allowed_origins))
 }
 
 fn bearer_token(headers: &HeaderMap) -> Option<&str> {

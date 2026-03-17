@@ -9,4 +9,5 @@ axum = "0.8"
 serde = { version = "1", features = ["derive"] }
 sqlx = { version = "0.8", features = ["migrate", "postgres", "runtime-tokio-rustls"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tower-http = { version = "0.6", features = ["cors"] }
 uuid = { version = "1", features = ["v4"] }

@@ -2,8 +2,22 @@ const jsonHeaders = {
   "content-type": "application/json"
 }
 
+function defaultApiBaseUrl() {
+  if (typeof window === "undefined") {
+    return "http://127.0.0.1:3000"
+  }
+
+  const { hostname, protocol } = window.location
+  const host = hostname === "frontend" ? "backend" : hostname
+
+  return `${protocol}//${host}:3000`
+}
+
+const apiBaseUrl =
+  import.meta.env.VITE_API_BASE_URL?.trim() || defaultApiBaseUrl()
+
 async function request(path, options = {}) {
-  const response = await fetch(path, options)
+  const response = await fetch(`${apiBaseUrl}${path}`, options)
   const body = await response.text()
 
   if (!response.ok) {

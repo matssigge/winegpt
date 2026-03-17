@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite"
 export default defineConfig({
   plugins: [tailwindcss(), rescript()],
   server: {
-    port: 5273
+    port: 5273,
+    allowedHosts: ["frontend"]
   }
 })

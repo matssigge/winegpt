@@ -24,6 +24,7 @@ services:
     environment:
       BACKEND_BIND_ADDR: 0.0.0.0:3000
       DATABASE_URL: postgres://wine:wine@postgres:5432/wine
+      FRONTEND_ORIGINS: http://127.0.0.1:4173,http://localhost:4173
     ports:
       - "3000:3000"
 

@@ -26,6 +26,7 @@ services:
     environment:
       BACKEND_BIND_ADDR: 0.0.0.0:3000
       DATABASE_URL: postgres://wine:wine@postgres:5432/wine
+      FRONTEND_ORIGINS: http://127.0.0.1:5273,http://localhost:5273,http://frontend:5273,http://127.0.0.1:4173,http://localhost:4173
     volumes:
       - ./backend:/app/backend
       - cargo-registry:/usr/local/cargo/registry
@@ -45,6 +46,7 @@ services:
       - backend
     environment:
       CHOKIDAR_USEPOLLING: "true"
+      VITE_API_BASE_URL: ""
     volumes:
       - ./frontend:/app/frontend
       - frontend-node-modules:/app/frontend/node_modules
@@ -91,9 +93,25 @@ services:
       - ./frontend:/app/frontend
       - frontend-node-modules:/app/frontend/node_modules
 
+  frontend-e2e:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: dev
+    command: sh -lc "PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npx playwright install --with-deps chromium && PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npm run test:e2e"
+    working_dir: /app/frontend
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./frontend:/app/frontend
+      - frontend-node-modules:/app/frontend/node_modules
+      - playwright-cache:/ms-playwright
+
 volumes:
   backend-target:
   cargo-git:
   cargo-registry:
   frontend-node-modules:
   postgres-data:
+  playwright-cache:

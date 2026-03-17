@@ -24,6 +24,7 @@ All Compose commands use the explicit project name `wine` to avoid collisions wi
 - `just backend-test`: run backend tests in a container
 - `just frontend-test`: run frontend smoke tests in a container
 - `just frontend-build`: build the frontend in a container
+- `docker compose -p wine -f compose.yml run --rm frontend-e2e`: run the browser-driven auth smoke test
 - `just down`: stop the Compose stack
 - `docker compose -p wine -f compose.prod.yml up --build`: run the runtime-oriented stack
 

@@ -27,6 +27,24 @@ pub fn database_url(database_url: Option<&str>) -> Result<&str, ConfigError> {
     database_url.ok_or(ConfigError::MissingDatabaseUrl)
 }
 
+pub fn allowed_frontend_origins(frontend_origins: Option<&str>) -> Vec<String> {
+    frontend_origins
+        .unwrap_or(
+            "http://127.0.0.1:5273,http://localhost:5273,http://frontend:5273,http://127.0.0.1:4173,http://localhost:4173",
+        )
+        .split(',')
+        .filter_map(|origin| {
+            let trimmed = origin.trim();
+
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
+        })
+        .collect()
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum ConfigError {
     MissingDatabaseUrl,
@@ -34,7 +52,9 @@ pub enum ConfigError {
 
 #[cfg(test)]
 mod tests {
-    use super::{backend_bind_address, database_url, health_response, ConfigError};
+    use super::{
+        allowed_frontend_origins, backend_bind_address, database_url, health_response, ConfigError,
+    };
 
     #[test]
     fn returns_expected_health_payload() {
@@ -72,5 +92,23 @@ mod tests {
         let error = database_url(None).expect_err("missing database url should fail");
 
         assert_eq!(error, ConfigError::MissingDatabaseUrl);
+    }
+
+    #[test]
+    fn returns_default_frontend_origins() {
+        let origins = allowed_frontend_origins(None);
+
+        assert!(origins.contains(&"http://127.0.0.1:5273".to_string()));
+        assert!(origins.contains(&"http://frontend:5273".to_string()));
+    }
+
+    #[test]
+    fn parses_custom_frontend_origins() {
+        let origins = allowed_frontend_origins(Some("http://a.test, http://b.test "));
+
+        assert_eq!(
+            origins,
+            vec!["http://a.test".to_string(), "http://b.test".to_string()]
+        );
     }
 }
