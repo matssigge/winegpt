@@ -1,5 +1,5 @@
 use axum::{
-    extract::State,
+    extract::{Path, State},
     http::{HeaderMap, StatusCode},
     routing::{get, post},
     Json, Router,
@@ -10,7 +10,10 @@ use std::net::SocketAddr;
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use wine_backend::{
     auth::{self, AuthError, AuthResponse, AuthUser, LoginInput, RegisterInput},
-    collections::{self, Collection, CollectionError, CreateCollectionInput},
+    collections::{
+        self, Collection, CollectionError, CreateCollectionInput, InviteCollectionInput,
+        InvitedCollectionMember,
+    },
     allowed_frontend_origins, backend_bind_address, database_url, db, health_response,
     HealthResponse,
 };
@@ -23,6 +26,7 @@ async fn main() {
         .route("/api/auth/login", post(login))
         .route("/api/auth/register", post(register))
         .route("/api/collections", get(list_collections).post(create_collection))
+        .route("/api/collections/{id}/invites", post(invite_collection_member))
         .route("/api/health", get(health))
         .route("/api/me", get(me))
         .layer(cors)
@@ -112,6 +116,22 @@ async fn list_collections(
         .map_err(map_auth_error)?;
 
     collections::list_for_user(&state.database, user.id)
+        .await
+        .map(Json)
+        .map_err(map_collection_error)
+}
+
+async fn invite_collection_member(
+    State(state): State<AppState>,
+    Path(collection_id): Path<i64>,
+    headers: HeaderMap,
+    Json(input): Json<InviteCollectionInput>,
+) -> Result<Json<InvitedCollectionMember>, (StatusCode, Json<ErrorResponse>)> {
+    let user = authenticate_user(&state.database, &headers)
+        .await
+        .map_err(map_auth_error)?;
+
+    collections::invite_by_email(&state.database, user.id, collection_id, &input.email)
         .await
         .map(Json)
         .map_err(map_collection_error)
