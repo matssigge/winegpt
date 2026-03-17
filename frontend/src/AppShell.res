@@ -33,7 +33,7 @@ let make = (
       <section className="mb-6 rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-end">
           <div className="flex-1">
-            <AuthField
+            <TextField
               label="New collection"
               value=collectionForm.name
               onChange=onCollectionFormChange

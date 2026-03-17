@@ -2,7 +2,7 @@
 
 import * as JsxRuntime from "react/jsx-runtime";
 
-function AuthField(props) {
+function TextField(props) {
   var __type_ = props.type_;
   var onChange = props.onChange;
   var type_ = __type_ !== undefined ? __type_ : "text";
@@ -26,7 +26,7 @@ function AuthField(props) {
             });
 }
 
-var make = AuthField;
+var make = TextField;
 
 export {
   make ,

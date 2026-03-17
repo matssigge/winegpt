@@ -47,7 +47,7 @@ let make = (
     </div>
     <form className="mt-6 space-y-4" onSubmit>
       {if isRegister {
-         <AuthField
+         <TextField
            label="Full name"
            value=form.fullName
            onChange={value => onFormChange(. "fullName", value)}
@@ -56,14 +56,14 @@ let make = (
        } else {
          React.null
        }}
-      <AuthField
+      <TextField
         label="Email"
         type_="email"
         value=form.email
         onChange={value => onFormChange(. "email", value)}
         autoComplete="email"
       />
-      <AuthField
+      <TextField
         label="Password"
         type_="password"
         value=form.password
