@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react"
-import { me } from "./AuthApi.bs.js"
 import {
   describeCollectionError,
   describeCreateCollectionError,
@@ -21,8 +20,11 @@ import {
   saveSelectedCollectionId
 } from "./CollectionSelectionStorage.bs.js"
 import {
+  loadSessionToken as loadStoredSessionToken,
+  restoreSession
+} from "./SessionBootstrap.bs.js"
+import {
   clearSessionToken,
-  loadSessionToken,
   saveSessionToken
 } from "./SessionStorage.bs.js"
 
@@ -284,7 +286,7 @@ export default function AuthApp() {
   })
 
   useEffect(() => {
-    const sessionToken = loadSessionToken()
+    const sessionToken = loadStoredSessionToken()
 
     if (!sessionToken) {
       setSessionToken(null)
@@ -297,10 +299,10 @@ export default function AuthApp() {
       return
     }
 
-    me(sessionToken)
-      .then(response => {
-        setSessionToken(sessionToken)
-        setCurrentUser(parseJson(response))
+    restoreSession(sessionToken)
+      .then(restoredSession => {
+        setSessionToken(restoredSession.sessionToken)
+        setCurrentUser(restoredSession.user)
         setIsInitializing(false)
       })
       .catch(() => {
