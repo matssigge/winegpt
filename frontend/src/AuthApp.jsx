@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react"
 import { login, me, register } from "./AuthApi.bs.js"
+import {
+  describeCollectionError,
+  describeCreateCollectionError,
+  describeError,
+  parseJson
+} from "./AuthAppSupport.bs.js"
 import { createCollection, listCollections } from "./CollectionApi.bs.js"
 import {
   clearSelectedCollectionId,
@@ -11,38 +17,6 @@ import {
   loadSessionToken,
   saveSessionToken
 } from "./SessionStorage.bs.js"
-
-function parseJson(text) {
-  return JSON.parse(text)
-}
-
-function describeError(error) {
-  switch (error.message) {
-    case "email_taken":
-      return "That email address is already registered."
-    case "invalid_email":
-      return "Enter a valid email address."
-    case "password_too_short":
-      return "Use a password with at least 8 characters."
-    case "invalid_credentials":
-      return "The email or password was not accepted."
-    default:
-      return "Something went wrong. Try again."
-  }
-}
-
-function describeCollectionError() {
-  return "Could not load your collections. Try refreshing."
-}
-
-function describeCreateCollectionError(error) {
-  switch (error.message) {
-    case "invalid_collection_name":
-      return "Enter a name for the collection."
-    default:
-      return "Could not create the collection. Try again."
-  }
-}
 
 function Field({ label, type = "text", value, onChange, autoComplete }) {
   return (
