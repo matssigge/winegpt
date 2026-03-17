@@ -22,7 +22,7 @@ async fn main() {
     let app = Router::new()
         .route("/api/auth/login", post(login))
         .route("/api/auth/register", post(register))
-        .route("/api/collections", post(create_collection))
+        .route("/api/collections", get(list_collections).post(create_collection))
         .route("/api/health", get(health))
         .route("/api/me", get(me))
         .layer(cors)
@@ -98,6 +98,20 @@ async fn create_collection(
         .map_err(map_auth_error)?;
 
     collections::create(&state.database, user.id, &input.name)
+        .await
+        .map(Json)
+        .map_err(map_collection_error)
+}
+
+async fn list_collections(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<Collection>>, (StatusCode, Json<ErrorResponse>)> {
+    let user = authenticate_user(&state.database, &headers)
+        .await
+        .map_err(map_auth_error)?;
+
+    collections::list_for_user(&state.database, user.id)
         .await
         .map(Json)
         .map_err(map_collection_error)
