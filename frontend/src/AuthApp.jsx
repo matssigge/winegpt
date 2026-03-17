@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { login, me, register } from "./authApi.js"
-import { listCollections } from "./collectionApi.js"
+import { createCollection, listCollections } from "./collectionApi.js"
 import {
   clearSessionToken,
   loadSessionToken,
@@ -28,6 +28,15 @@ function describeError(error) {
 
 function describeCollectionError() {
   return "Could not load your collections. Try refreshing."
+}
+
+function describeCreateCollectionError(error) {
+  switch (error.message) {
+    case "invalid_collection_name":
+      return "Enter a name for the collection."
+    default:
+      return "Could not create the collection. Try again."
+  }
 }
 
 function Field({ label, type = "text", value, onChange, autoComplete }) {
@@ -180,7 +189,14 @@ function CollectionList({ status }) {
   }
 }
 
-function AppShell({ user, collectionStatus, onLogout }) {
+function AppShell({
+  user,
+  collectionStatus,
+  collectionForm,
+  onCollectionFormChange,
+  onCreateCollection,
+  onLogout
+}) {
   return (
     <section className="w-full max-w-3xl rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur md:p-12">
       <p className="mb-3 font-mono text-xs uppercase tracking-[0.35em] text-stone-600">
@@ -205,6 +221,31 @@ function AppShell({ user, collectionStatus, onLogout }) {
         </button>
       </div>
       <div className="mt-8">
+        <section className="mb-6 rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end">
+            <div className="flex-1">
+              <Field
+                label="New collection"
+                value={collectionForm.name}
+                onChange={onCollectionFormChange}
+                autoComplete="off"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={onCreateCollection}
+              disabled={collectionForm.isSubmitting}
+              className="rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400"
+            >
+              {collectionForm.isSubmitting ? "Creating..." : "Create collection"}
+            </button>
+          </div>
+          {collectionForm.error ? (
+            <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {collectionForm.error}
+            </div>
+          ) : null}
+        </section>
         <CollectionList status={collectionStatus} />
       </div>
     </section>
@@ -226,6 +267,11 @@ export default function AuthApp() {
   const [collectionStatus, setCollectionStatus] = useState({
     kind: "loading",
     collections: []
+  })
+  const [collectionForm, setCollectionForm] = useState({
+    name: "",
+    isSubmitting: false,
+    error: null
   })
 
   useEffect(() => {
@@ -300,6 +346,14 @@ export default function AuthApp() {
     setError(null)
   }
 
+  function updateCollectionForm(value) {
+    setCollectionForm(current => ({
+      ...current,
+      name: value,
+      error: null
+    }))
+  }
+
   function handleSubmit(event) {
     event.preventDefault()
     setIsSubmitting(true)
@@ -315,6 +369,11 @@ export default function AuthApp() {
         saveSessionToken(payload.token)
         setSessionToken(payload.token)
         setCurrentUser(payload.user)
+        setCollectionForm({
+          name: "",
+          isSubmitting: false,
+          error: null
+        })
         setForm({
           email: "",
           fullName: "",
@@ -337,8 +396,51 @@ export default function AuthApp() {
       kind: "ready",
       collections: []
     })
+    setCollectionForm({
+      name: "",
+      isSubmitting: false,
+      error: null
+    })
     setError(null)
     setMode("login")
+  }
+
+  function handleCreateCollection() {
+    if (!sessionToken || collectionForm.isSubmitting) {
+      return
+    }
+
+    setCollectionForm(current => ({
+      ...current,
+      isSubmitting: true,
+      error: null
+    }))
+
+    createCollection(sessionToken, collectionForm.name)
+      .then(response => {
+        const collection = parseJson(response)
+
+        setCollectionStatus(current => {
+          const collections = current.kind === "ready" ? current.collections : []
+
+          return {
+            kind: "ready",
+            collections: [...collections, collection]
+          }
+        })
+        setCollectionForm({
+          name: "",
+          isSubmitting: false,
+          error: null
+        })
+      })
+      .catch(reason => {
+        setCollectionForm(current => ({
+          ...current,
+          isSubmitting: false,
+          error: describeCreateCollectionError(reason)
+        }))
+      })
   }
 
   return (
@@ -352,6 +454,9 @@ export default function AuthApp() {
           <AppShell
             user={currentUser}
             collectionStatus={collectionStatus}
+            collectionForm={collectionForm}
+            onCollectionFormChange={updateCollectionForm}
+            onCreateCollection={handleCreateCollection}
             onLogout={handleLogout}
           />
         ) : (
