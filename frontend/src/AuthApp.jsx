@@ -5,9 +5,7 @@ import {
 } from "./AuthAppSupport.bs.js"
 import {
   initialForm,
-  isRegisterMode,
   loginMode,
-  registerMode,
   submit as submitAuthForm,
   updateForm as updateAuthForm
 } from "./AuthForm.bs.js"
@@ -40,105 +38,8 @@ import {
   clearSessionToken,
   saveSessionToken
 } from "./SessionStorage.bs.js"
-
-function Field({ label, type = "text", value, onChange, autoComplete }) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-medium text-stone-700">{label}</span>
-      <input
-        type={type}
-        value={value}
-        onChange={event => onChange(event.target.value)}
-        autoComplete={autoComplete}
-        className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-950 outline-none transition focus:border-stone-500"
-      />
-    </label>
-  )
-}
-
-function AuthCard({
-  mode,
-  onModeChange,
-  form,
-  onFormChange,
-  onSubmit,
-  isSubmitting,
-  error
-}) {
-  const isRegister = isRegisterMode(mode)
-
-  return (
-    <section className="w-full max-w-md rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur">
-      <p className="mb-3 font-mono text-xs uppercase tracking-[0.35em] text-stone-600">
-        Wine
-      </p>
-      <h1 className="font-serif text-4xl leading-none tracking-[-0.04em] text-stone-950">
-        {isRegister ? "Create your account" : "Welcome back"}
-      </h1>
-      <p className="mt-4 text-sm leading-6 text-stone-700">
-        {isRegister
-          ? "Start your wine journal with a personal account."
-          : "Sign in to continue to your wine journal."}
-      </p>
-      <div className="mt-6 grid grid-cols-2 gap-2 rounded-2xl bg-stone-100 p-1">
-        <button
-          type="button"
-          onClick={() => onModeChange(loginMode)}
-          className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
-            !isRegister ? "bg-white text-stone-950 shadow-sm" : "text-stone-500"
-          }`}
-        >
-          Log in
-        </button>
-        <button
-          type="button"
-          onClick={() => onModeChange(registerMode)}
-          className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
-            isRegister ? "bg-white text-stone-950 shadow-sm" : "text-stone-500"
-          }`}
-        >
-          Sign up
-        </button>
-      </div>
-      <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-        {isRegister ? (
-          <Field
-            label="Full name"
-            value={form.fullName}
-            onChange={value => onFormChange("fullName", value)}
-            autoComplete="name"
-          />
-        ) : null}
-        <Field
-          label="Email"
-          type="email"
-          value={form.email}
-          onChange={value => onFormChange("email", value)}
-          autoComplete="email"
-        />
-        <Field
-          label="Password"
-          type="password"
-          value={form.password}
-          onChange={value => onFormChange("password", value)}
-          autoComplete={isRegister ? "new-password" : "current-password"}
-        />
-        {error ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            {error}
-          </div>
-        ) : null}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full rounded-2xl bg-stone-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400"
-        >
-          {isSubmitting ? "Working..." : isRegister ? "Create account" : "Log in"}
-        </button>
-      </form>
-    </section>
-  )
-}
+import { make as AuthCard } from "./AuthCard.bs.js"
+import { make as AuthField } from "./AuthField.bs.js"
 
 function CollectionList({ status, selectedCollectionId, onSelectCollection }) {
   switch (status.kind) {
@@ -247,7 +148,7 @@ function AppShell({
         <section className="mb-6 rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-end">
             <div className="flex-1">
-              <Field
+              <AuthField
                 label="New collection"
                 value={collectionForm.name}
                 onChange={onCollectionFormChange}
