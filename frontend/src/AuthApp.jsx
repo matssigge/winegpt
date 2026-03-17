@@ -40,76 +40,7 @@ import {
 } from "./SessionStorage.bs.js"
 import { make as AuthCard } from "./AuthCard.bs.js"
 import { make as AuthField } from "./AuthField.bs.js"
-
-function CollectionList({ status, selectedCollectionId, onSelectCollection }) {
-  switch (status.kind) {
-    case "loading":
-      return (
-        <section className="rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
-          <p className="text-sm text-stone-600">Loading your collections...</p>
-        </section>
-      )
-    case "error":
-      return (
-        <section className="rounded-[1.75rem] border border-rose-200 bg-rose-50 p-6">
-          <p className="text-sm text-rose-700">{status.message}</p>
-        </section>
-      )
-    case "ready":
-      if (status.collections.length === 0) {
-        return (
-          <section className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6">
-            <h2 className="text-lg font-semibold text-stone-950">No collections yet</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-600">
-              Your collections will appear here once you create your first shared wine journal.
-            </p>
-          </section>
-        )
-      }
-
-      return (
-        <section className="rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
-          <h2 className="text-lg font-semibold text-stone-950">Your collections</h2>
-          <ul className="mt-4 space-y-3">
-            {status.collections.map(collection => (
-              <li
-                key={collection.id}
-                className={`rounded-2xl border px-4 py-3 transition ${
-                  collection.id === selectedCollectionId
-                    ? "border-stone-950 bg-stone-950 text-white"
-                    : "border-stone-200 bg-white text-stone-950"
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => onSelectCollection(collection.id)}
-                  className="flex w-full items-center justify-between text-left"
-                >
-                  <div>
-                    <p className="font-medium">{collection.name}</p>
-                    <p
-                      className={`mt-1 text-xs uppercase tracking-[0.2em] ${
-                        collection.id === selectedCollectionId ? "text-stone-300" : "text-stone-500"
-                      }`}
-                    >
-                      {collection.role}
-                    </p>
-                  </div>
-                  {collection.id === selectedCollectionId ? (
-                    <span className="rounded-full border border-white/20 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-100">
-                      Selected
-                    </span>
-                  ) : null}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )
-    default:
-      return null
-  }
-}
+import { make as CollectionList } from "./CollectionList.bs.js"
 
 function AppShell({
   user,
