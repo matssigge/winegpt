@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Row};
 
 #[derive(Debug, PartialEq, Eq)]
@@ -6,14 +7,20 @@ pub enum CollectionError {
     Database,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Deserialize)]
+pub struct CreateCollectionInput {
+    pub name: String,
+}
+
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Collection {
     pub id: i64,
     pub name: String,
     pub role: CollectionRole,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum CollectionRole {
     Owner,
     Member,

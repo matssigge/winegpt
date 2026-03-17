@@ -10,6 +10,7 @@ use std::net::SocketAddr;
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use wine_backend::{
     auth::{self, AuthError, AuthResponse, AuthUser, LoginInput, RegisterInput},
+    collections::{self, Collection, CollectionError, CreateCollectionInput},
     allowed_frontend_origins, backend_bind_address, database_url, db, health_response,
     HealthResponse,
 };
@@ -21,6 +22,7 @@ async fn main() {
     let app = Router::new()
         .route("/api/auth/login", post(login))
         .route("/api/auth/register", post(register))
+        .route("/api/collections", post(create_collection))
         .route("/api/health", get(health))
         .route("/api/me", get(me))
         .layer(cors)
@@ -80,17 +82,25 @@ async fn me(
     State(state): State<AppState>,
     headers: HeaderMap,
 ) -> Result<Json<AuthUser>, (StatusCode, Json<ErrorResponse>)> {
-    let token = bearer_token(&headers).ok_or((
-        StatusCode::UNAUTHORIZED,
-        Json(ErrorResponse {
-            error: "missing_session_token",
-        }),
-    ))?;
-
-    auth::authenticate(&state.database, token)
+    authenticate_user(&state.database, &headers)
         .await
         .map(Json)
         .map_err(map_auth_error)
+}
+
+async fn create_collection(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(input): Json<CreateCollectionInput>,
+) -> Result<Json<Collection>, (StatusCode, Json<ErrorResponse>)> {
+    let user = authenticate_user(&state.database, &headers)
+        .await
+        .map_err(map_auth_error)?;
+
+    collections::create(&state.database, user.id, &input.name)
+        .await
+        .map(Json)
+        .map_err(map_collection_error)
 }
 
 fn load_bind_address() -> SocketAddr {
@@ -127,6 +137,12 @@ fn bearer_token(headers: &HeaderMap) -> Option<&str> {
     authorization.strip_prefix("Bearer ")
 }
 
+async fn authenticate_user(database: &PgPool, headers: &HeaderMap) -> Result<AuthUser, AuthError> {
+    let token = bearer_token(headers).ok_or(AuthError::MissingSessionToken)?;
+
+    auth::authenticate(database, token).await
+}
+
 fn map_auth_error(error: AuthError) -> (StatusCode, Json<ErrorResponse>) {
     let (status, code) = match error {
         AuthError::InvalidEmail => (StatusCode::BAD_REQUEST, "invalid_email"),
@@ -138,6 +154,15 @@ fn map_auth_error(error: AuthError) -> (StatusCode, Json<ErrorResponse>) {
         AuthError::Database | AuthError::Password => {
             (StatusCode::INTERNAL_SERVER_ERROR, "internal_error")
         }
+    };
+
+    (status, Json(ErrorResponse { error: code }))
+}
+
+fn map_collection_error(error: CollectionError) -> (StatusCode, Json<ErrorResponse>) {
+    let (status, code) = match error {
+        CollectionError::InvalidName => (StatusCode::BAD_REQUEST, "invalid_collection_name"),
+        CollectionError::Database => (StatusCode::INTERNAL_SERVER_ERROR, "internal_error"),
     };
 
     (status, Json(ErrorResponse { error: code }))
