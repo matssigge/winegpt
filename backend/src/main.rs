@@ -176,6 +176,10 @@ fn map_auth_error(error: AuthError) -> (StatusCode, Json<ErrorResponse>) {
 fn map_collection_error(error: CollectionError) -> (StatusCode, Json<ErrorResponse>) {
     let (status, code) = match error {
         CollectionError::InvalidName => (StatusCode::BAD_REQUEST, "invalid_collection_name"),
+        CollectionError::InvalidEmail => (StatusCode::BAD_REQUEST, "invalid_email"),
+        CollectionError::AlreadyMember => (StatusCode::CONFLICT, "already_member"),
+        CollectionError::Forbidden => (StatusCode::FORBIDDEN, "forbidden"),
+        CollectionError::UserNotFound => (StatusCode::NOT_FOUND, "user_not_found"),
         CollectionError::Database => (StatusCode::INTERNAL_SERVER_ERROR, "internal_error"),
     };
 

@@ -4,6 +4,10 @@ use sqlx::{PgPool, Row};
 #[derive(Debug, PartialEq, Eq)]
 pub enum CollectionError {
     InvalidName,
+    InvalidEmail,
+    AlreadyMember,
+    Forbidden,
+    UserNotFound,
     Database,
 }
 
@@ -12,10 +16,22 @@ pub struct CreateCollectionInput {
     pub name: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct InviteCollectionInput {
+    pub email: String,
+}
+
 #[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Collection {
     pub id: i64,
     pub name: String,
+    pub role: CollectionRole,
+}
+
+#[derive(Debug, PartialEq, Eq, Serialize)]
+pub struct InvitedCollectionMember {
+    pub user_id: i64,
+    pub email: String,
     pub role: CollectionRole,
 }
 
@@ -99,6 +115,65 @@ pub async fn list_for_user(
         .collect()
 }
 
+pub async fn require_membership(
+    database: &PgPool,
+    user_id: i64,
+    collection_id: i64,
+) -> Result<CollectionRole, CollectionError> {
+    membership_role(database, user_id, collection_id)
+        .await?
+        .ok_or(CollectionError::Forbidden)
+}
+
+pub async fn invite_by_email(
+    database: &PgPool,
+    owner_user_id: i64,
+    collection_id: i64,
+    email: &str,
+) -> Result<InvitedCollectionMember, CollectionError> {
+    let email = normalize_email(email).ok_or(CollectionError::InvalidEmail)?;
+    let role = require_membership(database, owner_user_id, collection_id).await?;
+
+    if role != CollectionRole::Owner {
+        return Err(CollectionError::Forbidden);
+    }
+
+    let user_row = sqlx::query("SELECT id, email FROM users WHERE email = $1")
+        .bind(&email)
+        .fetch_optional(database)
+        .await
+        .map_err(|_| CollectionError::Database)?
+        .ok_or(CollectionError::UserNotFound)?;
+    let invited_user_id = user_row
+        .try_get("id")
+        .map_err(|_| CollectionError::Database)?;
+    let invited_email = user_row
+        .try_get("email")
+        .map_err(|_| CollectionError::Database)?;
+
+    let existing_role = membership_role(database, invited_user_id, collection_id).await?;
+
+    if existing_role.is_some() {
+        return Err(CollectionError::AlreadyMember);
+    }
+
+    sqlx::query(
+        "INSERT INTO collection_memberships (collection_id, user_id, role)
+         VALUES ($1, $2, 'member')",
+    )
+    .bind(collection_id)
+    .bind(invited_user_id)
+    .execute(database)
+    .await
+    .map_err(|_| CollectionError::Database)?;
+
+    Ok(InvitedCollectionMember {
+        user_id: invited_user_id,
+        email: invited_email,
+        role: CollectionRole::Member,
+    })
+}
+
 fn normalize_name(name: &str) -> Option<String> {
     let trimmed = name.trim();
 
@@ -107,6 +182,35 @@ fn normalize_name(name: &str) -> Option<String> {
     } else {
         Some(trimmed.to_string())
     }
+}
+
+fn normalize_email(email: &str) -> Option<String> {
+    let email = email.trim().to_lowercase();
+
+    if email.is_empty() || !email.contains('@') {
+        None
+    } else {
+        Some(email)
+    }
+}
+
+async fn membership_role(
+    database: &PgPool,
+    user_id: i64,
+    collection_id: i64,
+) -> Result<Option<CollectionRole>, CollectionError> {
+    let role = sqlx::query_scalar::<_, String>(
+        "SELECT role
+         FROM collection_memberships
+         WHERE collection_id = $1 AND user_id = $2",
+    )
+    .bind(collection_id)
+    .bind(user_id)
+    .fetch_optional(database)
+    .await
+    .map_err(|_| CollectionError::Database)?;
+
+    role.map(|role| CollectionRole::from_db(&role)).transpose()
 }
 
 impl CollectionRole {
@@ -121,7 +225,10 @@ impl CollectionRole {
 
 #[cfg(test)]
 mod tests {
-    use super::{create, list_for_user, CollectionError, CollectionRole};
+    use super::{
+        create, invite_by_email, list_for_user, require_membership, CollectionError,
+        CollectionRole,
+    };
     use crate::{
         auth::{register, RegisterInput},
         test_support::test_database,
@@ -192,6 +299,101 @@ mod tests {
         assert_eq!(collections[0].role, CollectionRole::Owner);
         assert_eq!(collections[1].id, second_collection.id);
         assert_eq!(collections[1].role, CollectionRole::Member);
+    }
+
+    #[tokio::test]
+    async fn requires_membership_for_collection_access() {
+        let database = test_database().await;
+        let owner = register_user(&database).await;
+        let stranger = register_user(&database).await;
+        let collection = create(&database, owner.id, "Shared").await.unwrap();
+
+        let access = require_membership(&database, stranger.id, collection.id).await;
+
+        assert_eq!(access, Err(CollectionError::Forbidden));
+    }
+
+    #[tokio::test]
+    async fn owner_can_invite_existing_user_by_email() {
+        let database = test_database().await;
+        let owner = register_user(&database).await;
+        let invited_user = register_user(&database).await;
+        let collection = create(&database, owner.id, "Shared").await.unwrap();
+
+        let invited_member =
+            invite_by_email(&database, owner.id, collection.id, &invited_user.email)
+                .await
+                .expect("invite should succeed");
+
+        assert_eq!(invited_member.user_id, invited_user.id);
+        assert_eq!(invited_member.email, invited_user.email);
+        assert_eq!(invited_member.role, CollectionRole::Member);
+
+        let access = require_membership(&database, invited_user.id, collection.id)
+            .await
+            .expect("invited user should gain collection access");
+        assert_eq!(access, CollectionRole::Member);
+    }
+
+    #[tokio::test]
+    async fn rejects_inviting_existing_member() {
+        let database = test_database().await;
+        let owner = register_user(&database).await;
+        let invited_user = register_user(&database).await;
+        let collection = create(&database, owner.id, "Shared").await.unwrap();
+
+        invite_by_email(&database, owner.id, collection.id, &invited_user.email)
+            .await
+            .expect("first invite should succeed");
+        let result = invite_by_email(&database, owner.id, collection.id, &invited_user.email).await;
+
+        assert_eq!(result, Err(CollectionError::AlreadyMember));
+    }
+
+    #[tokio::test]
+    async fn rejects_non_owner_invites() {
+        let database = test_database().await;
+        let owner = register_user(&database).await;
+        let member = register_user(&database).await;
+        let invitee = register_user(&database).await;
+        let collection = create(&database, owner.id, "Shared").await.unwrap();
+
+        sqlx::query(
+            "INSERT INTO collection_memberships (collection_id, user_id, role)
+             VALUES ($1, $2, 'member')",
+        )
+        .bind(collection.id)
+        .bind(member.id)
+        .execute(&database)
+        .await
+        .expect("member should be added");
+
+        let result = invite_by_email(&database, member.id, collection.id, &invitee.email).await;
+
+        assert_eq!(result, Err(CollectionError::Forbidden));
+    }
+
+    #[tokio::test]
+    async fn rejects_invites_for_unknown_email() {
+        let database = test_database().await;
+        let owner = register_user(&database).await;
+        let collection = create(&database, owner.id, "Shared").await.unwrap();
+
+        let result =
+            invite_by_email(&database, owner.id, collection.id, "missing@example.com").await;
+
+        assert_eq!(result, Err(CollectionError::UserNotFound));
+    }
+
+    #[tokio::test]
+    async fn rejects_invalid_invite_email() {
+        let database = test_database().await;
+        let owner = register_user(&database).await;
+        let collection = create(&database, owner.id, "Shared").await.unwrap();
+
+        let result = invite_by_email(&database, owner.id, collection.id, "not-an-email").await;
+
+        assert_eq!(result, Err(CollectionError::InvalidEmail));
     }
 
     async fn register_user(database: &sqlx::PgPool) -> crate::auth::AuthUser {
