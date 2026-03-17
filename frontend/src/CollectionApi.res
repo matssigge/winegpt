@@ -3,18 +3,6 @@ type postOptions
 type getOptions
 type createCollectionPayload
 
-@module("./ApiClient.bs.js")
-external requestWithPost: (string, postOptions) => promise<string> = "request"
-
-@module("./ApiClient.bs.js")
-external requestWithGet: (string, getOptions) => promise<string> = "request"
-
-@module("./ApiClient.bs.js")
-external authHeaders: (string, headers) => headers = "authHeaders"
-
-@module("./ApiClient.bs.js")
-external jsonHeaders: headers = "jsonHeaders"
-
 @obj
 external makePostOptions: (
   @as("method") ~method_: string,
@@ -32,17 +20,17 @@ external makeCreateCollectionPayload: (~name: string, unit) => createCollectionP
 let stringify = value => value->Js.Json.stringifyAny->Belt.Option.getExn
 
 let listCollections = token =>
-  requestWithGet(
+  ApiClient.request(
     "/api/collections",
-    makeGetOptions(~headers=authHeaders(token, Js.Dict.empty()), ()),
+    makeGetOptions(~headers=ApiClient.authHeaders(token, Js.Dict.empty()), ()),
   )
 
 let createCollection = (token, name) =>
-  requestWithPost(
+  ApiClient.request(
     "/api/collections",
     makePostOptions(
       ~method_="POST",
-      ~headers=authHeaders(token, jsonHeaders),
+      ~headers=ApiClient.authHeaders(token, ApiClient.jsonHeaders),
       ~body=makeCreateCollectionPayload(~name, ())->stringify,
       (),
     ),

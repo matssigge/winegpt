@@ -4,18 +4,6 @@ type getOptions
 type registerPayload
 type loginPayload
 
-@module("./ApiClient.bs.js")
-external requestWithPost: (string, postOptions) => promise<string> = "request"
-
-@module("./ApiClient.bs.js")
-external requestWithGet: (string, getOptions) => promise<string> = "request"
-
-@module("./ApiClient.bs.js")
-external authHeaders: (string, headers) => headers = "authHeaders"
-
-@module("./ApiClient.bs.js")
-external jsonHeaders: headers = "jsonHeaders"
-
 @obj
 external makePostOptions: (
   @as("method") ~method_: string,
@@ -41,29 +29,29 @@ external makeLoginPayload: (~email: string, ~password: string, unit) => loginPay
 let stringify = value => value->Js.Json.stringifyAny->Belt.Option.getExn
 
 let register = (email, fullName, password) =>
-  requestWithPost(
+  ApiClient.request(
     "/api/auth/register",
     makePostOptions(
       ~method_="POST",
-      ~headers=jsonHeaders,
+      ~headers=ApiClient.jsonHeaders,
       ~body=makeRegisterPayload(~email, ~fullName, ~password, ())->stringify,
       (),
     ),
   )
 
 let login = (email, password) =>
-  requestWithPost(
+  ApiClient.request(
     "/api/auth/login",
     makePostOptions(
       ~method_="POST",
-      ~headers=jsonHeaders,
+      ~headers=ApiClient.jsonHeaders,
       ~body=makeLoginPayload(~email, ~password, ())->stringify,
       (),
     ),
   )
 
 let me = token =>
-  requestWithGet(
+  ApiClient.request(
     "/api/me",
-    makeGetOptions(~headers=authHeaders(token, Js.Dict.empty()), ()),
+    makeGetOptions(~headers=ApiClient.authHeaders(token, Js.Dict.empty()), ()),
   )
