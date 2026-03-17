@@ -8,11 +8,11 @@ import * as Caml_obj from "rescript/lib/es6/caml_obj.js";
 import * as Js_promise2 from "rescript/lib/es6/js_promise2.js";
 import * as AuthAppSupport from "./auth/AuthAppSupport.bs.js";
 import * as SessionStorage from "./auth/SessionStorage.bs.js";
-import * as CollectionState from "./CollectionState.bs.js";
+import * as CollectionState from "./collections/CollectionState.bs.js";
 import * as SessionBootstrap from "./auth/SessionBootstrap.bs.js";
 import * as Js_null_undefined from "rescript/lib/es6/js_null_undefined.js";
 import * as JsxRuntime from "react/jsx-runtime";
-import * as CollectionSelectionStorage from "./CollectionSelectionStorage.bs.js";
+import * as CollectionSelectionStorage from "./collections/CollectionSelectionStorage.bs.js";
 
 function App(props) {
   var match = React.useState(function () {
