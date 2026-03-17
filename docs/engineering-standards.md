@@ -188,6 +188,18 @@ Default choices unless there is a good reason otherwise:
 - Model state precisely using variants, records, and option types.
 - Avoid impossible states represented by multiple loosely related booleans.
 
+### ReScript vs JavaScript
+
+- Write frontend application code in ReScript by default.
+- Do not implement new frontend behavior in JavaScript when it can reasonably be implemented in ReScript.
+- Use JavaScript only for thin interop boundaries, such as:
+  - browser APIs that are awkward to model directly in ReScript
+  - third-party library bindings
+  - tool-required config or runtime glue files
+- Do not have ReScript modules import other ReScript modules through generated `.bs.js` files.
+- When touching an existing JavaScript frontend module, prefer moving the touched behavior into ReScript instead of extending the JavaScript surface area.
+- If a new JavaScript frontend file is truly necessary, document the reason in the commit message or PR description.
+
 ### React Usage
 
 - Presentational components should stay mostly pure.
