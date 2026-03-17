@@ -7,5 +7,8 @@ export default defineConfig({
   server: {
     port: 5273,
     allowedHosts: ["frontend"]
+  },
+  preview: {
+    allowedHosts: ["frontend"]
   }
 })
