@@ -2,14 +2,14 @@
 
 import * as React from "react";
 import * as AppShell from "./AppShell.bs.js";
-import * as AuthCard from "./AuthCard.bs.js";
-import * as AuthForm from "./AuthForm.bs.js";
+import * as AuthCard from "./auth/AuthCard.bs.js";
+import * as AuthForm from "./auth/AuthForm.bs.js";
 import * as Caml_obj from "rescript/lib/es6/caml_obj.js";
 import * as Js_promise2 from "rescript/lib/es6/js_promise2.js";
-import * as AuthAppSupport from "./AuthAppSupport.bs.js";
-import * as SessionStorage from "./SessionStorage.bs.js";
+import * as AuthAppSupport from "./auth/AuthAppSupport.bs.js";
+import * as SessionStorage from "./auth/SessionStorage.bs.js";
 import * as CollectionState from "./CollectionState.bs.js";
-import * as SessionBootstrap from "./SessionBootstrap.bs.js";
+import * as SessionBootstrap from "./auth/SessionBootstrap.bs.js";
 import * as Js_null_undefined from "rescript/lib/es6/js_null_undefined.js";
 import * as JsxRuntime from "react/jsx-runtime";
 import * as CollectionSelectionStorage from "./CollectionSelectionStorage.bs.js";
