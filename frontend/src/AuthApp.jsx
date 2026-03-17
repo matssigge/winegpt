@@ -10,7 +10,7 @@ import {
   clearSessionToken,
   loadSessionToken,
   saveSessionToken
-} from "./sessionStorage.js"
+} from "./SessionStorage.bs.js"
 
 function parseJson(text) {
   return JSON.parse(text)
