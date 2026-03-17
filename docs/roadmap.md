@@ -148,20 +148,57 @@ Acceptance criteria:
 
 Goal: a user can create and access wine collections.
 
-### 2.1 Add create-collection endpoint
+### 2.1 Add collection persistence module
+
+Scope:
+
+- add a small backend module for collection queries and commands
+- keep collection SQL out of route handlers
+
+Acceptance criteria:
+
+- collection-related handlers depend on a dedicated backend module
+- at least one collection persistence path has focused tests
+
+### 2.2 Add create-collection backend behavior
+
+Scope:
+
+- add backend service/repository logic to create a collection
+- create an owner membership for the creator in the same operation
+
+Acceptance criteria:
+
+- creating a collection persists both the collection and owner membership
+- creator becomes owner automatically
+- failure paths do not leave partial collection state behind
+
+### 2.3 Add create-collection endpoint
 
 Scope:
 
 - create `POST /api/collections`
-- create an owner membership for the creator
 
 Acceptance criteria:
 
 - authenticated user can create a collection
-- creator becomes owner automatically
+- request/response payloads are explicit
 - unauthenticated request is rejected
 
-### 2.2 Add list-my-collections endpoint
+### 2.4 Add list-my-collections backend behavior
+
+Scope:
+
+- add backend query logic to return collections for the current user
+- include membership role needed by the frontend
+
+Acceptance criteria:
+
+- user only sees collections they belong to
+- collection listing order is explicit and stable
+- focused tests cover both visible and non-visible collections
+
+### 2.5 Add list-my-collections endpoint
 
 Scope:
 
@@ -172,20 +209,57 @@ Acceptance criteria:
 - user only sees collections they belong to
 - response shape is stable and explicit
 
-### 2.3 Add frontend collection switcher
+### 2.6 Add frontend collection API module
 
 Scope:
 
-- show current user collections
-- allow selecting a collection
+- add dedicated frontend collection API calls
+- isolate collection transport details from components
 
 Acceptance criteria:
 
-- newly created collections appear in the UI
-- selected collection is reflected in app state
-- empty state is handled clearly
+- collection fetch/create calls live outside UI components
+- loading and error paths are explicit at the module boundary
 
-### 2.4 Enforce membership-based access control
+### 2.7 Add frontend collection list and empty state
+
+Scope:
+
+- show current user collections in the authenticated shell
+- add a clear empty state when none exist
+
+Acceptance criteria:
+
+- empty state is handled clearly
+- collection loading and fetch errors are visible in the UI
+
+### 2.8 Add collection creation UI
+
+Scope:
+
+- add a minimal create-collection form
+- append or refresh the collection list after successful creation
+
+Acceptance criteria:
+
+- authenticated user can create a collection from the UI
+- newly created collections appear in the UI
+- duplicate submit and failure states are handled explicitly
+
+### 2.9 Add frontend collection selection state
+
+Scope:
+
+- allow selecting a collection from the list
+- persist selected collection in frontend state
+
+Acceptance criteria:
+
+- selected collection is reflected in app state
+- reloading preserves a sensible selection when possible
+- empty and missing-selection states are handled explicitly
+
+### 2.10 Enforce membership-based access control
 
 Scope:
 
@@ -196,18 +270,69 @@ Acceptance criteria:
 - users cannot read or modify collections they do not belong to
 - access-control checks are covered by tests
 
-### 2.5 Add invite flow
+### 2.11 Add invite lookup/create backend behavior
 
 Scope:
 
-- invite another user by email
-- add membership for an existing or newly accepted user
+- add backend logic to invite a user by email
+- create membership for an existing user or record an invite path for later completion
+
+Acceptance criteria:
+
+- owner can invite by email through a single backend path
+- inviting an existing member is rejected cleanly
+- non-owners cannot create memberships
+
+### 2.12 Add invite endpoint
+
+Scope:
+
+- create collection invite API endpoint
+- validate collection membership and role at the edge
 
 Acceptance criteria:
 
 - collection owner can invite another user
+- non-members and non-owners are rejected
+- request and error payloads are explicit
+
+### 2.13 Add frontend invite UI
+
+Scope:
+
+- add a minimal invite-by-email form on the selected collection view
+- surface success and error states clearly
+
+Acceptance criteria:
+
+- owner can invite another user from the UI
+- invite success is visible without page reload
+- authorization failures are visible in the UI
+
+### 2.14 Add invited-user access verification
+
+Scope:
+
+- verify that an invited or newly added user can list and access the collection
+- keep the first implementation simple even if the invite flow is immediate membership
+
+Acceptance criteria:
+
 - invited user can gain access to the collection
-- non-members cannot invite into arbitrary collections
+- collection appears in the invited user’s list
+- regression coverage proves the end-to-end collection sharing path
+
+### 2.15 Add browser-level collection smoke test
+
+Scope:
+
+- extend Playwright coverage to the core collection flow
+- cover create and list behavior against the isolated test stack
+
+Acceptance criteria:
+
+- browser test can create a collection and see it appear in the UI
+- test runs only against the isolated test stack
 
 ## Milestone 3: Entry capture
 
