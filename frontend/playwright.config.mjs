@@ -6,7 +6,7 @@ export default {
   timeout: 30_000,
   outputDir: join(tmpdir(), "wine-playwright"),
   use: {
-    baseURL: "http://frontend:5273",
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://frontend:4173",
     headless: true
   }
 }

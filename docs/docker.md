@@ -7,6 +7,7 @@ All Compose commands use the explicit project name `wine` to avoid collisions wi
 ## Compose files
 
 - `compose.yml`: local development and one-off test/build services
+- `compose.test.yml`: isolated end-to-end test stack
 - `compose.prod.yml`: runtime-oriented services
 
 ## Services
@@ -23,8 +24,9 @@ All Compose commands use the explicit project name `wine` to avoid collisions wi
 - `just frontend-dev`: run only the frontend dev server
 - `just backend-test`: run backend tests in a container
 - `just frontend-test`: run frontend smoke tests in a container
+- `just frontend-e2e-test`: run the browser-driven auth smoke test against the isolated test stack and tear it down afterward
 - `just frontend-build`: build the frontend in a container
-- `docker compose -p wine -f compose.yml run --rm frontend-e2e`: run the browser-driven auth smoke test with Playwright baked into the image
+- `just test`: run backend tests, frontend smoke tests, and the isolated browser-driven auth test
 - `just down`: stop the Compose stack
 - `docker compose -p wine -f compose.prod.yml up --build`: run the runtime-oriented stack
 
@@ -35,3 +37,5 @@ All Compose commands use the explicit project name `wine` to avoid collisions wi
 - Frontend preview server: `http://127.0.0.1:4173`
 
 PostgreSQL is intentionally not published on a host port. Compose keeps its data in the named volume `postgres-data`.
+
+The end-to-end test stack uses the separate Compose project name `wine-test`, runs a dedicated PostgreSQL instance in temporary storage, starts a runtime-style backend and frontend, and then executes Playwright against that isolated stack.

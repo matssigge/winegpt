@@ -1,5 +1,6 @@
 set shell := ["zsh", "-cu"]
 compose := "docker compose -p wine -f compose.yml"
+compose_test := "docker compose -p wine-test -f compose.test.yml"
 
 default:
   @just --list
@@ -22,7 +23,10 @@ frontend-dev:
 frontend-test:
   {{compose}} run --rm frontend-test
 
-test: backend-test frontend-test
+frontend-e2e-test:
+  zsh -lc 'trap "docker compose -p wine-test -f compose.test.yml down -v" EXIT; docker compose -p wine-test -f compose.test.yml up --build --abort-on-container-exit --exit-code-from frontend-e2e frontend-e2e'
+
+test: backend-test frontend-test frontend-e2e-test
 
 build: frontend-build
 

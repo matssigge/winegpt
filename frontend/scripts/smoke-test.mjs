@@ -5,6 +5,7 @@ const requiredFiles = [
   "index.html",
   "playwright.config.mjs",
   "rescript.json",
+  "scripts/wait-for-url.mjs",
   "src/App.res",
   "src/Main.res",
   "vite.config.mjs"
@@ -46,6 +47,10 @@ const playwrightConfig = readFileSync(resolve("playwright.config.mjs"), "utf8")
 
 if (!playwrightConfig.includes('outputDir: join(tmpdir(), "wine-playwright")')) {
   throw new Error("Playwright artifacts should be written to a temp directory")
+}
+
+if (!playwrightConfig.includes('PLAYWRIGHT_BASE_URL')) {
+  throw new Error("Playwright base URL should be configurable")
 }
 
 console.log("frontend smoke test passed")

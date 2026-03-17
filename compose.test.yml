@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: wine_test
+      POSTGRES_USER: wine
+      POSTGRES_PASSWORD: wine
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wine -d wine_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: runtime
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      BACKEND_BIND_ADDR: 0.0.0.0:3000
+      DATABASE_URL: postgres://wine:wine@postgres:5432/wine_test
+      FRONTEND_ORIGINS: http://frontend:4173
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: runtime
+      args:
+        VITE_API_BASE_URL: http://backend:3000
+    depends_on:
+      - backend
+    healthcheck:
+      test: >-
+        node -e 'fetch("http://127.0.0.1:4173").then(response => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))'
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  frontend-e2e:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: e2e-runner
+    command: sh -lc "node ./scripts/wait-for-url.mjs http://backend:3000/api/health && npm run test:e2e"
+    depends_on:
+      frontend:
+        condition: service_healthy
+    environment:
+      PLAYWRIGHT_BASE_URL: http://frontend:4173
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
