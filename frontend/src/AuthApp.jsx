@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from "react"
-import { login, me, register } from "./AuthApi.bs.js"
+import { me } from "./AuthApi.bs.js"
 import {
   describeCollectionError,
   describeCreateCollectionError,
   describeError,
   parseJson
 } from "./AuthAppSupport.bs.js"
+import {
+  initialForm,
+  isRegisterMode,
+  loginMode,
+  registerMode,
+  submit as submitAuthForm,
+  updateForm as updateAuthForm
+} from "./AuthForm.bs.js"
 import { createCollection, listCollections } from "./CollectionApi.bs.js"
 import {
   clearSelectedCollectionId,
@@ -42,7 +50,7 @@ function AuthCard({
   isSubmitting,
   error
 }) {
-  const isRegister = mode === "register"
+  const isRegister = isRegisterMode(mode)
 
   return (
     <section className="w-full max-w-md rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur">
@@ -60,7 +68,7 @@ function AuthCard({
       <div className="mt-6 grid grid-cols-2 gap-2 rounded-2xl bg-stone-100 p-1">
         <button
           type="button"
-          onClick={() => onModeChange("login")}
+          onClick={() => onModeChange(loginMode)}
           className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
             !isRegister ? "bg-white text-stone-950 shadow-sm" : "text-stone-500"
           }`}
@@ -69,7 +77,7 @@ function AuthCard({
         </button>
         <button
           type="button"
-          onClick={() => onModeChange("register")}
+          onClick={() => onModeChange(registerMode)}
           className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
             isRegister ? "bg-white text-stone-950 shadow-sm" : "text-stone-500"
           }`}
@@ -257,12 +265,8 @@ function AppShell({
 }
 
 export default function AuthApp() {
-  const [mode, setMode] = useState("login")
-  const [form, setForm] = useState({
-    email: "",
-    fullName: "",
-    password: ""
-  })
+  const [mode, setMode] = useState(loginMode)
+  const [form, setForm] = useState(initialForm)
   const [currentUser, setCurrentUser] = useState(null)
   const [sessionToken, setSessionToken] = useState(null)
   const [isInitializing, setIsInitializing] = useState(true)
@@ -374,10 +378,7 @@ export default function AuthApp() {
   }, [collectionStatus, selectedCollectionId])
 
   function updateForm(field, value) {
-    setForm(current => ({
-      ...current,
-      [field]: value
-    }))
+    setForm(current => updateAuthForm(current, field, value))
   }
 
   function handleModeChange(nextMode) {
@@ -397,14 +398,8 @@ export default function AuthApp() {
     event.preventDefault()
     setIsSubmitting(true)
     setError(null)
-
-    const request = mode === "register"
-      ? register(form.email, form.fullName || null, form.password)
-      : login(form.email, form.password)
-
-    request
-      .then(response => {
-        const payload = parseJson(response)
+    submitAuthForm(mode, form)
+      .then(payload => {
         saveSessionToken(payload.token)
         setSessionToken(payload.token)
         setCurrentUser(payload.user)
@@ -413,11 +408,7 @@ export default function AuthApp() {
           isSubmitting: false,
           error: null
         })
-        setForm({
-          email: "",
-          fullName: "",
-          password: ""
-        })
+        setForm(initialForm)
       })
       .catch(reason => {
         setError(describeError(reason))
@@ -443,7 +434,7 @@ export default function AuthApp() {
       error: null
     })
     setError(null)
-    setMode("login")
+    setMode(loginMode)
   }
 
   function handleCreateCollection() {
