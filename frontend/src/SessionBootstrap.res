@@ -4,8 +4,12 @@ let restoreSession = sessionToken =>
   Js.Promise2.then(
     AuthApi.me(sessionToken),
     response =>
-      Js.Promise2.resolve({
-        sessionToken: sessionToken,
-        user: (response->AuthAppSupport.parseJson: AuthSession.user),
-      }: AuthSession.restoredSession),
+      switch response->ResponseDecoder.parse->Belt.Option.flatMap(ResponseDecoder.user) {
+      | Some(user) =>
+        Js.Promise2.resolve({
+          sessionToken: sessionToken,
+          user: user,
+        }: AuthSession.restoredSession)
+      | None => Js.Promise2.reject(ApiClient.invalidResponse())
+      },
   )

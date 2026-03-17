@@ -60,6 +60,8 @@ let copyHeaders = headers => {
   nextHeaders
 }
 
+let invalidResponse = () => makeError("invalid_response")->Obj.magic
+
 let authHeaders = (token, extraHeaders) => {
   let headers = copyHeaders(extraHeaders)
   headers->Js.Dict.set("authorization", "Bearer " ++ token)

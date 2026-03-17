@@ -36,6 +36,10 @@ let submit = (mode, form) => {
 
   Js.Promise2.then(
     request,
-    response => Js.Promise2.resolve(response->AuthAppSupport.parseJson: AuthSession.authPayload),
+    response =>
+      switch response->ResponseDecoder.parse->Belt.Option.flatMap(ResponseDecoder.authPayload) {
+      | Some(payload) => Js.Promise2.resolve(payload)
+      | None => Js.Promise2.reject(ApiClient.invalidResponse())
+      },
   )
 }

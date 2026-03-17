@@ -1,4 +1,4 @@
-type collection = CollectionState.collection
+type collection = CollectionModel.collection
 type status = CollectionState.status
 
 let selectedClasses =

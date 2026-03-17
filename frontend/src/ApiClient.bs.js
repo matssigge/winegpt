@@ -34,6 +34,10 @@ function copyHeaders(headers) {
   return nextHeaders;
 }
 
+function invalidResponse() {
+  return new Error("invalid_response");
+}
+
 function authHeaders(token, extraHeaders) {
   var headers = copyHeaders(extraHeaders);
   headers["authorization"] = "Bearer " + token;
@@ -81,6 +85,7 @@ export {
   defaultApiBaseUrl ,
   apiBaseUrl ,
   copyHeaders ,
+  invalidResponse ,
   authHeaders ,
   extractError ,
   request ,

@@ -151,7 +151,7 @@ let make = () => {
       setCollectionForm(current => CollectionState.startSubmittingCollectionForm(current))
 
       CollectionState.createCollection(token, collectionForm.name)
-      ->Js.Promise2.then((collection: CollectionState.collection) => {
+      ->Js.Promise2.then((collection: CollectionModel.collection) => {
         let nextSelectedCollectionId = Some(collection.id)
         setSelectedCollectionId(_ => nextSelectedCollectionId)
         CollectionSelectionStorage.saveSelectedCollectionId(collection.id)

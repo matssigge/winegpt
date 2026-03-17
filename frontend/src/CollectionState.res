@@ -1,8 +1,4 @@
-type collection = {
-  id: int,
-  name: string,
-  role: string,
-}
+type collection = CollectionModel.collection
 
 type status =
   | Loading
@@ -54,16 +50,25 @@ let finishCollectionForm = () => initialCollectionForm
 let listCollections = token =>
   Js.Promise2.then(
     CollectionApi.listCollections(token),
-    response => Js.Promise2.resolve(response->AuthAppSupport.parseJson),
+    response =>
+      switch response->ResponseDecoder.parse->Belt.Option.flatMap(ResponseDecoder.collections) {
+      | Some(collections) => Js.Promise2.resolve(collections)
+      | None => Js.Promise2.reject(ApiClient.invalidResponse())
+      },
   )
 
 let createCollection = (token, name) =>
   Js.Promise2.then(
     CollectionApi.createCollection(token, name),
-    response => Js.Promise2.resolve(response->AuthAppSupport.parseJson),
+    response =>
+      switch response->ResponseDecoder.parse->Belt.Option.flatMap(ResponseDecoder.collection) {
+      | Some(collection) => Js.Promise2.resolve(collection)
+      | None => Js.Promise2.reject(ApiClient.invalidResponse())
+      },
   )
 
-let appendCollection = (collections, collection) => Belt.Array.concat(collections, [collection])
+let appendCollection = (collections: array<collection>, collection: collection) =>
+  Belt.Array.concat(collections, [collection])
 
 let isReady = status =>
   switch status {
@@ -83,7 +88,11 @@ let errorMessage = status =>
   | Loading | Ready(_) => None
   }
 
-let resolveSelectedCollectionId = (collections, selectedCollectionId, persistedCollectionId) => {
+let resolveSelectedCollectionId = (
+  collections: array<collection>,
+  selectedCollectionId,
+  persistedCollectionId,
+) => {
   if Belt.Array.length(collections) == 0 {
     None
   } else {
