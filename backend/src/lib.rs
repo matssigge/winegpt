@@ -1,3 +1,4 @@
+pub mod auth;
 pub mod db;
 
 use serde::Serialize;
