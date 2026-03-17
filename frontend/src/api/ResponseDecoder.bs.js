@@ -106,6 +106,24 @@ function collections(json) {
   
 }
 
+function invitedCollectionMember(json) {
+  var object_ = Js_json.decodeObject(json);
+  if (object_ === undefined) {
+    return ;
+  }
+  var match = intField(object_, "user_id");
+  var match$1 = stringField(object_, "email");
+  var match$2 = stringField(object_, "role");
+  if (match !== undefined && match$1 !== undefined && match$2 !== undefined) {
+    return {
+            userId: match,
+            email: match$1,
+            role: match$2
+          };
+  }
+  
+}
+
 export {
   parse ,
   asObject ,
@@ -118,5 +136,6 @@ export {
   authPayload ,
   collection ,
   collections ,
+  invitedCollectionMember ,
 }
 /* No side effect */

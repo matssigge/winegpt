@@ -23,9 +23,20 @@ function createCollection(token, name) {
             });
 }
 
+function inviteCollectionMember(token, collectionId, email) {
+  return ApiClient.request("/api/collections/" + String(collectionId) + "/invites", {
+              method: "POST",
+              headers: ApiClient.authHeaders(token, ApiClient.jsonHeaders),
+              body: Belt_Option.getExn(JSON.stringify({
+                        email: email
+                      }))
+            });
+}
+
 export {
   stringify ,
   listCollections ,
   createCollection ,
+  inviteCollectionMember ,
 }
 /* ApiClient Not a pure module */

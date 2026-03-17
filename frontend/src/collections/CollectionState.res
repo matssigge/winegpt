@@ -82,6 +82,12 @@ let collections = status =>
   | Loading | Error(_) => []
   }
 
+let selectedCollection = (collections: array<collection>, selectedCollectionId) =>
+  switch selectedCollectionId {
+  | Some(selectedId) => collections->Belt.Array.getBy(collection => collection.id == selectedId)
+  | None => None
+  }
+
 let errorMessage = status =>
   switch status {
   | Error(message) => Some(message)

@@ -77,3 +77,18 @@ let collections = json =>
     )
   | None => None
   }
+
+let invitedCollectionMember = json =>
+  switch json->asObject {
+  | Some(object_) =>
+    switch (
+      object_->intField("user_id"),
+      object_->stringField("email"),
+      object_->stringField("role"),
+    ) {
+    | (Some(userId), Some(email), Some(role)) =>
+      Some({userId: userId, email: email, role: role}: CollectionInviteModel.invitedMember)
+    | _ => None
+    }
+  | None => None
+  }

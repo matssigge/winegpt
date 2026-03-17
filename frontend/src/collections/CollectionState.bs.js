@@ -119,6 +119,15 @@ function collections(status) {
   }
 }
 
+function selectedCollection(collections, selectedCollectionId) {
+  if (selectedCollectionId !== undefined) {
+    return Belt_Array.getBy(collections, (function (collection) {
+                  return collection.id === selectedCollectionId;
+                }));
+  }
+  
+}
+
 function errorMessage(status) {
   if (typeof status !== "object" || status.TAG === "Ready") {
     return ;
@@ -172,6 +181,7 @@ export {
   appendCollection ,
   isReady ,
   collections ,
+  selectedCollection ,
   errorMessage ,
   resolveSelectedCollectionId ,
 }
