@@ -15,86 +15,83 @@ function CollectionList(props) {
   var onSelectCollection = props.onSelectCollection;
   var selectedCollectionId = props.selectedCollectionId;
   var status = props.status;
-  var match = status.kind;
-  switch (match) {
-    case "error" :
-        return JsxRuntime.jsx("section", {
-                    children: JsxRuntime.jsx("p", {
-                          children: status.message,
-                          className: "text-sm text-rose-700"
-                        }),
-                    className: "rounded-[1.75rem] border border-rose-200 bg-rose-50 p-6"
-                  });
-    case "loading" :
-        return JsxRuntime.jsx("section", {
-                    children: JsxRuntime.jsx("p", {
-                          children: "Loading your collections...",
-                          className: "text-sm text-stone-600"
-                        }),
-                    className: "rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6"
-                  });
-    case "ready" :
-        if (status.collections.length === 0) {
-          return JsxRuntime.jsxs("section", {
-                      children: [
-                        JsxRuntime.jsx("h2", {
-                              children: "No collections yet",
-                              className: "text-lg font-semibold text-stone-950"
-                            }),
-                        JsxRuntime.jsx("p", {
-                              children: "Your collections will appear here once you create your first shared wine journal.",
-                              className: "mt-2 text-sm leading-6 text-stone-600"
-                            })
-                      ],
-                      className: "rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6"
-                    });
-        }
-        var collections = status.collections;
-        return JsxRuntime.jsxs("section", {
-                    children: [
-                      JsxRuntime.jsx("h2", {
-                            children: "Your collections",
-                            className: "text-lg font-semibold text-stone-950"
-                          }),
-                      JsxRuntime.jsx("ul", {
-                            children: Belt_Array.map(collections, (function (collection) {
-                                    var isSelected = (selectedCollectionId == null) ? false : collection.id === selectedCollectionId;
-                                    return JsxRuntime.jsx("li", {
-                                                children: JsxRuntime.jsxs("button", {
-                                                      children: [
-                                                        JsxRuntime.jsxs("div", {
-                                                              children: [
-                                                                JsxRuntime.jsx("p", {
-                                                                      children: collection.name,
-                                                                      className: "font-medium"
-                                                                    }),
-                                                                JsxRuntime.jsx("p", {
-                                                                      children: collection.role,
-                                                                      className: isSelected ? selectedRoleClasses : unselectedRoleClasses
-                                                                    })
-                                                              ]
-                                                            }),
-                                                        isSelected ? JsxRuntime.jsx("span", {
-                                                                children: "Selected",
-                                                                className: "rounded-full border border-white/20 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-100"
-                                                              }) : null
-                                                      ],
-                                                      className: "flex w-full items-center justify-between text-left",
-                                                      type: "button",
-                                                      onClick: (function (param) {
-                                                          onSelectCollection(collection.id);
-                                                        })
-                                                    }),
-                                                className: isSelected ? selectedClasses : unselectedClasses
-                                              }, String(collection.id));
-                                  })),
-                            className: "mt-4 space-y-3"
-                          })
-                    ],
-                    className: "rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6"
-                  });
-    default:
-      return null;
+  if (typeof status !== "object") {
+    return JsxRuntime.jsx("section", {
+                children: JsxRuntime.jsx("p", {
+                      children: "Loading your collections...",
+                      className: "text-sm text-stone-600"
+                    }),
+                className: "rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6"
+              });
+  }
+  if (status.TAG !== "Ready") {
+    return JsxRuntime.jsx("section", {
+                children: JsxRuntime.jsx("p", {
+                      children: status._0,
+                      className: "text-sm text-rose-700"
+                    }),
+                className: "rounded-[1.75rem] border border-rose-200 bg-rose-50 p-6"
+              });
+  }
+  var collections = status._0;
+  if (collections.length === 0) {
+    return JsxRuntime.jsxs("section", {
+                children: [
+                  JsxRuntime.jsx("h2", {
+                        children: "No collections yet",
+                        className: "text-lg font-semibold text-stone-950"
+                      }),
+                  JsxRuntime.jsx("p", {
+                        children: "Your collections will appear here once you create your first shared wine journal.",
+                        className: "mt-2 text-sm leading-6 text-stone-600"
+                      })
+                ],
+                className: "rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6"
+              });
+  } else {
+    return JsxRuntime.jsxs("section", {
+                children: [
+                  JsxRuntime.jsx("h2", {
+                        children: "Your collections",
+                        className: "text-lg font-semibold text-stone-950"
+                      }),
+                  JsxRuntime.jsx("ul", {
+                        children: Belt_Array.map(collections, (function (collection) {
+                                var isSelected = (selectedCollectionId == null) ? false : collection.id === selectedCollectionId;
+                                return JsxRuntime.jsx("li", {
+                                            children: JsxRuntime.jsxs("button", {
+                                                  children: [
+                                                    JsxRuntime.jsxs("div", {
+                                                          children: [
+                                                            JsxRuntime.jsx("p", {
+                                                                  children: collection.name,
+                                                                  className: "font-medium"
+                                                                }),
+                                                            JsxRuntime.jsx("p", {
+                                                                  children: collection.role,
+                                                                  className: isSelected ? selectedRoleClasses : unselectedRoleClasses
+                                                                })
+                                                          ]
+                                                        }),
+                                                    isSelected ? JsxRuntime.jsx("span", {
+                                                            children: "Selected",
+                                                            className: "rounded-full border border-white/20 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-100"
+                                                          }) : null
+                                                  ],
+                                                  className: "flex w-full items-center justify-between text-left",
+                                                  type: "button",
+                                                  onClick: (function (param) {
+                                                      onSelectCollection(collection.id);
+                                                    })
+                                                }),
+                                            className: isSelected ? selectedClasses : unselectedClasses
+                                          }, String(collection.id));
+                              })),
+                        className: "mt-4 space-y-3"
+                      })
+                ],
+                className: "rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6"
+              });
   }
 }
 

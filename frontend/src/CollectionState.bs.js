@@ -7,42 +7,31 @@ import * as CollectionApi from "./CollectionApi.bs.js";
 import * as AuthAppSupport from "./AuthAppSupport.bs.js";
 
 function initialCollectionStatus() {
-  return {
-          kind: "loading",
-          collections: [],
-          message: ""
-        };
+  return "Loading";
 }
 
 function emptyCollectionStatus() {
   return {
-          kind: "ready",
-          collections: [],
-          message: ""
+          TAG: "Ready",
+          _0: []
         };
 }
 
 function loadingCollectionStatus() {
-  return {
-          kind: "loading",
-          collections: [],
-          message: ""
-        };
+  return "Loading";
 }
 
 function readyCollectionStatus(collections) {
   return {
-          kind: "ready",
-          collections: collections,
-          message: ""
+          TAG: "Ready",
+          _0: collections
         };
 }
 
 function errorCollectionStatus(message) {
   return {
-          kind: "error",
-          collections: [],
-          message: message
+          TAG: "Error",
+          _0: message
         };
 }
 
@@ -101,11 +90,29 @@ function appendCollection(collections, collection) {
 }
 
 function isReady(status) {
-  return status.kind === "ready";
+  if (typeof status !== "object" || status.TAG !== "Ready") {
+    return false;
+  } else {
+    return true;
+  }
 }
 
 function collections(status) {
-  return status.collections;
+  if (typeof status !== "object") {
+    return [];
+  } else if (status.TAG === "Ready") {
+    return status._0;
+  } else {
+    return [];
+  }
+}
+
+function errorMessage(status) {
+  if (typeof status !== "object" || status.TAG === "Ready") {
+    return ;
+  } else {
+    return status._0;
+  }
 }
 
 function resolveSelectedCollectionId(collections, selectedCollectionId, persistedCollectionId) {
@@ -153,6 +160,7 @@ export {
   appendCollection ,
   isReady ,
   collections ,
+  errorMessage ,
   resolveSelectedCollectionId ,
 }
 /* CollectionApi Not a pure module */

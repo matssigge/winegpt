@@ -5,7 +5,6 @@ import * as AppShell from "./AppShell.bs.js";
 import * as AuthCard from "./AuthCard.bs.js";
 import * as AuthForm from "./AuthForm.bs.js";
 import * as Caml_obj from "rescript/lib/es6/caml_obj.js";
-import * as Caml_option from "rescript/lib/es6/caml_option.js";
 import * as Js_promise2 from "rescript/lib/es6/js_promise2.js";
 import * as AuthAppSupport from "./AuthAppSupport.bs.js";
 import * as SessionStorage from "./SessionStorage.bs.js";
@@ -71,7 +70,7 @@ function App(props) {
                               return restoredSession.sessionToken;
                             });
                         setCurrentUser(function (param) {
-                              return Caml_option.some(restoredSession.user);
+                              return restoredSession.user;
                             });
                         setIsInitializing(function (param) {
                               return false;
@@ -208,7 +207,7 @@ function App(props) {
                       return nextSessionToken;
                     });
                 setCurrentUser(function (param) {
-                      return Caml_option.some(payload.user);
+                      return payload.user;
                     });
                 setCollectionForm(function (param) {
                       return CollectionState.finishCollectionForm();
@@ -298,7 +297,7 @@ function App(props) {
                             className: "w-full max-w-md rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 text-sm text-stone-600 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur"
                           }) : (
                         currentUser !== undefined ? JsxRuntime.jsx(AppShell.make, {
-                                user: Caml_option.valFromOption(currentUser),
+                                user: currentUser,
                                 collectionStatus: collectionStatus,
                                 collectionForm: collectionForm,
                                 selectedCollectionId: selectedCollectionId,

@@ -1,7 +1,13 @@
-type collection
+type collection = {
+  id: int,
+  name: string,
+  role: string,
+}
 
-@get
-external id: collection => int = "id"
+type status =
+  | Loading
+  | Ready(array<collection>)
+  | Error(string)
 
 type collectionForm = {
   name: string,
@@ -10,33 +16,23 @@ type collectionForm = {
 }
 
 let initialCollectionStatus = () => {
-  "kind": "loading",
-  "collections": [],
-  "message": "",
+  Loading
 }
 
 let emptyCollectionStatus = () => {
-  "kind": "ready",
-  "collections": [],
-  "message": "",
+  Ready([])
 }
 
 let loadingCollectionStatus = () => {
-  "kind": "loading",
-  "collections": [],
-  "message": "",
+  Loading
 }
 
 let readyCollectionStatus = collections => {
-  "kind": "ready",
-  "collections": collections,
-  "message": "",
+  Ready(collections)
 }
 
 let errorCollectionStatus = message => {
-  "kind": "error",
-  "collections": [],
-  "message": message,
+  Error(message)
 }
 
 let initialCollectionForm = {
@@ -69,9 +65,23 @@ let createCollection = (token, name) =>
 
 let appendCollection = (collections, collection) => Belt.Array.concat(collections, [collection])
 
-let isReady = status => status["kind"] == "ready"
+let isReady = status =>
+  switch status {
+  | Ready(_) => true
+  | Loading | Error(_) => false
+  }
 
-let collections = status => status["collections"]
+let collections = status =>
+  switch status {
+  | Ready(collections) => collections
+  | Loading | Error(_) => []
+  }
+
+let errorMessage = status =>
+  switch status {
+  | Error(message) => Some(message)
+  | Loading | Ready(_) => None
+  }
 
 let resolveSelectedCollectionId = (collections, selectedCollectionId, persistedCollectionId) => {
   if Belt.Array.length(collections) == 0 {
@@ -79,7 +89,7 @@ let resolveSelectedCollectionId = (collections, selectedCollectionId, persistedC
   } else {
     let currentSelectionStillExists = collections->Belt.Array.some(collection =>
       switch selectedCollectionId {
-      | Some(selectedId) => collection->id == selectedId
+      | Some(selectedId) => collection.id == selectedId
       | None => false
       }
     )
@@ -89,7 +99,7 @@ let resolveSelectedCollectionId = (collections, selectedCollectionId, persistedC
     } else {
       let persistedSelectionStillExists = collections->Belt.Array.some(collection =>
         switch persistedCollectionId {
-        | Some(persistedId) => collection->id == persistedId
+        | Some(persistedId) => collection.id == persistedId
         | None => false
         }
       )
@@ -97,7 +107,7 @@ let resolveSelectedCollectionId = (collections, selectedCollectionId, persistedC
       if persistedSelectionStillExists {
         persistedCollectionId
       } else {
-        Some(collections[0]->id)
+        Some(collections[0].id)
       }
     }
   }

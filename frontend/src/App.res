@@ -116,10 +116,10 @@ let make = () => {
 
     AuthForm.submit(mode, form)
     ->Js.Promise2.then(payload => {
-      let nextSessionToken = payload->AuthSession.token
+      let nextSessionToken = payload.token
       SessionStorage.saveSessionToken(nextSessionToken)
       setSessionToken(_ => Some(nextSessionToken))
-      setCurrentUser(_ => Some(payload->AuthSession.user))
+      setCurrentUser(_ => Some(payload.user))
       setCollectionForm(_ => CollectionState.finishCollectionForm())
       setForm(_ => AuthForm.initialForm)
       setIsSubmitting(_ => false)
@@ -151,10 +151,10 @@ let make = () => {
       setCollectionForm(current => CollectionState.startSubmittingCollectionForm(current))
 
       CollectionState.createCollection(token, collectionForm.name)
-      ->Js.Promise2.then(collection => {
-        let nextSelectedCollectionId = Some(collection->CollectionState.id)
+      ->Js.Promise2.then((collection: CollectionState.collection) => {
+        let nextSelectedCollectionId = Some(collection.id)
         setSelectedCollectionId(_ => nextSelectedCollectionId)
-        CollectionSelectionStorage.saveSelectedCollectionId(collection->CollectionState.id)
+        CollectionSelectionStorage.saveSelectedCollectionId(collection.id)
         setCollectionStatus(current => {
           let collections =
             if CollectionState.isReady(current) {

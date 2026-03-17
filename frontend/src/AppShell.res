@@ -18,7 +18,7 @@ let make = (
         </h1>
         <p className="mt-6 max-w-xl text-base leading-7 text-stone-700 md:text-lg">
           {React.string("Signed in as ")}
-          <span className="font-semibold text-stone-900"> {React.string(user->AuthSession.email)} </span>
+          <span className="font-semibold text-stone-900"> {React.string(user.email)} </span>
           {React.string(". Choose a collection once it exists, then entry capture is the next slice.")}
         </p>
       </div>

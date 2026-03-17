@@ -1,27 +1,5 @@
 type collection = CollectionState.collection
-type status = {
-  "collections": array<collection>,
-  "kind": string,
-  "message": string,
-}
-
-@get
-external id: collection => int = "id"
-
-@get
-external name: collection => string = "name"
-
-@get
-external role: collection => string = "role"
-
-@get
-external kind: status => string = "kind"
-
-@get
-external message: status => string = "message"
-
-@get
-external collections: status => array<collection> = "collections"
+type status = CollectionState.status
 
 let selectedClasses =
   "rounded-2xl border px-4 py-3 transition border-stone-950 bg-stone-950 text-white"
@@ -36,17 +14,17 @@ let unselectedRoleClasses = "mt-1 text-xs uppercase tracking-[0.2em] text-stone-
 let make = (~status, ~selectedCollectionId: Js.Nullable.t<int>, ~onSelectCollection: int => unit) => {
   let selectedCollectionId = selectedCollectionId->Js.Nullable.toOption
 
-  switch status->kind {
-  | "loading" =>
+  switch status {
+  | CollectionState.Loading =>
     <section className="rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
       <p className="text-sm text-stone-600"> {React.string("Loading your collections...")} </p>
     </section>
-  | "error" =>
+  | CollectionState.Error(message) =>
     <section className="rounded-[1.75rem] border border-rose-200 bg-rose-50 p-6">
-      <p className="text-sm text-rose-700"> {React.string(status->message)} </p>
+      <p className="text-sm text-rose-700"> {React.string(message)} </p>
     </section>
-  | "ready" =>
-    if Belt.Array.length(status->collections) == 0 {
+  | CollectionState.Ready(collections) =>
+    if Belt.Array.length(collections) == 0 {
       <section className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6">
         <h2 className="text-lg font-semibold text-stone-950"> {React.string("No collections yet")} </h2>
         <p className="mt-2 text-sm leading-6 text-stone-600">
@@ -54,8 +32,6 @@ let make = (~status, ~selectedCollectionId: Js.Nullable.t<int>, ~onSelectCollect
         </p>
       </section>
     } else {
-      let collections = status->collections
-
       <section className="rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
         <h2 className="text-lg font-semibold text-stone-950"> {React.string("Your collections")} </h2>
         <ul className="mt-4 space-y-3">
@@ -63,21 +39,21 @@ let make = (~status, ~selectedCollectionId: Js.Nullable.t<int>, ~onSelectCollect
            ->Belt.Array.map(collection => {
              let isSelected =
                switch selectedCollectionId {
-               | Some(selectedId) => collection->id == selectedId
+               | Some(selectedId) => collection.id == selectedId
                | None => false
                }
 
              <li
-               key={collection->id->Belt.Int.toString}
+               key={collection.id->Belt.Int.toString}
                className={if isSelected { selectedClasses } else { unselectedClasses }}>
                <button
                  type_="button"
-                 onClick={_ => onSelectCollection(collection->id)}
+                 onClick={_ => onSelectCollection(collection.id)}
                  className="flex w-full items-center justify-between text-left">
                  <div>
-                   <p className="font-medium"> {React.string(collection->name)} </p>
+                   <p className="font-medium"> {React.string(collection.name)} </p>
                    <p className={if isSelected { selectedRoleClasses } else { unselectedRoleClasses }}>
-                     {React.string(collection->role)}
+                     {React.string(collection.role)}
                    </p>
                  </div>
                  {if isSelected {
@@ -94,6 +70,5 @@ let make = (~status, ~selectedCollectionId: Js.Nullable.t<int>, ~onSelectCollect
         </ul>
       </section>
     }
-  | _ => React.null
   }
 }
