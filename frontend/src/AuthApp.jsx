@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react"
 import {
-  describeCollectionError,
   describeCreateCollectionError,
-  describeError,
-  parseJson
+  describeError
 } from "./AuthAppSupport.bs.js"
 import {
   initialForm,
@@ -13,7 +11,22 @@ import {
   submit as submitAuthForm,
   updateForm as updateAuthForm
 } from "./AuthForm.bs.js"
-import { createCollection, listCollections } from "./CollectionApi.bs.js"
+import {
+  appendCollection,
+  createCollection,
+  emptyCollectionStatus,
+  errorCollectionStatus,
+  finishCollectionForm,
+  initialCollectionForm,
+  initialCollectionStatus,
+  listCollections,
+  loadingCollectionStatus,
+  readyCollectionStatus,
+  resolveSelectedCollectionId,
+  startSubmittingCollectionForm,
+  updateCollectionForm as updateCollectionFormState,
+  failCollectionForm
+} from "./CollectionState.bs.js"
 import {
   clearSelectedCollectionId,
   loadSelectedCollectionId,
@@ -274,26 +287,16 @@ export default function AuthApp() {
   const [isInitializing, setIsInitializing] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState(null)
-  const [collectionStatus, setCollectionStatus] = useState({
-    kind: "loading",
-    collections: []
-  })
+  const [collectionStatus, setCollectionStatus] = useState(initialCollectionStatus())
   const [selectedCollectionId, setSelectedCollectionId] = useState(null)
-  const [collectionForm, setCollectionForm] = useState({
-    name: "",
-    isSubmitting: false,
-    error: null
-  })
+  const [collectionForm, setCollectionForm] = useState(initialCollectionForm)
 
   useEffect(() => {
     const sessionToken = loadStoredSessionToken()
 
     if (!sessionToken) {
       setSessionToken(null)
-      setCollectionStatus({
-        kind: "ready",
-        collections: []
-      })
+      setCollectionStatus(emptyCollectionStatus())
       setSelectedCollectionId(null)
       setIsInitializing(false)
       return
@@ -309,10 +312,7 @@ export default function AuthApp() {
         clearSessionToken()
         setSessionToken(null)
         setCurrentUser(null)
-        setCollectionStatus({
-          kind: "ready",
-          collections: []
-        })
+        setCollectionStatus(emptyCollectionStatus())
         setSelectedCollectionId(null)
         setIsInitializing(false)
       })
@@ -320,31 +320,19 @@ export default function AuthApp() {
 
   useEffect(() => {
     if (!currentUser || !sessionToken) {
-      setCollectionStatus({
-        kind: "ready",
-        collections: []
-      })
+      setCollectionStatus(emptyCollectionStatus())
       setSelectedCollectionId(null)
       return
     }
 
-    setCollectionStatus({
-      kind: "loading",
-      collections: []
-    })
+    setCollectionStatus(loadingCollectionStatus())
 
     listCollections(sessionToken)
-      .then(response => {
-        setCollectionStatus({
-          kind: "ready",
-          collections: parseJson(response)
-        })
+      .then(collections => {
+        setCollectionStatus(readyCollectionStatus(collections))
       })
       .catch(() => {
-        setCollectionStatus({
-          kind: "error",
-          message: describeCollectionError()
-        })
+        setCollectionStatus(errorCollectionStatus("Could not load your collections. Try refreshing."))
       })
   }, [currentUser, sessionToken])
 
@@ -359,21 +347,15 @@ export default function AuthApp() {
       return
     }
 
-    const persistedCollectionId = loadSelectedCollectionId()
-    const currentSelectionStillExists = collectionStatus.collections.some(
-      collection => collection.id === selectedCollectionId
+    const nextSelectedCollectionId = resolveSelectedCollectionId(
+      collectionStatus.collections,
+      selectedCollectionId,
+      loadSelectedCollectionId()
     )
 
-    if (currentSelectionStillExists) {
+    if (nextSelectedCollectionId === selectedCollectionId) {
       return
     }
-
-    const persistedSelectionStillExists = collectionStatus.collections.some(
-      collection => collection.id === persistedCollectionId
-    )
-    const nextSelectedCollectionId = persistedSelectionStillExists
-      ? persistedCollectionId
-      : collectionStatus.collections[0].id
 
     setSelectedCollectionId(nextSelectedCollectionId)
     saveSelectedCollectionId(nextSelectedCollectionId)
@@ -389,11 +371,7 @@ export default function AuthApp() {
   }
 
   function updateCollectionForm(value) {
-    setCollectionForm(current => ({
-      ...current,
-      name: value,
-      error: null
-    }))
+    setCollectionForm(current => updateCollectionFormState(current, value))
   }
 
   function handleSubmit(event) {
@@ -405,11 +383,7 @@ export default function AuthApp() {
         saveSessionToken(payload.token)
         setSessionToken(payload.token)
         setCurrentUser(payload.user)
-        setCollectionForm({
-          name: "",
-          isSubmitting: false,
-          error: null
-        })
+        setCollectionForm(finishCollectionForm())
         setForm(initialForm)
       })
       .catch(reason => {
@@ -424,17 +398,10 @@ export default function AuthApp() {
     clearSessionToken()
     setSessionToken(null)
     setCurrentUser(null)
-    setCollectionStatus({
-      kind: "ready",
-      collections: []
-    })
+    setCollectionStatus(emptyCollectionStatus())
     setSelectedCollectionId(null)
     clearSelectedCollectionId()
-    setCollectionForm({
-      name: "",
-      isSubmitting: false,
-      error: null
-    })
+    setCollectionForm(finishCollectionForm())
     setError(null)
     setMode(loginMode)
   }
@@ -444,38 +411,21 @@ export default function AuthApp() {
       return
     }
 
-    setCollectionForm(current => ({
-      ...current,
-      isSubmitting: true,
-      error: null
-    }))
+    setCollectionForm(current => startSubmittingCollectionForm(current))
 
     createCollection(sessionToken, collectionForm.name)
-      .then(response => {
-        const collection = parseJson(response)
-
+      .then(collection => {
         setSelectedCollectionId(collection.id)
         saveSelectedCollectionId(collection.id)
         setCollectionStatus(current => {
           const collections = current.kind === "ready" ? current.collections : []
 
-          return {
-            kind: "ready",
-            collections: [...collections, collection]
-          }
+          return readyCollectionStatus(appendCollection(collections, collection))
         })
-        setCollectionForm({
-          name: "",
-          isSubmitting: false,
-          error: null
-        })
+        setCollectionForm(finishCollectionForm())
       })
       .catch(reason => {
-        setCollectionForm(current => ({
-          ...current,
-          isSubmitting: false,
-          error: describeCreateCollectionError(reason)
-        }))
+        setCollectionForm(current => failCollectionForm(current, describeCreateCollectionError(reason)))
       })
   }
 
