@@ -3,9 +3,13 @@ let make = (
   ~user: AuthSession.user,
   ~collectionStatus,
   ~collectionForm: CollectionState.collectionForm,
+  ~selectedCollection: option<CollectionModel.collection>,
   ~selectedCollectionId: option<int>,
+  ~inviteForm: CollectionInvite.form,
   ~onCollectionFormChange: string => unit,
   ~onCreateCollection: unit => unit,
+  ~onInviteFormChange: string => unit,
+  ~onInvite: unit => unit,
   ~onSelectCollection: int => unit,
   ~onLogout: unit => unit,
 ) => {
@@ -62,6 +66,78 @@ let make = (
         | None => React.null
         }}
       </section>
+      {switch selectedCollection {
+      | Some(collection) =>
+        <section className="mb-6 rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.25em] text-stone-500">
+                {React.string("Selected collection")}
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-stone-950">
+                {React.string(collection.name)}
+              </h2>
+              <p className="mt-2 text-sm text-stone-600">
+                {React.string(
+                   if collection->CollectionModel.isOwner {
+                     "You can invite another account into this collection."
+                   } else {
+                     "You currently have member access to this collection."
+                   },
+                 )}
+              </p>
+            </div>
+            <span className="rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600">
+              {React.string(collection.role)}
+            </span>
+          </div>
+          {if collection->CollectionModel.isOwner {
+             <div className="mt-6 border-t border-stone-200 pt-6">
+               <div className="flex flex-col gap-4 md:flex-row md:items-end">
+                 <div className="flex-1">
+                   <TextField
+                     label="Invite by email"
+                     type_="email"
+                     value=inviteForm.email
+                     onChange=onInviteFormChange
+                     autoComplete="email"
+                   />
+                 </div>
+                 <button
+                   type_="button"
+                   onClick={_ => onInvite()}
+                   disabled={inviteForm.isSubmitting}
+                   className="rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400">
+                   {React.string(
+                      if inviteForm.isSubmitting {
+                        "Inviting..."
+                      } else {
+                        "Invite"
+                      },
+                    )}
+                 </button>
+               </div>
+               {switch inviteForm.error {
+               | Some(message) =>
+                 <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                   {React.string(message)}
+                 </div>
+               | None => React.null
+               }}
+               {switch inviteForm.success {
+               | Some(message) =>
+                 <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                   {React.string(message)}
+                 </div>
+               | None => React.null
+               }}
+             </div>
+           } else {
+             React.null
+           }}
+        </section>
+      | None => React.null
+      }}
       <CollectionList
         status=collectionStatus
         selectedCollectionId={selectedCollectionId->Js.Nullable.fromOption}

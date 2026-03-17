@@ -2,14 +2,98 @@
 
 import * as TextField from "./ui/TextField.bs.js";
 import * as CollectionList from "./collections/CollectionList.bs.js";
+import * as CollectionModel from "./collections/CollectionModel.bs.js";
 import * as Js_null_undefined from "rescript/lib/es6/js_null_undefined.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function AppShell(props) {
   var onLogout = props.onLogout;
+  var onInvite = props.onInvite;
   var onCreateCollection = props.onCreateCollection;
+  var inviteForm = props.inviteForm;
+  var selectedCollection = props.selectedCollection;
   var collectionForm = props.collectionForm;
   var message = collectionForm.error;
+  var tmp;
+  if (selectedCollection !== undefined) {
+    var tmp$1;
+    if (CollectionModel.isOwner(selectedCollection)) {
+      var message$1 = inviteForm.error;
+      var message$2 = inviteForm.success;
+      tmp$1 = JsxRuntime.jsxs("div", {
+            children: [
+              JsxRuntime.jsxs("div", {
+                    children: [
+                      JsxRuntime.jsx("div", {
+                            children: JsxRuntime.jsx(TextField.make, {
+                                  label: "Invite by email",
+                                  value: inviteForm.email,
+                                  onChange: props.onInviteFormChange,
+                                  autoComplete: "email",
+                                  type_: "email"
+                                }),
+                            className: "flex-1"
+                          }),
+                      JsxRuntime.jsx("button", {
+                            children: inviteForm.isSubmitting ? "Inviting..." : "Invite",
+                            className: "rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400",
+                            disabled: inviteForm.isSubmitting,
+                            type: "button",
+                            onClick: (function (param) {
+                                onInvite();
+                              })
+                          })
+                    ],
+                    className: "flex flex-col gap-4 md:flex-row md:items-end"
+                  }),
+              message$1 !== undefined ? JsxRuntime.jsx("div", {
+                      children: message$1,
+                      className: "mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+                    }) : null,
+              message$2 !== undefined ? JsxRuntime.jsx("div", {
+                      children: message$2,
+                      className: "mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+                    }) : null
+            ],
+            className: "mt-6 border-t border-stone-200 pt-6"
+          });
+    } else {
+      tmp$1 = null;
+    }
+    tmp = JsxRuntime.jsxs("section", {
+          children: [
+            JsxRuntime.jsxs("div", {
+                  children: [
+                    JsxRuntime.jsxs("div", {
+                          children: [
+                            JsxRuntime.jsx("p", {
+                                  children: "Selected collection",
+                                  className: "text-xs font-medium uppercase tracking-[0.25em] text-stone-500"
+                                }),
+                            JsxRuntime.jsx("h2", {
+                                  children: selectedCollection.name,
+                                  className: "mt-2 text-2xl font-semibold text-stone-950"
+                                }),
+                            JsxRuntime.jsx("p", {
+                                  children: CollectionModel.isOwner(selectedCollection) ? "You can invite another account into this collection." : "You currently have member access to this collection.",
+                                  className: "mt-2 text-sm text-stone-600"
+                                })
+                          ]
+                        }),
+                    JsxRuntime.jsx("span", {
+                          children: selectedCollection.role,
+                          className: "rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600"
+                        })
+                  ],
+                  className: "flex flex-col gap-3 md:flex-row md:items-start md:justify-between"
+                }),
+            tmp$1
+          ],
+          className: "mb-6 rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6"
+        });
+  } else {
+    tmp = null;
+  }
   return JsxRuntime.jsxs("section", {
               children: [
                 JsxRuntime.jsx("p", {
@@ -82,6 +166,7 @@ function AppShell(props) {
                               ],
                               className: "mb-6 rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6"
                             }),
+                        tmp,
                         JsxRuntime.jsx(CollectionList.make, {
                               status: props.collectionStatus,
                               selectedCollectionId: Js_null_undefined.fromOption(props.selectedCollectionId),

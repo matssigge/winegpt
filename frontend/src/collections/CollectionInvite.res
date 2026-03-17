@@ -14,13 +14,18 @@ let initialForm = {
   success: None,
 }
 
-let updateForm = (form, email) => {...form, email: email, error: None, success: None}
+let updateForm = (form: form, email) => {...form, email: email, error: None, success: None}
 
-let startSubmitting = form => {...form, isSubmitting: true, error: None, success: None}
+let startSubmitting = (form: form) => {...form, isSubmitting: true, error: None, success: None}
 
-let failForm = (form, message) => {...form, isSubmitting: false, error: Some(message), success: None}
+let failForm = (form: form, message) => {
+  ...form,
+  isSubmitting: false,
+  error: Some(message),
+  success: None,
+}
 
-let succeedForm = invitedMember => {
+let succeedForm = (invitedMember: invitedMember): form => {
   email: "",
   isSubmitting: false,
   error: None,

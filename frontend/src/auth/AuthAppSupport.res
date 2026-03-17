@@ -20,3 +20,12 @@ let describeCreateCollectionError = error =>
   | "invalid_collection_name" => "Enter a name for the collection."
   | _ => "Could not create the collection. Try again."
   }
+
+let describeInviteError = error =>
+  switch error->message {
+  | "invalid_email" => "Enter a valid email address."
+  | "already_member" => "That person already belongs to this collection."
+  | "user_not_found" => "That email does not match an existing account yet."
+  | "forbidden" => "Only collection owners can invite people."
+  | _ => "Could not send the invite. Try again."
+  }

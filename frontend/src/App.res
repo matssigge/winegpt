@@ -13,6 +13,7 @@ let make = () => {
   let (collectionStatus, setCollectionStatus) = React.useState(() => CollectionState.initialCollectionStatus())
   let (selectedCollectionId, setSelectedCollectionId) = React.useState(() => None)
   let (collectionForm, setCollectionForm) = React.useState(() => CollectionState.initialCollectionForm)
+  let (inviteForm, setInviteForm) = React.useState(() => CollectionInvite.initialForm)
 
   React.useEffect0(() => {
     switch SessionBootstrap.loadSessionToken() {
@@ -109,6 +110,10 @@ let make = () => {
     setCollectionForm(current => CollectionState.updateCollectionForm(current, value))
   }
 
+  let updateInviteForm = value => {
+    setInviteForm(current => CollectionInvite.updateForm(current, value))
+  }
+
   let handleSubmit = event => {
     event->preventDefault
     setIsSubmitting(_ => true)
@@ -121,6 +126,7 @@ let make = () => {
       setSessionToken(_ => Some(nextSessionToken))
       setCurrentUser(_ => Some(payload.user))
       setCollectionForm(_ => CollectionState.finishCollectionForm())
+      setInviteForm(_ => CollectionInvite.initialForm)
       setForm(_ => AuthForm.initialForm)
       setIsSubmitting(_ => false)
       Js.Promise2.resolve()
@@ -141,6 +147,7 @@ let make = () => {
     setSelectedCollectionId(_ => None)
     CollectionSelectionStorage.clearSelectedCollectionId()
     setCollectionForm(_ => CollectionState.finishCollectionForm())
+    setInviteForm(_ => CollectionInvite.initialForm)
     setError(_ => None)
     setMode(_ => AuthForm.loginMode)
   }
@@ -155,6 +162,7 @@ let make = () => {
         let nextSelectedCollectionId = Some(collection.id)
         setSelectedCollectionId(_ => nextSelectedCollectionId)
         CollectionSelectionStorage.saveSelectedCollectionId(collection.id)
+        setInviteForm(_ => CollectionInvite.initialForm)
         setCollectionStatus(current => {
           let collections =
             if CollectionState.isReady(current) {
@@ -182,7 +190,29 @@ let make = () => {
     let nextSelectedCollectionId = Some(collectionId)
     setSelectedCollectionId(_ => nextSelectedCollectionId)
     CollectionSelectionStorage.saveSelectedCollectionId(collectionId)
+    setInviteForm(_ => CollectionInvite.initialForm)
   }
+
+  let selectedCollection =
+    CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId)
+
+  let handleInvite = () =>
+    switch (sessionToken, selectedCollection) {
+    | (Some(token), Some(collection)) if collection->CollectionModel.isOwner && !inviteForm.isSubmitting =>
+      setInviteForm(current => CollectionInvite.startSubmitting(current))
+
+      CollectionInvite.invite(token, collection.id, inviteForm.email)
+      ->Js.Promise2.then(invitedMember => {
+        setInviteForm(_ => CollectionInvite.succeedForm(invitedMember))
+        Js.Promise2.resolve()
+      })
+      ->Js.Promise2.catch(reason => {
+        setInviteForm(current => CollectionInvite.failForm(current, AuthAppSupport.describeInviteError(reason)))
+        Js.Promise2.resolve()
+      })
+      ->ignore
+    | _ => ()
+    }
 
   <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950">
     <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center">
@@ -197,9 +227,13 @@ let make = () => {
              user
              collectionStatus
              collectionForm
+             selectedCollection
              selectedCollectionId
+             inviteForm
              onCollectionFormChange=updateCollectionForm
              onCreateCollection=handleCreateCollection
+             onInviteFormChange=updateInviteForm
+             onInvite=handleInvite
              onSelectCollection=handleSelectCollection
              onLogout=handleLogout
            />

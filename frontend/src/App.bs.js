@@ -8,7 +8,9 @@ import * as Caml_obj from "rescript/lib/es6/caml_obj.js";
 import * as Js_promise2 from "rescript/lib/es6/js_promise2.js";
 import * as AuthAppSupport from "./auth/AuthAppSupport.bs.js";
 import * as SessionStorage from "./auth/SessionStorage.bs.js";
+import * as CollectionModel from "./collections/CollectionModel.bs.js";
 import * as CollectionState from "./collections/CollectionState.bs.js";
+import * as CollectionInvite from "./collections/CollectionInvite.bs.js";
 import * as SessionBootstrap from "./auth/SessionBootstrap.bs.js";
 import * as Js_null_undefined from "rescript/lib/es6/js_null_undefined.js";
 import * as JsxRuntime from "react/jsx-runtime";
@@ -62,6 +64,11 @@ function App(props) {
       });
   var setCollectionForm = match$9[1];
   var collectionForm = match$9[0];
+  var match$10 = React.useState(function () {
+        return CollectionInvite.initialForm;
+      });
+  var setInviteForm = match$10[1];
+  var inviteForm = match$10[0];
   React.useEffect((function () {
           var restoredToken = SessionBootstrap.loadSessionToken();
           if (restoredToken !== undefined) {
@@ -192,6 +199,11 @@ function App(props) {
           return CollectionState.updateCollectionForm(current, value);
         });
   };
+  var updateInviteForm = function (value) {
+    setInviteForm(function (current) {
+          return CollectionInvite.updateForm(current, value);
+        });
+  };
   var handleSubmit = function ($$event) {
     $$event.preventDefault();
     setIsSubmitting(function (param) {
@@ -211,6 +223,9 @@ function App(props) {
                     });
                 setCollectionForm(function (param) {
                       return CollectionState.finishCollectionForm();
+                    });
+                setInviteForm(function (param) {
+                      return CollectionInvite.initialForm;
                     });
                 setForm(function (param) {
                       return AuthForm.initialForm;
@@ -247,6 +262,9 @@ function App(props) {
     setCollectionForm(function (param) {
           return CollectionState.finishCollectionForm();
         });
+    setInviteForm(function (param) {
+          return CollectionInvite.initialForm;
+        });
     setError(function (param) {
           
         });
@@ -265,6 +283,9 @@ function App(props) {
                         return nextSelectedCollectionId;
                       });
                   CollectionSelectionStorage.saveSelectedCollectionId(collection.id);
+                  setInviteForm(function (param) {
+                        return CollectionInvite.initialForm;
+                      });
                   setCollectionStatus(function (current) {
                         var collections = CollectionState.isReady(current) ? CollectionState.collections(current) : [];
                         return CollectionState.readyCollectionStatus(CollectionState.appendCollection(collections, collection));
@@ -289,6 +310,30 @@ function App(props) {
           return nextSelectedCollectionId;
         });
     CollectionSelectionStorage.saveSelectedCollectionId(collectionId);
+    setInviteForm(function (param) {
+          return CollectionInvite.initialForm;
+        });
+  };
+  var selectedCollection = CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId);
+  var handleInvite = function () {
+    if (sessionToken !== undefined && selectedCollection !== undefined && CollectionModel.isOwner(selectedCollection) && !inviteForm.isSubmitting) {
+      setInviteForm(function (current) {
+            return CollectionInvite.startSubmitting(current);
+          });
+      Js_promise2.$$catch(Js_promise2.then(CollectionInvite.invite(sessionToken, selectedCollection.id, inviteForm.email), (function (invitedMember) {
+                  setInviteForm(function (param) {
+                        return CollectionInvite.succeedForm(invitedMember);
+                      });
+                  return Promise.resolve();
+                })), (function (reason) {
+              setInviteForm(function (current) {
+                    return CollectionInvite.failForm(current, AuthAppSupport.describeInviteError(reason));
+                  });
+              return Promise.resolve();
+            }));
+      return ;
+    }
+    
   };
   return JsxRuntime.jsx("main", {
               children: JsxRuntime.jsx("div", {
@@ -300,9 +345,13 @@ function App(props) {
                                 user: currentUser,
                                 collectionStatus: collectionStatus,
                                 collectionForm: collectionForm,
+                                selectedCollection: selectedCollection,
                                 selectedCollectionId: selectedCollectionId,
+                                inviteForm: inviteForm,
                                 onCollectionFormChange: updateCollectionForm,
                                 onCreateCollection: handleCreateCollection,
+                                onInviteFormChange: updateInviteForm,
+                                onInvite: handleInvite,
                                 onSelectCollection: handleSelectCollection,
                                 onLogout: handleLogout
                               }) : JsxRuntime.jsx(AuthCard.make, {

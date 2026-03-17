@@ -30,9 +30,26 @@ function describeCreateCollectionError(error) {
   }
 }
 
+function describeInviteError(error) {
+  var match = error.message;
+  switch (match) {
+    case "already_member" :
+        return "That person already belongs to this collection.";
+    case "forbidden" :
+        return "Only collection owners can invite people.";
+    case "invalid_email" :
+        return "Enter a valid email address.";
+    case "user_not_found" :
+        return "That email does not match an existing account yet.";
+    default:
+      return "Could not send the invite. Try again.";
+  }
+}
+
 export {
   describeError ,
   describeCollectionError ,
   describeCreateCollectionError ,
+  describeInviteError ,
 }
 /* No side effect */
