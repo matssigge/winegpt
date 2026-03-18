@@ -35,6 +35,7 @@ pub enum EntryError {
     InvalidConsumedAt,
     InvalidRating,
     Forbidden,
+    NotFound,
     Database,
     Wine(WineError),
 }
@@ -160,6 +161,85 @@ pub async fn list_for_collection(
     rows.into_iter().map(entry_from_row).collect()
 }
 
+pub async fn update(
+    database: &PgPool,
+    user_id: i64,
+    collection_id: i64,
+    entry_id: i64,
+    input: CreateEntryInput,
+) -> Result<WineEntry, EntryError> {
+    collections::require_membership(database, user_id, collection_id)
+        .await
+        .map_err(map_collection_error)?;
+
+    let consumed_at = normalize_consumed_at(&input.consumed_at)?;
+    let rating = normalize_rating(input.rating)?;
+    let venue_name = normalize_optional_text(input.venue_name);
+    let location_text = normalize_optional_text(input.location_text);
+    let pairing_notes = normalize_optional_text(input.pairing_notes);
+    let tasting_notes = normalize_optional_text(input.tasting_notes);
+
+    let mut transaction = database.begin().await.map_err(|_| EntryError::Database)?;
+    let wine = wines::create_or_find_in_transaction(&mut transaction, input.wine)
+        .await
+        .map_err(EntryError::Wine)?;
+
+    let row = sqlx::query(
+        "UPDATE wine_entries
+         SET wine_id = $1,
+             consumed_at = $2::timestamptz,
+             venue_name = $3,
+             location_text = $4,
+             pairing_notes = $5,
+             tasting_notes = $6,
+             rating = $7
+         WHERE id = $8 AND collection_id = $9
+         RETURNING id, collection_id, created_by_user_id,
+                   to_char(consumed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS consumed_at,
+                   venue_name, location_text, pairing_notes, tasting_notes, rating",
+    )
+    .bind(wine.id)
+    .bind(&consumed_at)
+    .bind(&venue_name)
+    .bind(&location_text)
+    .bind(&pairing_notes)
+    .bind(&tasting_notes)
+    .bind(rating)
+    .bind(entry_id)
+    .bind(collection_id)
+    .fetch_optional(&mut *transaction)
+    .await
+    .map_err(|_| EntryError::Database)?
+    .ok_or(EntryError::NotFound)?;
+
+    transaction.commit().await.map_err(|_| EntryError::Database)?;
+
+    Ok(WineEntry {
+        id: row.try_get("id").map_err(|_| EntryError::Database)?,
+        collection_id: row
+            .try_get("collection_id")
+            .map_err(|_| EntryError::Database)?,
+        wine,
+        created_by_user_id: row
+            .try_get("created_by_user_id")
+            .map_err(|_| EntryError::Database)?,
+        consumed_at: row
+            .try_get("consumed_at")
+            .map_err(|_| EntryError::Database)?,
+        venue_name: row.try_get("venue_name").map_err(|_| EntryError::Database)?,
+        location_text: row
+            .try_get("location_text")
+            .map_err(|_| EntryError::Database)?,
+        pairing_notes: row
+            .try_get("pairing_notes")
+            .map_err(|_| EntryError::Database)?,
+        tasting_notes: row
+            .try_get("tasting_notes")
+            .map_err(|_| EntryError::Database)?,
+        rating: row.try_get("rating").map_err(|_| EntryError::Database)?,
+    })
+}
+
 fn normalize_consumed_at(consumed_at: &str) -> Result<String, EntryError> {
     let trimmed = consumed_at.trim();
 
@@ -245,7 +325,7 @@ fn entry_from_row(row: sqlx::postgres::PgRow) -> Result<WineEntry, EntryError> {
 
 #[cfg(test)]
 mod tests {
-    use super::{create, list_for_collection, CreateEntryInput, EntryError};
+    use super::{create, list_for_collection, update, CreateEntryInput, EntryError};
     use crate::{
         auth::{register, RegisterInput},
         collections,
@@ -470,6 +550,122 @@ mod tests {
         let result = list_for_collection(&database, stranger.id, collection.id).await;
 
         assert_eq!(result, Err(EntryError::Forbidden));
+    }
+
+    #[tokio::test]
+    async fn updates_existing_entry_for_collection_member() {
+        let database = test_database().await;
+        let user = register_user(&database).await;
+        let collection = collections::create(&database, user.id, "Home").await.unwrap();
+        let entry = create(
+            &database,
+            user.id,
+            collection.id,
+            CreateEntryInput {
+                wine: sample_wine_input("Taganan", Some(2022)),
+                consumed_at: "2025-01-15T19:30:00Z".to_string(),
+                venue_name: Some("Home".to_string()),
+                location_text: Some("Stockholm".to_string()),
+                pairing_notes: Some("Roast chicken".to_string()),
+                tasting_notes: Some("Salty and bright".to_string()),
+                rating: Some(4),
+            },
+        )
+        .await
+        .unwrap();
+
+        let updated = update(
+            &database,
+            user.id,
+            collection.id,
+            entry.id,
+            CreateEntryInput {
+                wine: sample_wine_input("Benje", Some(2023)),
+                consumed_at: "2025-01-18T18:15:00Z".to_string(),
+                venue_name: Some("Bar Central".to_string()),
+                location_text: Some("Madrid".to_string()),
+                pairing_notes: Some("Anchovies".to_string()),
+                tasting_notes: Some("Smoky and lifted".to_string()),
+                rating: Some(5),
+            },
+        )
+        .await
+        .expect("entry should update");
+
+        assert_eq!(updated.id, entry.id);
+        assert_eq!(updated.wine.name, "Benje");
+        assert_eq!(updated.consumed_at, "2025-01-18T18:15:00Z");
+        assert_eq!(updated.venue_name.as_deref(), Some("Bar Central"));
+        assert_eq!(updated.rating, Some(5));
+    }
+
+    #[tokio::test]
+    async fn rejects_update_for_non_member() {
+        let database = test_database().await;
+        let owner = register_user(&database).await;
+        let stranger = register_user(&database).await;
+        let collection = collections::create(&database, owner.id, "Home").await.unwrap();
+        let entry = create(
+            &database,
+            owner.id,
+            collection.id,
+            CreateEntryInput {
+                wine: sample_wine_input("Taganan", Some(2022)),
+                consumed_at: "2025-01-15T19:30:00Z".to_string(),
+                venue_name: None,
+                location_text: None,
+                pairing_notes: None,
+                tasting_notes: None,
+                rating: Some(4),
+            },
+        )
+        .await
+        .unwrap();
+
+        let result = update(
+            &database,
+            stranger.id,
+            collection.id,
+            entry.id,
+            CreateEntryInput {
+                wine: sample_wine_input("Benje", Some(2023)),
+                consumed_at: "2025-01-18T18:15:00Z".to_string(),
+                venue_name: None,
+                location_text: None,
+                pairing_notes: None,
+                tasting_notes: None,
+                rating: Some(5),
+            },
+        )
+        .await;
+
+        assert_eq!(result, Err(EntryError::Forbidden));
+    }
+
+    #[tokio::test]
+    async fn returns_not_found_for_missing_entry_update() {
+        let database = test_database().await;
+        let user = register_user(&database).await;
+        let collection = collections::create(&database, user.id, "Home").await.unwrap();
+
+        let result = update(
+            &database,
+            user.id,
+            collection.id,
+            999_999,
+            CreateEntryInput {
+                wine: sample_wine_input("Benje", Some(2023)),
+                consumed_at: "2025-01-18T18:15:00Z".to_string(),
+                venue_name: None,
+                location_text: None,
+                pairing_notes: None,
+                tasting_notes: None,
+                rating: Some(5),
+            },
+        )
+        .await;
+
+        assert_eq!(result, Err(EntryError::NotFound));
     }
 
     fn sample_wine_input(name: &str, vintage: Option<i32>) -> WineInput {

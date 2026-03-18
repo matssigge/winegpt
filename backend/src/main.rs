@@ -247,6 +247,7 @@ fn map_entry_error(error: EntryError) -> (StatusCode, Json<ErrorResponse>) {
         EntryError::InvalidConsumedAt => (StatusCode::BAD_REQUEST, "invalid_consumed_at"),
         EntryError::InvalidRating => (StatusCode::BAD_REQUEST, "invalid_rating"),
         EntryError::Forbidden => (StatusCode::FORBIDDEN, "forbidden"),
+        EntryError::NotFound => (StatusCode::NOT_FOUND, "entry_not_found"),
         EntryError::Wine(wine_backend::wines::WineError::InvalidName) => {
             (StatusCode::BAD_REQUEST, "invalid_wine_name")
         }
