@@ -14,12 +14,15 @@ let make = (
   ~inviteForm: CollectionInvite.form,
   ~entryStatus: EntryState.status,
   ~entryForm: EntryState.form,
+  ~selectedEntry: option<EntryModel.entry>,
+  ~selectedEntryId: option<int>,
   ~onCollectionFormChange: string => unit,
   ~onCreateCollection: unit => unit,
   ~onInviteFormChange: string => unit,
   ~onInvite: unit => unit,
   ~onEntryFormChange: (. string, string) => unit,
   ~onCreateEntry: unit => unit,
+  ~onSelectEntry: int => unit,
   ~onSelectCollection: int => unit,
   ~onLogout: unit => unit,
 ) => {
@@ -248,7 +251,10 @@ let make = (
       | None => React.null
       }}
       <div className="mb-6">
-        <EntryHistory status=entryStatus />
+        <EntryDetail entry=selectedEntry />
+      </div>
+      <div className="mb-6">
+        <EntryHistory status=entryStatus selectedEntryId onSelectEntry />
       </div>
       <CollectionList
         status=collectionStatus

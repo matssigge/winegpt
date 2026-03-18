@@ -19,7 +19,7 @@ for (const file of requiredFiles) {
 
 const packageJson = JSON.parse(readFileSync(resolve("package.json"), "utf8"))
 
-if (packageJson.scripts?.build !== "rescript build && vite build") {
+if (packageJson.scripts?.build !== "rescript build -regen && rescript build && vite build") {
   throw new Error("Unexpected frontend build script")
 }
 

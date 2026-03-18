@@ -5,6 +5,7 @@ import * as Belt_Int from "rescript/lib/es6/belt_Int.js";
 import * as EntryApi from "./EntryApi.bs.js";
 import * as ApiClient from "../api/ApiClient.bs.js";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
+import * as Caml_array from "rescript/lib/es6/caml_array.js";
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
 import * as Js_promise2 from "rescript/lib/es6/js_promise2.js";
 import * as ResponseDecoder from "../api/ResponseDecoder.bs.js";
@@ -241,6 +242,27 @@ function entries(status) {
   }
 }
 
+function selectedEntry(entries, selectedEntryId) {
+  if (selectedEntryId !== undefined) {
+    return Belt_Array.getBy(entries, (function (entry) {
+                  return entry.id === selectedEntryId;
+                }));
+  }
+  
+}
+
+function resolveSelectedEntryId(entries, selectedEntryId) {
+  if (entries.length === 0) {
+    return ;
+  }
+  var match = selectedEntry(entries, selectedEntryId);
+  if (match !== undefined) {
+    return selectedEntryId;
+  } else {
+    return Caml_array.get(entries, 0).id;
+  }
+}
+
 function appendEntry(entries, entry) {
   return Belt_Array.concat([entry], entries);
 }
@@ -348,6 +370,8 @@ export {
   failForm ,
   succeedForm ,
   entries ,
+  selectedEntry ,
+  resolveSelectedEntryId ,
   appendEntry ,
   isReady ,
   stringOption ,

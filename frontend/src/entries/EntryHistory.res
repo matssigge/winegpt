@@ -24,7 +24,11 @@ let wineMeta = (entry: EntryModel.entry) => {
 }
 
 @react.component
-let make = (~status) =>
+let make = (
+  ~status,
+  ~selectedEntryId: option<int>,
+  ~onSelectEntry: int => unit,
+) =>
   switch status {
   | EntryState.Idle =>
     <section className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6">
@@ -62,42 +66,71 @@ let make = (~status) =>
         <ul className="mt-4 space-y-3">
           {entries
            ->Belt.Array.map(entry => {
+             let isSelected =
+               switch selectedEntryId {
+               | Some(selectedId) => entry.id == selectedId
+               | None => false
+               }
+
              <li
                key={entry.id->Belt.Int.toString}
-               className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+               className={
+                 if isSelected {
+                   "rounded-2xl border border-stone-950 bg-stone-950 p-4 shadow-sm text-white"
+                 } else {
+                   "rounded-2xl border border-stone-200 bg-white p-4 shadow-sm"
+                 }
+               }>
+               <button type_="button" onClick={_ => onSelectEntry(entry.id)} className="block w-full text-left">
                <div className="flex items-start justify-between gap-4">
                  <div>
-                   <p className="text-base font-semibold text-stone-950"> {React.string(entry->wineLabel)} </p>
+                   <p className={if isSelected { "text-base font-semibold text-white" } else { "text-base font-semibold text-stone-950" }}>
+                     {React.string(entry->wineLabel)}
+                   </p>
                    {switch entry->wineMeta {
                    | Some(meta) =>
-                     <p className="mt-1 text-sm text-stone-600"> {React.string(meta)} </p>
+                     <p className={if isSelected { "mt-1 text-sm text-stone-200" } else { "mt-1 text-sm text-stone-600" }}>
+                       {React.string(meta)}
+                     </p>
                    | None => React.null
                    }}
                  </div>
                  {switch entry.rating {
                  | Some(rating) =>
-                   <span className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800">
+                   <span
+                     className={
+                       if isSelected {
+                         "rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white"
+                       } else {
+                         "rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800"
+                       }
+                     }>
                      {React.string(rating->Belt.Int.toString ++ "/5")}
                    </span>
                  | None => React.null
                  }}
                </div>
-               <p className="mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-500">
+               <p className={if isSelected { "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-300" } else { "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-500" }}>
                  {React.string(entry.consumedAt)}
                </p>
                {switch entry.tastingNotes {
                | Some(notes) =>
-                 <p className="mt-3 text-sm leading-6 text-stone-700"> {React.string(notes)} </p>
-               | None => React.null
-               }}
-               {switch entry.pairingNotes {
-               | Some(notes) =>
-                 <p className="mt-2 text-sm leading-6 text-stone-600">
-                   <span className="font-medium text-stone-800"> {React.string("Pairing: ")} </span>
+                 <p className={if isSelected { "mt-3 text-sm leading-6 text-stone-100" } else { "mt-3 text-sm leading-6 text-stone-700" }}>
                    {React.string(notes)}
                  </p>
                | None => React.null
                }}
+               {switch entry.pairingNotes {
+               | Some(notes) =>
+                 <p className={if isSelected { "mt-2 text-sm leading-6 text-stone-200" } else { "mt-2 text-sm leading-6 text-stone-600" }}>
+                   <span className={if isSelected { "font-medium text-white" } else { "font-medium text-stone-800" }}>
+                     {React.string("Pairing: ")}
+                   </span>
+                   {React.string(notes)}
+                 </p>
+               | None => React.null
+               }}
+               </button>
              </li>
            })
            ->React.array}

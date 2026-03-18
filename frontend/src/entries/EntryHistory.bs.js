@@ -31,6 +31,8 @@ function wineMeta(entry) {
 }
 
 function EntryHistory(props) {
+  var onSelectEntry = props.onSelectEntry;
+  var selectedEntryId = props.selectedEntryId;
   var status = props.status;
   if (typeof status !== "object") {
     if (status === "Idle") {
@@ -111,53 +113,61 @@ function EntryHistory(props) {
                       }),
                   JsxRuntime.jsx("ul", {
                         children: Belt_Array.map(entries, (function (entry) {
+                                var isSelected = selectedEntryId !== undefined ? entry.id === selectedEntryId : false;
                                 var meta = wineMeta(entry);
                                 var rating = entry.rating;
                                 var notes = entry.tastingNotes;
                                 var notes$1 = entry.pairingNotes;
-                                return JsxRuntime.jsxs("li", {
-                                            children: [
-                                              JsxRuntime.jsxs("div", {
-                                                    children: [
-                                                      JsxRuntime.jsxs("div", {
+                                return JsxRuntime.jsx("li", {
+                                            children: JsxRuntime.jsxs("button", {
+                                                  children: [
+                                                    JsxRuntime.jsxs("div", {
+                                                          children: [
+                                                            JsxRuntime.jsxs("div", {
+                                                                  children: [
+                                                                    JsxRuntime.jsx("p", {
+                                                                          children: wineLabel(entry),
+                                                                          className: isSelected ? "text-base font-semibold text-white" : "text-base font-semibold text-stone-950"
+                                                                        }),
+                                                                    meta !== undefined ? JsxRuntime.jsx("p", {
+                                                                            children: meta,
+                                                                            className: isSelected ? "mt-1 text-sm text-stone-200" : "mt-1 text-sm text-stone-600"
+                                                                          }) : null
+                                                                  ]
+                                                                }),
+                                                            rating !== undefined ? JsxRuntime.jsx("span", {
+                                                                    children: String(rating) + "/5",
+                                                                    className: isSelected ? "rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white" : "rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800"
+                                                                  }) : null
+                                                          ],
+                                                          className: "flex items-start justify-between gap-4"
+                                                        }),
+                                                    JsxRuntime.jsx("p", {
+                                                          children: entry.consumedAt,
+                                                          className: isSelected ? "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-300" : "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
+                                                        }),
+                                                    notes !== undefined ? JsxRuntime.jsx("p", {
+                                                            children: notes,
+                                                            className: isSelected ? "mt-3 text-sm leading-6 text-stone-100" : "mt-3 text-sm leading-6 text-stone-700"
+                                                          }) : null,
+                                                    notes$1 !== undefined ? JsxRuntime.jsxs("p", {
                                                             children: [
-                                                              JsxRuntime.jsx("p", {
-                                                                    children: wineLabel(entry),
-                                                                    className: "text-base font-semibold text-stone-950"
+                                                              JsxRuntime.jsx("span", {
+                                                                    children: "Pairing: ",
+                                                                    className: isSelected ? "font-medium text-white" : "font-medium text-stone-800"
                                                                   }),
-                                                              meta !== undefined ? JsxRuntime.jsx("p", {
-                                                                      children: meta,
-                                                                      className: "mt-1 text-sm text-stone-600"
-                                                                    }) : null
-                                                            ]
-                                                          }),
-                                                      rating !== undefined ? JsxRuntime.jsx("span", {
-                                                              children: String(rating) + "/5",
-                                                              className: "rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800"
-                                                            }) : null
-                                                    ],
-                                                    className: "flex items-start justify-between gap-4"
-                                                  }),
-                                              JsxRuntime.jsx("p", {
-                                                    children: entry.consumedAt,
-                                                    className: "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
-                                                  }),
-                                              notes !== undefined ? JsxRuntime.jsx("p", {
-                                                      children: notes,
-                                                      className: "mt-3 text-sm leading-6 text-stone-700"
-                                                    }) : null,
-                                              notes$1 !== undefined ? JsxRuntime.jsxs("p", {
-                                                      children: [
-                                                        JsxRuntime.jsx("span", {
-                                                              children: "Pairing: ",
-                                                              className: "font-medium text-stone-800"
-                                                            }),
-                                                        notes$1
-                                                      ],
-                                                      className: "mt-2 text-sm leading-6 text-stone-600"
-                                                    }) : null
-                                            ],
-                                            className: "rounded-2xl border border-stone-200 bg-white p-4 shadow-sm"
+                                                              notes$1
+                                                            ],
+                                                            className: isSelected ? "mt-2 text-sm leading-6 text-stone-200" : "mt-2 text-sm leading-6 text-stone-600"
+                                                          }) : null
+                                                  ],
+                                                  className: "block w-full text-left",
+                                                  type: "button",
+                                                  onClick: (function (param) {
+                                                      onSelectEntry(entry.id);
+                                                    })
+                                                }),
+                                            className: isSelected ? "rounded-2xl border border-stone-950 bg-stone-950 p-4 shadow-sm text-white" : "rounded-2xl border border-stone-200 bg-white p-4 shadow-sm"
                                           }, String(entry.id));
                               })),
                         className: "mt-4 space-y-3"

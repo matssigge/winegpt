@@ -82,6 +82,22 @@ let entries = status =>
   | Idle | Loading | Error(_) => []
   }
 
+let selectedEntry = (entries: array<entry>, selectedEntryId) =>
+  switch selectedEntryId {
+  | Some(selectedId) => entries->Belt.Array.getBy(entry => entry.id == selectedId)
+  | None => None
+  }
+
+let resolveSelectedEntryId = (entries: array<entry>, selectedEntryId) =>
+  if Belt.Array.length(entries) == 0 {
+    None
+  } else {
+    switch selectedEntry(entries, selectedEntryId) {
+    | Some(_) => selectedEntryId
+    | None => Some(entries[0].id)
+    }
+  }
+
 let appendEntry = (entries: array<entry>, entry: entry) => Belt.Array.concat([entry], entries)
 
 let isReady = status =>

@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "rescript build && vite build",
+    "build": "rescript build -regen && rescript build && vite build",
     "dev": "vite",
     "preview": "vite preview",
     "test": "node ./scripts/smoke-test.mjs",

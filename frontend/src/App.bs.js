@@ -74,11 +74,17 @@ function App(props) {
         return EntryState.initialStatus();
       });
   var setEntryStatus = match$11[1];
+  var entryStatus = match$11[0];
   var match$12 = React.useState(function () {
         return EntryState.initialForm;
       });
   var setEntryForm = match$12[1];
   var entryForm = match$12[0];
+  var match$13 = React.useState(function () {
+        
+      });
+  var setSelectedEntryId = match$13[1];
+  var selectedEntryId = match$13[0];
   React.useEffect((function () {
           var restoredToken = SessionBootstrap.loadSessionToken();
           if (restoredToken !== undefined) {
@@ -113,6 +119,9 @@ function App(props) {
                     setEntryForm(function (param) {
                           return EntryState.initialForm;
                         });
+                    setSelectedEntryId(function (param) {
+                          
+                        });
                     setIsInitializing(function (param) {
                           return false;
                         });
@@ -133,6 +142,9 @@ function App(props) {
                 });
             setEntryForm(function (param) {
                   return EntryState.initialForm;
+                });
+            setSelectedEntryId(function (param) {
+                  
                 });
             setIsInitializing(function (param) {
                   return false;
@@ -168,6 +180,9 @@ function App(props) {
                 });
             setEntryStatus(function (param) {
                   return EntryState.initialStatus();
+                });
+            setSelectedEntryId(function (param) {
+                  
                 });
           }
           
@@ -304,6 +319,9 @@ function App(props) {
     setEntryForm(function (param) {
           return EntryState.initialForm;
         });
+    setSelectedEntryId(function (param) {
+          
+        });
     setError(function (param) {
           
         });
@@ -327,6 +345,9 @@ function App(props) {
                       });
                   setEntryForm(function (param) {
                         return EntryState.initialForm;
+                      });
+                  setSelectedEntryId(function (param) {
+                        
                       });
                   setCollectionStatus(function (current) {
                         var collections = CollectionState.isReady(current) ? CollectionState.collections(current) : [];
@@ -358,8 +379,12 @@ function App(props) {
     setEntryForm(function (param) {
           return EntryState.initialForm;
         });
+    setSelectedEntryId(function (param) {
+          
+        });
   };
   var selectedCollection = CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId);
+  var selectedEntry = EntryState.selectedEntry(EntryState.entries(entryStatus), selectedEntryId);
   React.useEffect((function () {
           var exit = 0;
           if (sessionToken !== undefined && selectedCollection !== undefined) {
@@ -370,10 +395,16 @@ function App(props) {
                         setEntryStatus(function (param) {
                               return EntryState.readyStatus(entries);
                             });
+                        setSelectedEntryId(function (current) {
+                              return EntryState.resolveSelectedEntryId(entries, current);
+                            });
                         return Promise.resolve();
                       })), (function (param) {
                     setEntryStatus(function (param) {
                           return EntryState.errorStatus(AuthAppSupport.describeEntryHistoryError());
+                        });
+                    setSelectedEntryId(function (param) {
+                          
                         });
                     return Promise.resolve();
                   }));
@@ -386,6 +417,9 @@ function App(props) {
                 });
             setEntryForm(function (param) {
                   return EntryState.initialForm;
+                });
+            setSelectedEntryId(function (param) {
+                  
                 });
           }
           
@@ -424,6 +458,9 @@ function App(props) {
                         var entries = EntryState.isReady(current) ? EntryState.entries(current) : [];
                         return EntryState.readyStatus(EntryState.appendEntry(entries, entry));
                       });
+                  setSelectedEntryId(function (param) {
+                        return entry.id;
+                      });
                   setEntryForm(function (param) {
                         return EntryState.succeedForm();
                       });
@@ -438,6 +475,11 @@ function App(props) {
     }
     
   };
+  var handleSelectEntry = function (entryId) {
+    setSelectedEntryId(function (param) {
+          return entryId;
+        });
+  };
   return JsxRuntime.jsx("main", {
               children: JsxRuntime.jsx("div", {
                     children: match$4[0] ? JsxRuntime.jsx("section", {
@@ -451,14 +493,17 @@ function App(props) {
                                 selectedCollection: selectedCollection,
                                 selectedCollectionId: selectedCollectionId,
                                 inviteForm: inviteForm,
-                                entryStatus: match$11[0],
+                                entryStatus: entryStatus,
                                 entryForm: entryForm,
+                                selectedEntry: selectedEntry,
+                                selectedEntryId: selectedEntryId,
                                 onCollectionFormChange: updateCollectionForm,
                                 onCreateCollection: handleCreateCollection,
                                 onInviteFormChange: updateInviteForm,
                                 onInvite: handleInvite,
                                 onEntryFormChange: updateEntryForm,
                                 onCreateEntry: handleCreateEntry,
+                                onSelectEntry: handleSelectEntry,
                                 onSelectCollection: handleSelectCollection,
                                 onLogout: handleLogout
                               }) : JsxRuntime.jsx(AuthCard.make, {

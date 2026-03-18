@@ -16,6 +16,7 @@ let make = () => {
   let (inviteForm, setInviteForm) = React.useState(() => CollectionInvite.initialForm)
   let (entryStatus, setEntryStatus) = React.useState(() => EntryState.initialStatus())
   let (entryForm, setEntryForm) = React.useState(() => EntryState.initialForm)
+  let (selectedEntryId, setSelectedEntryId) = React.useState(() => None)
 
   React.useEffect0(() => {
     switch SessionBootstrap.loadSessionToken() {
@@ -35,6 +36,7 @@ let make = () => {
         setSelectedCollectionId(_ => None)
         setEntryStatus(_ => EntryState.initialStatus())
         setEntryForm(_ => EntryState.initialForm)
+        setSelectedEntryId(_ => None)
         setIsInitializing(_ => false)
         Js.Promise2.resolve()
       })
@@ -45,6 +47,7 @@ let make = () => {
       setSelectedCollectionId(_ => None)
       setEntryStatus(_ => EntryState.initialStatus())
       setEntryForm(_ => EntryState.initialForm)
+      setSelectedEntryId(_ => None)
       setIsInitializing(_ => false)
     }
 
@@ -70,6 +73,7 @@ let make = () => {
       setCollectionStatus(_ => CollectionState.emptyCollectionStatus())
       setSelectedCollectionId(_ => None)
       setEntryStatus(_ => EntryState.initialStatus())
+      setSelectedEntryId(_ => None)
     }
 
     None
@@ -162,6 +166,7 @@ let make = () => {
     setInviteForm(_ => CollectionInvite.initialForm)
     setEntryStatus(_ => EntryState.initialStatus())
     setEntryForm(_ => EntryState.initialForm)
+    setSelectedEntryId(_ => None)
     setError(_ => None)
     setMode(_ => AuthForm.loginMode)
   }
@@ -178,6 +183,7 @@ let make = () => {
         CollectionSelectionStorage.saveSelectedCollectionId(collection.id)
         setInviteForm(_ => CollectionInvite.initialForm)
         setEntryForm(_ => EntryState.initialForm)
+        setSelectedEntryId(_ => None)
         setCollectionStatus(current => {
           let collections =
             if CollectionState.isReady(current) {
@@ -207,10 +213,12 @@ let make = () => {
     CollectionSelectionStorage.saveSelectedCollectionId(collectionId)
     setInviteForm(_ => CollectionInvite.initialForm)
     setEntryForm(_ => EntryState.initialForm)
+    setSelectedEntryId(_ => None)
   }
 
   let selectedCollection =
     CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId)
+  let selectedEntry = EntryState.selectedEntry(EntryState.entries(entryStatus), selectedEntryId)
 
   React.useEffect3(() => {
     switch (sessionToken, selectedCollection) {
@@ -220,16 +228,19 @@ let make = () => {
       EntryState.listEntries(token, collection.id)
       ->Js.Promise2.then(entries => {
         setEntryStatus(_ => EntryState.readyStatus(entries))
+        setSelectedEntryId(current => EntryState.resolveSelectedEntryId(entries, current))
         Js.Promise2.resolve()
       })
       ->Js.Promise2.catch(_ => {
         setEntryStatus(_ => EntryState.errorStatus(AuthAppSupport.describeEntryHistoryError()))
+        setSelectedEntryId(_ => None)
         Js.Promise2.resolve()
       })
       ->ignore
     | _ =>
       setEntryStatus(_ => EntryState.initialStatus())
       setEntryForm(_ => EntryState.initialForm)
+      setSelectedEntryId(_ => None)
     }
 
     None
@@ -270,6 +281,7 @@ let make = () => {
 
           EntryState.readyStatus(EntryState.appendEntry(entries, entry))
         })
+        setSelectedEntryId(_ => Some(entry.id))
         setEntryForm(_ => EntryState.succeedForm())
         Js.Promise2.resolve()
       })
@@ -280,6 +292,10 @@ let make = () => {
       ->ignore
     | _ => ()
     }
+
+  let handleSelectEntry = entryId => {
+    setSelectedEntryId(_ => Some(entryId))
+  }
 
   <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950">
     <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center">
@@ -299,12 +315,15 @@ let make = () => {
              inviteForm
              entryStatus
              entryForm
+             selectedEntry
+             selectedEntryId
              onCollectionFormChange=updateCollectionForm
              onCreateCollection=handleCreateCollection
              onInviteFormChange=updateInviteForm
              onInvite=handleInvite
              onEntryFormChange=updateEntryForm
              onCreateEntry=handleCreateEntry
+             onSelectEntry=handleSelectEntry
              onSelectCollection=handleSelectCollection
              onLogout=handleLogout
            />
