@@ -46,10 +46,34 @@ function describeInviteError(error) {
   }
 }
 
+function describeEntryError(error) {
+  var match = error.message;
+  switch (match) {
+    case "forbidden" :
+        return "You no longer have access to this collection.";
+    case "invalid_consumed_at" :
+        return "Enter when you drank the wine.";
+    case "invalid_rating" :
+        return "Rating must be a whole number from 1 to 5.";
+    case "invalid_wine_name" :
+        return "Enter a wine name.";
+    case "invalid_wine_vintage" :
+        return "Vintage must be a year between 1900 and 2100.";
+    default:
+      return "Could not save the entry. Try again.";
+  }
+}
+
+function describeEntryHistoryError() {
+  return "Could not load collection history. Try refreshing.";
+}
+
 export {
   describeError ,
   describeCollectionError ,
   describeCreateCollectionError ,
   describeInviteError ,
+  describeEntryError ,
+  describeEntryHistoryError ,
 }
 /* No side effect */

@@ -29,3 +29,15 @@ let describeInviteError = error =>
   | "forbidden" => "Only collection owners can invite people."
   | _ => "Could not send the invite. Try again."
   }
+
+let describeEntryError = error =>
+  switch error->message {
+  | "invalid_consumed_at" => "Enter when you drank the wine."
+  | "invalid_rating" => "Rating must be a whole number from 1 to 5."
+  | "invalid_wine_name" => "Enter a wine name."
+  | "invalid_wine_vintage" => "Vintage must be a year between 1900 and 2100."
+  | "forbidden" => "You no longer have access to this collection."
+  | _ => "Could not save the entry. Try again."
+  }
+
+let describeEntryHistoryError = () => "Could not load collection history. Try refreshing."
