@@ -1,7 +1,7 @@
 use axum::{
     extract::{Path, State},
     http::{HeaderMap, StatusCode},
-    routing::{get, post},
+    routing::{get, patch, post},
     Json, Router,
 };
 use serde::Serialize;
@@ -30,6 +30,10 @@ async fn main() {
         .route(
             "/api/collections/{id}/entries",
             get(list_entries).post(create_entry),
+        )
+        .route(
+            "/api/collections/{collection_id}/entries/{entry_id}",
+            patch(update_entry),
         )
         .route("/api/collections/{id}/invites", post(invite_collection_member))
         .route("/api/health", get(health))
@@ -173,6 +177,22 @@ async fn list_entries(
         .map_err(map_entry_error)
 }
 
+async fn update_entry(
+    State(state): State<AppState>,
+    Path((collection_id, entry_id)): Path<(i64, i64)>,
+    headers: HeaderMap,
+    Json(input): Json<CreateEntryInput>,
+) -> Result<Json<WineEntry>, (StatusCode, Json<ErrorResponse>)> {
+    let user = authenticate_user(&state.database, &headers)
+        .await
+        .map_err(map_auth_error)?;
+
+    entries::update(&state.database, user.id, collection_id, entry_id, input)
+        .await
+        .map(Json)
+        .map_err(map_entry_error)
+}
+
 fn load_bind_address() -> SocketAddr {
     let bind_address = std::env::var("BACKEND_BIND_ADDR").ok();
 
@@ -196,7 +216,11 @@ fn load_cors() -> CorsLayer {
         .collect::<Vec<_>>();
 
     CorsLayer::new()
-        .allow_methods([axum::http::Method::GET, axum::http::Method::POST])
+        .allow_methods([
+            axum::http::Method::GET,
+            axum::http::Method::POST,
+            axum::http::Method::PATCH,
+        ])
         .allow_headers([axum::http::header::AUTHORIZATION, axum::http::header::CONTENT_TYPE])
         .allow_origin(AllowOrigin::list(allowed_origins))
 }
