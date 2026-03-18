@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use sqlx::{PgPool, Row};
+use sqlx::{PgPool, Postgres, Row, Transaction};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct WineInput {
@@ -51,6 +51,35 @@ pub async fn create_or_find(database: &PgPool, input: WineInput) -> Result<Wine,
     .bind(&normalized.region)
     .bind(&normalized.country)
     .fetch_one(database)
+    .await
+    .map_err(|_| WineError::Database)?;
+
+    wine_from_row(&row)
+}
+
+pub(crate) async fn create_or_find_in_transaction(
+    transaction: &mut Transaction<'_, Postgres>,
+    input: WineInput,
+) -> Result<Wine, WineError> {
+    let normalized = NormalizedWine::from_input(input)?;
+
+    if let Some(existing) = find_existing_in_transaction(transaction, &normalized).await? {
+        return Ok(existing);
+    }
+
+    let row = sqlx::query(
+        "INSERT INTO wines (producer, name, vintage, style, grape, region, country)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         RETURNING id, producer, name, vintage, style, grape, region, country",
+    )
+    .bind(&normalized.producer)
+    .bind(&normalized.name)
+    .bind(normalized.vintage)
+    .bind(&normalized.style)
+    .bind(&normalized.grape)
+    .bind(&normalized.region)
+    .bind(&normalized.country)
+    .fetch_one(&mut **transaction)
     .await
     .map_err(|_| WineError::Database)?;
 
@@ -110,6 +139,37 @@ async fn find_existing(
     .bind(&wine.region)
     .bind(&wine.country)
     .fetch_optional(database)
+    .await
+    .map_err(|_| WineError::Database)?;
+
+    row.map(|row| wine_from_row(&row)).transpose()
+}
+
+async fn find_existing_in_transaction(
+    transaction: &mut Transaction<'_, Postgres>,
+    wine: &NormalizedWine,
+) -> Result<Option<Wine>, WineError> {
+    let row = sqlx::query(
+        "SELECT id, producer, name, vintage, style, grape, region, country
+         FROM wines
+         WHERE producer IS NOT DISTINCT FROM $1
+           AND name = $2
+           AND vintage IS NOT DISTINCT FROM $3
+           AND style IS NOT DISTINCT FROM $4
+           AND grape IS NOT DISTINCT FROM $5
+           AND region IS NOT DISTINCT FROM $6
+           AND country IS NOT DISTINCT FROM $7
+         ORDER BY id ASC
+         LIMIT 1",
+    )
+    .bind(&wine.producer)
+    .bind(&wine.name)
+    .bind(wine.vintage)
+    .bind(&wine.style)
+    .bind(&wine.grape)
+    .bind(&wine.region)
+    .bind(&wine.country)
+    .fetch_optional(&mut **transaction)
     .await
     .map_err(|_| WineError::Database)?;
 

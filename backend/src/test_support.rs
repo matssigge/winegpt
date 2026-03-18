@@ -13,6 +13,14 @@ pub async fn test_database() -> PgPool {
         .await
         .expect("test database should connect");
 
+    sqlx::query("DELETE FROM wine_entries")
+        .execute(&database)
+        .await
+        .expect("wine entries should be cleared");
+    sqlx::query("DELETE FROM wines")
+        .execute(&database)
+        .await
+        .expect("wines should be cleared");
     sqlx::query("DELETE FROM collection_memberships")
         .execute(&database)
         .await
