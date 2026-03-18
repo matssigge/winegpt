@@ -27,7 +27,10 @@ async fn main() {
         .route("/api/auth/login", post(login))
         .route("/api/auth/register", post(register))
         .route("/api/collections", get(list_collections).post(create_collection))
-        .route("/api/collections/{id}/entries", post(create_entry))
+        .route(
+            "/api/collections/{id}/entries",
+            get(list_entries).post(create_entry),
+        )
         .route("/api/collections/{id}/invites", post(invite_collection_member))
         .route("/api/health", get(health))
         .route("/api/me", get(me))
@@ -150,6 +153,21 @@ async fn create_entry(
         .map_err(map_auth_error)?;
 
     entries::create(&state.database, user.id, collection_id, input)
+        .await
+        .map(Json)
+        .map_err(map_entry_error)
+}
+
+async fn list_entries(
+    State(state): State<AppState>,
+    Path(collection_id): Path<i64>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<WineEntry>>, (StatusCode, Json<ErrorResponse>)> {
+    let user = authenticate_user(&state.database, &headers)
+        .await
+        .map_err(map_auth_error)?;
+
+    entries::list_for_collection(&state.database, user.id, collection_id)
         .await
         .map(Json)
         .map_err(map_entry_error)
