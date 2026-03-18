@@ -119,6 +119,47 @@ pub async fn create(
     })
 }
 
+pub async fn list_for_collection(
+    database: &PgPool,
+    user_id: i64,
+    collection_id: i64,
+) -> Result<Vec<WineEntry>, EntryError> {
+    collections::require_membership(database, user_id, collection_id)
+        .await
+        .map_err(map_collection_error)?;
+
+    let rows = sqlx::query(
+        "SELECT
+            wine_entries.id,
+            wine_entries.collection_id,
+            wine_entries.created_by_user_id,
+            to_char(wine_entries.consumed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS consumed_at,
+            wine_entries.venue_name,
+            wine_entries.location_text,
+            wine_entries.pairing_notes,
+            wine_entries.tasting_notes,
+            wine_entries.rating,
+            wines.id AS wine_id,
+            wines.producer AS wine_producer,
+            wines.name AS wine_name,
+            wines.vintage AS wine_vintage,
+            wines.style AS wine_style,
+            wines.grape AS wine_grape,
+            wines.region AS wine_region,
+            wines.country AS wine_country
+         FROM wine_entries
+         INNER JOIN wines ON wines.id = wine_entries.wine_id
+         WHERE wine_entries.collection_id = $1
+         ORDER BY wine_entries.consumed_at DESC, wine_entries.id DESC",
+    )
+    .bind(collection_id)
+    .fetch_all(database)
+    .await
+    .map_err(|_| EntryError::Database)?;
+
+    rows.into_iter().map(entry_from_row).collect()
+}
+
 fn normalize_consumed_at(consumed_at: &str) -> Result<String, EntryError> {
     let trimmed = consumed_at.trim();
 
@@ -160,9 +201,51 @@ fn map_collection_error(error: CollectionError) -> EntryError {
     }
 }
 
+fn entry_from_row(row: sqlx::postgres::PgRow) -> Result<WineEntry, EntryError> {
+    Ok(WineEntry {
+        id: row.try_get("id").map_err(|_| EntryError::Database)?,
+        collection_id: row
+            .try_get("collection_id")
+            .map_err(|_| EntryError::Database)?,
+        wine: Wine {
+            id: row.try_get("wine_id").map_err(|_| EntryError::Database)?,
+            producer: row
+                .try_get("wine_producer")
+                .map_err(|_| EntryError::Database)?,
+            name: row.try_get("wine_name").map_err(|_| EntryError::Database)?,
+            vintage: row
+                .try_get("wine_vintage")
+                .map_err(|_| EntryError::Database)?,
+            style: row.try_get("wine_style").map_err(|_| EntryError::Database)?,
+            grape: row.try_get("wine_grape").map_err(|_| EntryError::Database)?,
+            region: row.try_get("wine_region").map_err(|_| EntryError::Database)?,
+            country: row
+                .try_get("wine_country")
+                .map_err(|_| EntryError::Database)?,
+        },
+        created_by_user_id: row
+            .try_get("created_by_user_id")
+            .map_err(|_| EntryError::Database)?,
+        consumed_at: row
+            .try_get("consumed_at")
+            .map_err(|_| EntryError::Database)?,
+        venue_name: row.try_get("venue_name").map_err(|_| EntryError::Database)?,
+        location_text: row
+            .try_get("location_text")
+            .map_err(|_| EntryError::Database)?,
+        pairing_notes: row
+            .try_get("pairing_notes")
+            .map_err(|_| EntryError::Database)?,
+        tasting_notes: row
+            .try_get("tasting_notes")
+            .map_err(|_| EntryError::Database)?,
+        rating: row.try_get("rating").map_err(|_| EntryError::Database)?,
+    })
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{create, CreateEntryInput, EntryError};
+    use super::{create, list_for_collection, CreateEntryInput, EntryError};
     use crate::{
         auth::{register, RegisterInput},
         collections,
@@ -326,6 +409,67 @@ mod tests {
         .await;
 
         assert_eq!(result, Err(EntryError::InvalidConsumedAt));
+    }
+
+    #[tokio::test]
+    async fn lists_entries_for_collection_in_descending_consumed_order() {
+        let database = test_database().await;
+        let user = register_user(&database).await;
+        let collection = collections::create(&database, user.id, "Home").await.unwrap();
+
+        let older = create(
+            &database,
+            user.id,
+            collection.id,
+            CreateEntryInput {
+                wine: sample_wine_input("Taganan", Some(2022)),
+                consumed_at: "2025-01-15T19:30:00Z".to_string(),
+                venue_name: Some("Home".to_string()),
+                location_text: None,
+                pairing_notes: None,
+                tasting_notes: None,
+                rating: Some(4),
+            },
+        )
+        .await
+        .unwrap();
+
+        let newer = create(
+            &database,
+            user.id,
+            collection.id,
+            CreateEntryInput {
+                wine: sample_wine_input("Benje", Some(2023)),
+                consumed_at: "2025-01-20T19:30:00Z".to_string(),
+                venue_name: Some("Restaurant".to_string()),
+                location_text: None,
+                pairing_notes: None,
+                tasting_notes: None,
+                rating: Some(5),
+            },
+        )
+        .await
+        .unwrap();
+
+        let entries = list_for_collection(&database, user.id, collection.id)
+            .await
+            .expect("entries should list");
+
+        assert_eq!(entries.len(), 2);
+        assert_eq!(entries[0].id, newer.id);
+        assert_eq!(entries[1].id, older.id);
+    }
+
+    #[tokio::test]
+    async fn rejects_listing_entries_for_non_member() {
+        let database = test_database().await;
+        let owner = register_user(&database).await;
+        let stranger = register_user(&database).await;
+        let collection = collections::create(&database, owner.id, "Home").await.unwrap();
+
+        let result = list_for_collection(&database, stranger.id, collection.id).await;
+
+        assert_eq!(result, Err(EntryError::Forbidden));
     }
 
     fn sample_wine_input(name: &str, vintage: Option<i32>) -> WineInput {
