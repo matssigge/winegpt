@@ -25,10 +25,38 @@ let stringField = (object_, key) =>
   | None => None
   }
 
+let optionalStringField = (object_, key) =>
+  switch object_->field(key) {
+  | Some(value) =>
+    switch value->string {
+    | Some(text) => Some(Some(text))
+    | None =>
+      switch value->Js.Json.decodeNull {
+      | Some(_) => Some(None)
+      | None => None
+      }
+    }
+  | None => Some(None)
+  }
+
 let intField = (object_, key) =>
   switch object_->field(key) {
   | Some(value) => value->int
   | None => None
+  }
+
+let optionalIntField = (object_, key) =>
+  switch object_->field(key) {
+  | Some(value) =>
+    switch value->int {
+    | Some(number) => Some(Some(number))
+    | None =>
+      switch value->Js.Json.decodeNull {
+      | Some(_) => Some(None)
+      | None => None
+      }
+    }
+  | None => Some(None)
   }
 
 let user = json =>
@@ -90,5 +118,99 @@ let invitedCollectionMember = json =>
       Some({userId: userId, email: email, role: role}: CollectionInviteModel.invitedMember)
     | _ => None
     }
+  | None => None
+  }
+
+let wine = json =>
+  switch json->asObject {
+  | Some(object_) =>
+    switch (
+      object_->intField("id"),
+      object_->optionalStringField("producer"),
+      object_->stringField("name"),
+      object_->optionalIntField("vintage"),
+      object_->optionalStringField("style"),
+      object_->optionalStringField("grape"),
+      object_->optionalStringField("region"),
+      object_->optionalStringField("country"),
+    ) {
+    | (
+        Some(id),
+        Some(producer),
+        Some(name),
+        Some(vintage),
+        Some(style),
+        Some(grape),
+        Some(region),
+        Some(country),
+      ) =>
+      Some({
+        id: id,
+        producer: producer,
+        name: name,
+        vintage: vintage,
+        style: style,
+        grape: grape,
+        region: region,
+        country: country,
+      }: EntryModel.wine)
+    | _ => None
+    }
+  | None => None
+  }
+
+let entry = json =>
+  switch json->asObject {
+  | Some(object_) =>
+    switch (
+      object_->intField("id"),
+      object_->intField("collection_id"),
+      object_->field("wine")->Belt.Option.flatMap(wine),
+      object_->intField("created_by_user_id"),
+      object_->stringField("consumed_at"),
+      object_->optionalStringField("venue_name"),
+      object_->optionalStringField("location_text"),
+      object_->optionalStringField("pairing_notes"),
+      object_->optionalStringField("tasting_notes"),
+      object_->optionalIntField("rating"),
+    ) {
+    | (
+        Some(id),
+        Some(collectionId),
+        Some(wine),
+        Some(createdByUserId),
+        Some(consumedAt),
+        Some(venueName),
+        Some(locationText),
+        Some(pairingNotes),
+        Some(tastingNotes),
+        Some(rating),
+      ) =>
+      Some({
+        id: id,
+        collectionId: collectionId,
+        wine: wine,
+        createdByUserId: createdByUserId,
+        consumedAt: consumedAt,
+        venueName: venueName,
+        locationText: locationText,
+        pairingNotes: pairingNotes,
+        tastingNotes: tastingNotes,
+        rating: rating,
+      }: EntryModel.entry)
+    | _ => None
+    }
+  | None => None
+  }
+
+let entries = json =>
+  switch json->Js.Json.decodeArray {
+  | Some(items) =>
+    Belt.Array.reduce(items, Some([]), (decoded, item) =>
+      switch (decoded, item->entry) {
+      | (Some(entries), Some(entry)) => Some(Belt.Array.concat(entries, [entry]))
+      | _ => None
+      }
+    )
   | None => None
   }

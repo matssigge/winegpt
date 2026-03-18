@@ -4,6 +4,7 @@ import * as Js_dict from "rescript/lib/es6/js_dict.js";
 import * as Js_json from "rescript/lib/es6/js_json.js";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
+import * as Caml_option from "rescript/lib/es6/caml_option.js";
 
 function parse(text) {
   try {
@@ -36,10 +37,42 @@ function stringField(object_, key) {
   
 }
 
+function optionalStringField(object_, key) {
+  var value = Js_dict.get(object_, key);
+  if (value === undefined) {
+    return Caml_option.some(undefined);
+  }
+  var text = Js_json.decodeString(value);
+  if (text !== undefined) {
+    return Caml_option.some(text);
+  }
+  var match = Js_json.decodeNull(value);
+  if (match !== undefined) {
+    return Caml_option.some(undefined);
+  }
+  
+}
+
 function intField(object_, key) {
   var value = Js_dict.get(object_, key);
   if (value !== undefined) {
     return $$int(value);
+  }
+  
+}
+
+function optionalIntField(object_, key) {
+  var value = Js_dict.get(object_, key);
+  if (value === undefined) {
+    return Caml_option.some(undefined);
+  }
+  var number = $$int(value);
+  if (number !== undefined) {
+    return Caml_option.some(number);
+  }
+  var match = Js_json.decodeNull(value);
+  if (match !== undefined) {
+    return Caml_option.some(undefined);
   }
   
 }
@@ -124,6 +157,80 @@ function invitedCollectionMember(json) {
   
 }
 
+function wine(json) {
+  var object_ = Js_json.decodeObject(json);
+  if (object_ === undefined) {
+    return ;
+  }
+  var match = intField(object_, "id");
+  var match$1 = optionalStringField(object_, "producer");
+  var match$2 = stringField(object_, "name");
+  var match$3 = optionalIntField(object_, "vintage");
+  var match$4 = optionalStringField(object_, "style");
+  var match$5 = optionalStringField(object_, "grape");
+  var match$6 = optionalStringField(object_, "region");
+  var match$7 = optionalStringField(object_, "country");
+  if (match !== undefined && match$1 !== undefined && match$2 !== undefined && match$3 !== undefined && match$4 !== undefined && match$5 !== undefined && match$6 !== undefined && match$7 !== undefined) {
+    return {
+            id: match,
+            producer: Caml_option.valFromOption(match$1),
+            name: match$2,
+            vintage: Caml_option.valFromOption(match$3),
+            style: Caml_option.valFromOption(match$4),
+            grape: Caml_option.valFromOption(match$5),
+            region: Caml_option.valFromOption(match$6),
+            country: Caml_option.valFromOption(match$7)
+          };
+  }
+  
+}
+
+function entry(json) {
+  var object_ = Js_json.decodeObject(json);
+  if (object_ === undefined) {
+    return ;
+  }
+  var match = intField(object_, "id");
+  var match$1 = intField(object_, "collection_id");
+  var match$2 = Belt_Option.flatMap(Js_dict.get(object_, "wine"), wine);
+  var match$3 = intField(object_, "created_by_user_id");
+  var match$4 = stringField(object_, "consumed_at");
+  var match$5 = optionalStringField(object_, "venue_name");
+  var match$6 = optionalStringField(object_, "location_text");
+  var match$7 = optionalStringField(object_, "pairing_notes");
+  var match$8 = optionalStringField(object_, "tasting_notes");
+  var match$9 = optionalIntField(object_, "rating");
+  if (match !== undefined && match$1 !== undefined && match$2 !== undefined && match$3 !== undefined && match$4 !== undefined && match$5 !== undefined && match$6 !== undefined && match$7 !== undefined && match$8 !== undefined && match$9 !== undefined) {
+    return {
+            id: match,
+            collectionId: match$1,
+            wine: match$2,
+            createdByUserId: match$3,
+            consumedAt: match$4,
+            venueName: Caml_option.valFromOption(match$5),
+            locationText: Caml_option.valFromOption(match$6),
+            pairingNotes: Caml_option.valFromOption(match$7),
+            tastingNotes: Caml_option.valFromOption(match$8),
+            rating: Caml_option.valFromOption(match$9)
+          };
+  }
+  
+}
+
+function entries(json) {
+  var items = Js_json.decodeArray(json);
+  if (items !== undefined) {
+    return Belt_Array.reduce(items, [], (function (decoded, item) {
+                  var match = entry(item);
+                  if (decoded !== undefined && match !== undefined) {
+                    return Belt_Array.concat(decoded, [match]);
+                  }
+                  
+                }));
+  }
+  
+}
+
 export {
   parse ,
   asObject ,
@@ -131,11 +238,16 @@ export {
   $$int ,
   field ,
   stringField ,
+  optionalStringField ,
   intField ,
+  optionalIntField ,
   user ,
   authPayload ,
   collection ,
   collections ,
   invitedCollectionMember ,
+  wine ,
+  entry ,
+  entries ,
 }
 /* No side effect */
