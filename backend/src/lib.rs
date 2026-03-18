@@ -1,6 +1,7 @@
 pub mod auth;
 pub mod collections;
 pub mod db;
+pub mod wines;
 #[cfg(test)]
 pub mod test_support;
 
