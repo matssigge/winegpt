@@ -14,6 +14,7 @@ use wine_backend::{
         self, Collection, CollectionError, CreateCollectionInput, InviteCollectionInput,
         InvitedCollectionMember,
     },
+    entries::{self, CreateEntryInput, EntryError, WineEntry},
     allowed_frontend_origins, backend_bind_address, database_url, db, health_response,
     HealthResponse,
 };
@@ -26,6 +27,7 @@ async fn main() {
         .route("/api/auth/login", post(login))
         .route("/api/auth/register", post(register))
         .route("/api/collections", get(list_collections).post(create_collection))
+        .route("/api/collections/{id}/entries", post(create_entry))
         .route("/api/collections/{id}/invites", post(invite_collection_member))
         .route("/api/health", get(health))
         .route("/api/me", get(me))
@@ -137,6 +139,22 @@ async fn invite_collection_member(
         .map_err(map_collection_error)
 }
 
+async fn create_entry(
+    State(state): State<AppState>,
+    Path(collection_id): Path<i64>,
+    headers: HeaderMap,
+    Json(input): Json<CreateEntryInput>,
+) -> Result<Json<WineEntry>, (StatusCode, Json<ErrorResponse>)> {
+    let user = authenticate_user(&state.database, &headers)
+        .await
+        .map_err(map_auth_error)?;
+
+    entries::create(&state.database, user.id, collection_id, input)
+        .await
+        .map(Json)
+        .map_err(map_entry_error)
+}
+
 fn load_bind_address() -> SocketAddr {
     let bind_address = std::env::var("BACKEND_BIND_ADDR").ok();
 
@@ -201,6 +219,25 @@ fn map_collection_error(error: CollectionError) -> (StatusCode, Json<ErrorRespon
         CollectionError::Forbidden => (StatusCode::FORBIDDEN, "forbidden"),
         CollectionError::UserNotFound => (StatusCode::NOT_FOUND, "user_not_found"),
         CollectionError::Database => (StatusCode::INTERNAL_SERVER_ERROR, "internal_error"),
+    };
+
+    (status, Json(ErrorResponse { error: code }))
+}
+
+fn map_entry_error(error: EntryError) -> (StatusCode, Json<ErrorResponse>) {
+    let (status, code) = match error {
+        EntryError::InvalidConsumedAt => (StatusCode::BAD_REQUEST, "invalid_consumed_at"),
+        EntryError::InvalidRating => (StatusCode::BAD_REQUEST, "invalid_rating"),
+        EntryError::Forbidden => (StatusCode::FORBIDDEN, "forbidden"),
+        EntryError::Wine(wine_backend::wines::WineError::InvalidName) => {
+            (StatusCode::BAD_REQUEST, "invalid_wine_name")
+        }
+        EntryError::Wine(wine_backend::wines::WineError::InvalidVintage) => {
+            (StatusCode::BAD_REQUEST, "invalid_wine_vintage")
+        }
+        EntryError::Database | EntryError::Wine(wine_backend::wines::WineError::Database) => {
+            (StatusCode::INTERNAL_SERVER_ERROR, "internal_error")
+        }
     };
 
     (status, Json(ErrorResponse { error: code }))
