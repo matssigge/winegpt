@@ -5,6 +5,7 @@ import * as AppShell from "./AppShell.bs.js";
 import * as AuthCard from "./auth/AuthCard.bs.js";
 import * as AuthForm from "./auth/AuthForm.bs.js";
 import * as Caml_obj from "rescript/lib/es6/caml_obj.js";
+import * as EntryState from "./entries/EntryState.bs.js";
 import * as Js_promise2 from "rescript/lib/es6/js_promise2.js";
 import * as AuthAppSupport from "./auth/AuthAppSupport.bs.js";
 import * as SessionStorage from "./auth/SessionStorage.bs.js";
@@ -69,6 +70,15 @@ function App(props) {
       });
   var setInviteForm = match$10[1];
   var inviteForm = match$10[0];
+  var match$11 = React.useState(function () {
+        return EntryState.initialStatus();
+      });
+  var setEntryStatus = match$11[1];
+  var match$12 = React.useState(function () {
+        return EntryState.initialForm;
+      });
+  var setEntryForm = match$12[1];
+  var entryForm = match$12[0];
   React.useEffect((function () {
           var restoredToken = SessionBootstrap.loadSessionToken();
           if (restoredToken !== undefined) {
@@ -97,6 +107,12 @@ function App(props) {
                     setSelectedCollectionId(function (param) {
                           
                         });
+                    setEntryStatus(function (param) {
+                          return EntryState.initialStatus();
+                        });
+                    setEntryForm(function (param) {
+                          return EntryState.initialForm;
+                        });
                     setIsInitializing(function (param) {
                           return false;
                         });
@@ -111,6 +127,12 @@ function App(props) {
                 });
             setSelectedCollectionId(function (param) {
                   
+                });
+            setEntryStatus(function (param) {
+                  return EntryState.initialStatus();
+                });
+            setEntryForm(function (param) {
+                  return EntryState.initialForm;
                 });
             setIsInitializing(function (param) {
                   return false;
@@ -143,6 +165,9 @@ function App(props) {
                 });
             setSelectedCollectionId(function (param) {
                   
+                });
+            setEntryStatus(function (param) {
+                  return EntryState.initialStatus();
                 });
           }
           
@@ -204,6 +229,11 @@ function App(props) {
           return CollectionInvite.updateForm(current, value);
         });
   };
+  var updateEntryForm = function (field, value) {
+    setEntryForm(function (current) {
+          return EntryState.updateForm(current, field, value);
+        });
+  };
   var handleSubmit = function ($$event) {
     $$event.preventDefault();
     setIsSubmitting(function (param) {
@@ -226,6 +256,9 @@ function App(props) {
                     });
                 setInviteForm(function (param) {
                       return CollectionInvite.initialForm;
+                    });
+                setEntryForm(function (param) {
+                      return EntryState.initialForm;
                     });
                 setForm(function (param) {
                       return AuthForm.initialForm;
@@ -265,6 +298,12 @@ function App(props) {
     setInviteForm(function (param) {
           return CollectionInvite.initialForm;
         });
+    setEntryStatus(function (param) {
+          return EntryState.initialStatus();
+        });
+    setEntryForm(function (param) {
+          return EntryState.initialForm;
+        });
     setError(function (param) {
           
         });
@@ -285,6 +324,9 @@ function App(props) {
                   CollectionSelectionStorage.saveSelectedCollectionId(collection.id);
                   setInviteForm(function (param) {
                         return CollectionInvite.initialForm;
+                      });
+                  setEntryForm(function (param) {
+                        return EntryState.initialForm;
                       });
                   setCollectionStatus(function (current) {
                         var collections = CollectionState.isReady(current) ? CollectionState.collections(current) : [];
@@ -313,8 +355,45 @@ function App(props) {
     setInviteForm(function (param) {
           return CollectionInvite.initialForm;
         });
+    setEntryForm(function (param) {
+          return EntryState.initialForm;
+        });
   };
   var selectedCollection = CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId);
+  React.useEffect((function () {
+          var exit = 0;
+          if (sessionToken !== undefined && selectedCollection !== undefined) {
+            setEntryStatus(function (param) {
+                  return EntryState.loadingStatus();
+                });
+            Js_promise2.$$catch(Js_promise2.then(EntryState.listEntries(sessionToken, selectedCollection.id), (function (entries) {
+                        setEntryStatus(function (param) {
+                              return EntryState.readyStatus(entries);
+                            });
+                        return Promise.resolve();
+                      })), (function (param) {
+                    setEntryStatus(function (param) {
+                          return EntryState.errorStatus(AuthAppSupport.describeEntryHistoryError());
+                        });
+                    return Promise.resolve();
+                  }));
+          } else {
+            exit = 1;
+          }
+          if (exit === 1) {
+            setEntryStatus(function (param) {
+                  return EntryState.initialStatus();
+                });
+            setEntryForm(function (param) {
+                  return EntryState.initialForm;
+                });
+          }
+          
+        }), [
+        sessionToken,
+        collectionStatus,
+        selectedCollectionId
+      ]);
   var handleInvite = function () {
     if (sessionToken !== undefined && selectedCollection !== undefined && CollectionModel.isOwner(selectedCollection) && !inviteForm.isSubmitting) {
       setInviteForm(function (current) {
@@ -335,6 +414,30 @@ function App(props) {
     }
     
   };
+  var handleCreateEntry = function () {
+    if (sessionToken !== undefined && selectedCollection !== undefined && !entryForm.isSubmitting) {
+      setEntryForm(function (current) {
+            return EntryState.startSubmitting(current);
+          });
+      Js_promise2.$$catch(Js_promise2.then(EntryState.createEntry(sessionToken, selectedCollection.id, entryForm), (function (entry) {
+                  setEntryStatus(function (current) {
+                        var entries = EntryState.isReady(current) ? EntryState.entries(current) : [];
+                        return EntryState.readyStatus(EntryState.appendEntry(entries, entry));
+                      });
+                  setEntryForm(function (param) {
+                        return EntryState.succeedForm();
+                      });
+                  return Promise.resolve();
+                })), (function (reason) {
+              setEntryForm(function (current) {
+                    return EntryState.failForm(current, AuthAppSupport.describeEntryError(reason));
+                  });
+              return Promise.resolve();
+            }));
+      return ;
+    }
+    
+  };
   return JsxRuntime.jsx("main", {
               children: JsxRuntime.jsx("div", {
                     children: match$4[0] ? JsxRuntime.jsx("section", {
@@ -348,10 +451,14 @@ function App(props) {
                                 selectedCollection: selectedCollection,
                                 selectedCollectionId: selectedCollectionId,
                                 inviteForm: inviteForm,
+                                entryStatus: match$11[0],
+                                entryForm: entryForm,
                                 onCollectionFormChange: updateCollectionForm,
                                 onCreateCollection: handleCreateCollection,
                                 onInviteFormChange: updateInviteForm,
                                 onInvite: handleInvite,
+                                onEntryFormChange: updateEntryForm,
+                                onCreateEntry: handleCreateEntry,
                                 onSelectCollection: handleSelectCollection,
                                 onLogout: handleLogout
                               }) : JsxRuntime.jsx(AuthCard.make, {

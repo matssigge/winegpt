@@ -17,13 +17,13 @@ external makeGetOptions: (~headers: headers, unit) => getOptions = ""
 
 @obj
 external makeWinePayload: (
-  ~producer: option<string>=?,
+  ~producer: option<string>,
   ~name: string,
-  ~vintage: option<int>=?,
-  ~style: option<string>=?,
-  ~grape: option<string>=?,
-  ~region: option<string>=?,
-  ~country: option<string>=?,
+  ~vintage: option<int>,
+  ~style: option<string>,
+  ~grape: option<string>,
+  ~region: option<string>,
+  ~country: option<string>,
   unit,
 ) => winePayload = ""
 
@@ -31,11 +31,11 @@ external makeWinePayload: (
 external makeCreateEntryPayload: (
   ~wine: winePayload,
   ~consumed_at: string,
-  ~venue_name: option<string>=?,
-  ~location_text: option<string>=?,
-  ~pairing_notes: option<string>=?,
-  ~tasting_notes: option<string>=?,
-  ~rating: option<int>=?,
+  ~venue_name: option<string>,
+  ~location_text: option<string>,
+  ~pairing_notes: option<string>,
+  ~tasting_notes: option<string>,
+  ~rating: option<int>,
   unit,
 ) => createEntryPayload = ""
 
@@ -50,22 +50,26 @@ let listEntries = (token, collectionId) =>
 let createEntry = (
   token,
   collectionId,
-  ~producer=?,
+  ~producer: option<string>,
   ~name,
-  ~vintage=?,
-  ~style=?,
-  ~grape=?,
-  ~region=?,
-  ~country=?,
+  ~vintage: option<int>,
+  ~style: option<string>=?,
+  ~grape: option<string>=?,
+  ~region: option<string>=?,
+  ~country: option<string>=?,
   ~consumedAt,
-  ~venueName=?,
-  ~locationText=?,
-  ~pairingNotes=?,
-  ~tastingNotes=?,
-  ~rating=?,
+  ~venueName: option<string>,
+  ~locationText: option<string>,
+  ~pairingNotes: option<string>,
+  ~tastingNotes: option<string>,
+  ~rating: option<int>,
   (),
 ) =>
   {
+    let style = style
+    let grape = grape
+    let region = region
+    let country = country
     let venue_name = venueName
     let location_text = locationText
     let pairing_notes = pairingNotes
@@ -80,21 +84,21 @@ let createEntry = (
         makeCreateEntryPayload(
           ~wine=
             makeWinePayload(
-              ~producer?,
+              ~producer,
               ~name,
-              ~vintage?,
-              ~style?,
-              ~grape?,
-              ~region?,
-              ~country?,
+              ~vintage,
+              ~style,
+              ~grape,
+              ~region,
+              ~country,
               (),
             ),
           ~consumed_at=consumedAt,
-          ~venue_name?,
-          ~location_text?,
-          ~pairing_notes?,
-          ~tasting_notes?,
-          ~rating?,
+          ~venue_name,
+          ~location_text,
+          ~pairing_notes,
+          ~tasting_notes,
+          ~rating,
           (),
         )->stringify,
       (),

@@ -2,7 +2,6 @@
 
 import * as ApiClient from "../api/ApiClient.bs.js";
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
-import * as Caml_option from "rescript/lib/es6/caml_option.js";
 
 function stringify(value) {
   return Belt_Option.getExn(JSON.stringify(value));
@@ -15,50 +14,26 @@ function listEntries(token, collectionId) {
 }
 
 function createEntry(token, collectionId, producer, name, vintage, style, grape, region, country, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating, param) {
-  var tmp = {
-    name: name
-  };
-  if (producer !== undefined) {
-    tmp.producer = Caml_option.valFromOption(producer);
-  }
-  if (vintage !== undefined) {
-    tmp.vintage = Caml_option.valFromOption(vintage);
-  }
-  if (style !== undefined) {
-    tmp.style = Caml_option.valFromOption(style);
-  }
-  if (grape !== undefined) {
-    tmp.grape = Caml_option.valFromOption(grape);
-  }
-  if (region !== undefined) {
-    tmp.region = Caml_option.valFromOption(region);
-  }
-  if (country !== undefined) {
-    tmp.country = Caml_option.valFromOption(country);
-  }
-  var tmp$1 = {
-    wine: tmp,
-    consumed_at: consumedAt
-  };
-  if (venueName !== undefined) {
-    tmp$1.venue_name = Caml_option.valFromOption(venueName);
-  }
-  if (locationText !== undefined) {
-    tmp$1.location_text = Caml_option.valFromOption(locationText);
-  }
-  if (pairingNotes !== undefined) {
-    tmp$1.pairing_notes = Caml_option.valFromOption(pairingNotes);
-  }
-  if (tastingNotes !== undefined) {
-    tmp$1.tasting_notes = Caml_option.valFromOption(tastingNotes);
-  }
-  if (rating !== undefined) {
-    tmp$1.rating = Caml_option.valFromOption(rating);
-  }
   return ApiClient.request("/api/collections/" + String(collectionId) + "/entries", {
               method: "POST",
               headers: ApiClient.authHeaders(token, ApiClient.jsonHeaders),
-              body: Belt_Option.getExn(JSON.stringify(tmp$1))
+              body: Belt_Option.getExn(JSON.stringify({
+                        wine: {
+                          producer: producer,
+                          name: name,
+                          vintage: vintage,
+                          style: style,
+                          grape: grape,
+                          region: region,
+                          country: country
+                        },
+                        consumed_at: consumedAt,
+                        venue_name: venueName,
+                        location_text: locationText,
+                        pairing_notes: pairingNotes,
+                        tasting_notes: tastingNotes,
+                        rating: rating
+                      }))
             });
 }
 

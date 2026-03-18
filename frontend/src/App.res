@@ -14,6 +14,8 @@ let make = () => {
   let (selectedCollectionId, setSelectedCollectionId) = React.useState(() => None)
   let (collectionForm, setCollectionForm) = React.useState(() => CollectionState.initialCollectionForm)
   let (inviteForm, setInviteForm) = React.useState(() => CollectionInvite.initialForm)
+  let (entryStatus, setEntryStatus) = React.useState(() => EntryState.initialStatus())
+  let (entryForm, setEntryForm) = React.useState(() => EntryState.initialForm)
 
   React.useEffect0(() => {
     switch SessionBootstrap.loadSessionToken() {
@@ -31,6 +33,8 @@ let make = () => {
         setCurrentUser(_ => None)
         setCollectionStatus(_ => CollectionState.emptyCollectionStatus())
         setSelectedCollectionId(_ => None)
+        setEntryStatus(_ => EntryState.initialStatus())
+        setEntryForm(_ => EntryState.initialForm)
         setIsInitializing(_ => false)
         Js.Promise2.resolve()
       })
@@ -39,6 +43,8 @@ let make = () => {
       setSessionToken(_ => None)
       setCollectionStatus(_ => CollectionState.emptyCollectionStatus())
       setSelectedCollectionId(_ => None)
+      setEntryStatus(_ => EntryState.initialStatus())
+      setEntryForm(_ => EntryState.initialForm)
       setIsInitializing(_ => false)
     }
 
@@ -63,6 +69,7 @@ let make = () => {
     | _ =>
       setCollectionStatus(_ => CollectionState.emptyCollectionStatus())
       setSelectedCollectionId(_ => None)
+      setEntryStatus(_ => EntryState.initialStatus())
     }
 
     None
@@ -114,6 +121,10 @@ let make = () => {
     setInviteForm(current => CollectionInvite.updateForm(current, value))
   }
 
+  let updateEntryForm = (field, value) => {
+    setEntryForm(current => EntryState.updateForm(current, field, value))
+  }
+
   let handleSubmit = event => {
     event->preventDefault
     setIsSubmitting(_ => true)
@@ -127,6 +138,7 @@ let make = () => {
       setCurrentUser(_ => Some(payload.user))
       setCollectionForm(_ => CollectionState.finishCollectionForm())
       setInviteForm(_ => CollectionInvite.initialForm)
+      setEntryForm(_ => EntryState.initialForm)
       setForm(_ => AuthForm.initialForm)
       setIsSubmitting(_ => false)
       Js.Promise2.resolve()
@@ -148,6 +160,8 @@ let make = () => {
     CollectionSelectionStorage.clearSelectedCollectionId()
     setCollectionForm(_ => CollectionState.finishCollectionForm())
     setInviteForm(_ => CollectionInvite.initialForm)
+    setEntryStatus(_ => EntryState.initialStatus())
+    setEntryForm(_ => EntryState.initialForm)
     setError(_ => None)
     setMode(_ => AuthForm.loginMode)
   }
@@ -163,6 +177,7 @@ let make = () => {
         setSelectedCollectionId(_ => nextSelectedCollectionId)
         CollectionSelectionStorage.saveSelectedCollectionId(collection.id)
         setInviteForm(_ => CollectionInvite.initialForm)
+        setEntryForm(_ => EntryState.initialForm)
         setCollectionStatus(current => {
           let collections =
             if CollectionState.isReady(current) {
@@ -191,10 +206,34 @@ let make = () => {
     setSelectedCollectionId(_ => nextSelectedCollectionId)
     CollectionSelectionStorage.saveSelectedCollectionId(collectionId)
     setInviteForm(_ => CollectionInvite.initialForm)
+    setEntryForm(_ => EntryState.initialForm)
   }
 
   let selectedCollection =
     CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId)
+
+  React.useEffect3(() => {
+    switch (sessionToken, selectedCollection) {
+    | (Some(token), Some(collection)) =>
+      setEntryStatus(_ => EntryState.loadingStatus())
+
+      EntryState.listEntries(token, collection.id)
+      ->Js.Promise2.then(entries => {
+        setEntryStatus(_ => EntryState.readyStatus(entries))
+        Js.Promise2.resolve()
+      })
+      ->Js.Promise2.catch(_ => {
+        setEntryStatus(_ => EntryState.errorStatus(AuthAppSupport.describeEntryHistoryError()))
+        Js.Promise2.resolve()
+      })
+      ->ignore
+    | _ =>
+      setEntryStatus(_ => EntryState.initialStatus())
+      setEntryForm(_ => EntryState.initialForm)
+    }
+
+    None
+  }, (sessionToken, collectionStatus, selectedCollectionId))
 
   let handleInvite = () =>
     switch (sessionToken, selectedCollection) {
@@ -208,6 +247,34 @@ let make = () => {
       })
       ->Js.Promise2.catch(reason => {
         setInviteForm(current => CollectionInvite.failForm(current, AuthAppSupport.describeInviteError(reason)))
+        Js.Promise2.resolve()
+      })
+      ->ignore
+    | _ => ()
+    }
+
+  let handleCreateEntry = () =>
+    switch (sessionToken, selectedCollection) {
+    | (Some(token), Some(collection)) if !entryForm.isSubmitting =>
+      setEntryForm(current => EntryState.startSubmitting(current))
+
+      EntryState.createEntry(token, collection.id, entryForm)
+      ->Js.Promise2.then(entry => {
+        setEntryStatus(current => {
+          let entries =
+            if EntryState.isReady(current) {
+              EntryState.entries(current)
+            } else {
+              []
+            }
+
+          EntryState.readyStatus(EntryState.appendEntry(entries, entry))
+        })
+        setEntryForm(_ => EntryState.succeedForm())
+        Js.Promise2.resolve()
+      })
+      ->Js.Promise2.catch(reason => {
+        setEntryForm(current => EntryState.failForm(current, AuthAppSupport.describeEntryError(reason)))
         Js.Promise2.resolve()
       })
       ->ignore
@@ -230,10 +297,14 @@ let make = () => {
              selectedCollection
              selectedCollectionId
              inviteForm
+             entryStatus
+             entryForm
              onCollectionFormChange=updateCollectionForm
              onCreateCollection=handleCreateCollection
              onInviteFormChange=updateInviteForm
              onInvite=handleInvite
+             onEntryFormChange=updateEntryForm
+             onCreateEntry=handleCreateEntry
              onSelectCollection=handleSelectCollection
              onLogout=handleLogout
            />

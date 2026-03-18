@@ -26,6 +26,17 @@ type error
 @new
 external makeError: string => error = "Error"
 
+type date
+
+@new
+external makeDate: string => date = "Date"
+
+@send
+external getTime: date => float = "getTime"
+
+@send
+external toISOString: date => string = "toISOString"
+
 let initialStatus = () => Idle
 let loadingStatus = () => Loading
 let emptyStatus = () => Ready([])
@@ -89,9 +100,22 @@ let intOption = (value, ~errorCode) =>
   switch value->String.trim {
   | "" => Js.Promise2.resolve(None)
   | trimmed =>
-    switch Int.fromString(trimmed) {
+    switch Belt.Int.fromString(trimmed) {
     | Some(number) => Js.Promise2.resolve(Some(number))
     | None => Js.Promise2.reject(makeError(errorCode)->Obj.magic)
+    }
+  }
+
+let normalizeConsumedAt = value =>
+  switch value->String.trim {
+  | "" => Js.Promise2.reject(makeError("invalid_consumed_at")->Obj.magic)
+  | trimmed =>
+    let date = makeDate(trimmed)
+
+    if Js.Float.isNaN(date->getTime) {
+      Js.Promise2.reject(makeError("invalid_consumed_at")->Obj.magic)
+    } else {
+      Js.Promise2.resolve(date->toISOString)
     }
   }
 
@@ -106,28 +130,38 @@ let listEntries = (token, collectionId) =>
   )
 
 let createEntry = (token, collectionId, form: form) =>
-  Js.Promise2.then(intOption(form.vintage, ~errorCode="invalid_wine_vintage"), vintage =>
-    Js.Promise2.then(intOption(form.rating, ~errorCode="invalid_rating"), rating =>
-      Js.Promise2.then(
-        EntryApi.createEntry(
-          token,
-          collectionId,
-          ~producer?=stringOption(form.producer),
-          ~name=form.wineName,
-          ~vintage?,
-          ~consumedAt=form.consumedAt,
-          ~venueName?=stringOption(form.venueName),
-          ~locationText?=stringOption(form.locationText),
-          ~pairingNotes?=stringOption(form.pairingNotes),
-          ~tastingNotes?=stringOption(form.tastingNotes),
-          ~rating?,
-          (),
-        ),
-        response =>
-          switch response->ResponseDecoder.parse->Belt.Option.flatMap(ResponseDecoder.entry) {
-          | Some(entry) => Js.Promise2.resolve(entry)
-          | None => Js.Promise2.reject(ApiClient.invalidResponse())
-          },
+  Js.Promise2.then(normalizeConsumedAt(form.consumedAt), consumedAt =>
+    Js.Promise2.then(intOption(form.vintage, ~errorCode="invalid_wine_vintage"), vintage =>
+      Js.Promise2.then(intOption(form.rating, ~errorCode="invalid_rating"), rating =>
+        {
+          let producer = stringOption(form.producer)
+          let venueName = stringOption(form.venueName)
+          let locationText = stringOption(form.locationText)
+          let pairingNotes = stringOption(form.pairingNotes)
+          let tastingNotes = stringOption(form.tastingNotes)
+
+          Js.Promise2.then(
+            EntryApi.createEntry(
+              token,
+              collectionId,
+              ~producer,
+              ~name=form.wineName,
+              ~vintage,
+              ~consumedAt,
+              ~venueName,
+              ~locationText,
+              ~pairingNotes,
+              ~tastingNotes,
+              ~rating,
+              (),
+            ),
+            response =>
+              switch response->ResponseDecoder.parse->Belt.Option.flatMap(ResponseDecoder.entry) {
+              | Some(entry) => Js.Promise2.resolve(entry)
+              | None => Js.Promise2.reject(ApiClient.invalidResponse())
+              },
+          )
+        }
       )
     )
   )
