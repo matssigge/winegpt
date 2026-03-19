@@ -2,7 +2,9 @@
 
 ## Purpose
 
-This application helps users keep a record of wines they have drunk.
+This application helps users keep a record of wines they have drunk. 
+
+The primary value is helping users remember good wines they have had before and the context around them.
 
 Users can record:
 - which wine they drank
@@ -21,17 +23,19 @@ Users can maintain their own records or share collections with other people such
 
 The system should make it easy for a user to:
 
-- quickly log a wine from a mobile device
-- capture useful context at the moment of drinking
-- attach one or more photos
+- quickly recall wines they have enjoyed before
 - browse and search past wine entries
 - compare past experiences with the same wine
 - remember what a wine paired well with
+- quickly log a wine from a mobile device when needed
+- capture useful context at the moment of drinking
+- attach one or more photos
 - maintain a shared wine history with a partner or household
 - mark a wine as a favorite
 
 The system should prioritize:
 
+- history browsing and recall over data entry density on the main screen
 - low operational complexity
 - simple deployment
 - fast and reliable everyday use
@@ -45,6 +49,12 @@ The system should prioritize:
 ### Entry capture
 
 Users can create a wine entry with structured and free-form information.
+
+Entry capture should be fast and easy to access, but it is not the primary focus of the main collection screen.
+
+The main collection screen should emphasize browsing history and opening past entries.
+
+Creating a new entry should happen through a clearly accessible action such as an add button that opens a dedicated capture flow.
 
 A wine entry may include:
 
@@ -92,6 +102,14 @@ Collections should be easy to create and share with another user.
 Users can browse wine entries within a collection.
 
 Entries should be sortable and filterable.
+
+This is the central product surface.
+
+Users should be able to:
+
+- quickly scan recent entries
+- open an entry to inspect wine details and occasion details
+- search or filter when trying to remember a bottle, producer, pairing, or prior impression
 
 ---
 
@@ -170,17 +188,18 @@ Photos are uploaded through the web app and stored separately from structured en
 
 Typical flow:
 
-1. User drinks a wine
+1. User wants to remember a wine they had before
 2. User opens the app
 3. User selects a collection
-4. User creates a new wine entry
-5. User records wine details
-6. User adds notes and pairing information
-7. User takes or uploads photos
-8. User saves the entry
-9. Users in the same collection can later view the entry
+4. User browses or searches entry history
+5. User opens a matching entry to inspect the wine and occasion details
+6. If the wine is new, the user taps an add action
+7. User records wine details
+8. User adds notes, pairing information, and optionally photos
+9. User saves the entry
+10. Users in the same collection can later view that entry in history
 
-The logging flow should be fast and forgiving.
+The logging flow should be fast and forgiving, but the default screen should optimize for recall and browsing.
 
 Users may not always know every structured detail about a wine.
 
@@ -188,7 +207,8 @@ Users may not always know every structured detail about a wine.
 
 ## Design Principles
 
-- Optimize for quick capture on mobile
+- Optimize for quick recall first and quick capture second
+- Mobile first with a solid desktop experience
 - Prefer simple and explicit data models
 - Preserve user-entered history
 - Separate wine identity from drinking occasions
@@ -230,7 +250,8 @@ Initial version should support:
 - creating wine collections
 - inviting another user to a collection
 - creating wine entries in a collection
-- attaching photos
 - browsing entry history
+- opening an entry from history
+- attaching photos
 - basic search/filtering
 - editing entries

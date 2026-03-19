@@ -334,9 +334,14 @@ Acceptance criteria:
 - browser test can create a collection and see it appear in the UI
 - test runs only against the isolated test stack
 
-## Milestone 3: Entry capture
+## Milestone 3: History and entry capture
 
-Goal: a user can record a wine-drinking occasion in a collection.
+Goal: a user can browse collection history and quickly add a new wine-drinking occasion when needed.
+
+Notes:
+
+- treat history as the main collection screen
+- keep entry creation easy to reach, but do not make an inline capture form the default primary surface
 
 ### 3.1 Add wine create/reuse backend logic
 
@@ -364,11 +369,39 @@ Acceptance criteria:
 - entry is linked to both collection and wine
 - invalid input is rejected with explicit errors
 
-### 3.3 Add mobile-first entry form
+### 3.3 Add entry history endpoint
 
 Scope:
 
-- implement a minimal “new entry” screen
+- create `GET /api/collections/:id/entries`
+- return entries ordered by `consumed_at`
+
+Acceptance criteria:
+
+- collection member can browse history for one collection
+- non-member access is rejected
+- ordering is deterministic
+
+### 3.4 Add history-first collection screen
+
+Scope:
+
+- make history the primary content for the selected collection
+- show enough summary data for quick browsing
+- include a clear empty state and a clearly accessible add action
+
+Acceptance criteria:
+
+- user can browse past entries from the main collection screen
+- empty history state is clear
+- the main screen is optimized for browsing rather than inline data entry
+- add-entry action is easy to find on mobile widths
+
+### 3.5 Add mobile-first entry creation flow
+
+Scope:
+
+- implement a minimal dedicated “new entry” flow
 - start with essential fields only:
   - wine name
   - producer
@@ -384,32 +417,6 @@ Acceptance criteria:
 - user can create an entry from a mobile-sized viewport
 - form handles missing optional wine metadata gracefully
 - success and validation errors are visible in the UI
-
-### 3.4 Add entry history endpoint
-
-Scope:
-
-- create `GET /api/collections/:id/entries`
-- return entries ordered by `consumed_at`
-
-Acceptance criteria:
-
-- collection member can browse history for one collection
-- non-member access is rejected
-- ordering is deterministic
-
-### 3.5 Add history screen
-
-Scope:
-
-- list entries for the selected collection
-- show enough summary data for quick browsing
-
-Acceptance criteria:
-
-- user can browse past entries
-- empty history state is clear
-- list works on mobile widths
 
 ### 3.6 Add entry detail screen
 
