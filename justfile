@@ -9,7 +9,7 @@ install:
   {{compose}} build
 
 backend-test:
-  {{compose}} run --rm backend-test
+  {{compose_test}} run --rm backend-test
 
 backend-run:
   {{compose}} up backend

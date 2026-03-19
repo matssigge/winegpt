@@ -55,24 +55,6 @@ services:
     ports:
       - "5273:5273"
 
-  backend-test:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-      target: dev
-    command: cargo test --manifest-path backend/Cargo.toml -- --test-threads=1
-    working_dir: /app
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: postgres://wine:wine@postgres:5432/wine
-    volumes:
-      - ./backend:/app/backend
-      - cargo-registry:/usr/local/cargo/registry
-      - cargo-git:/usr/local/cargo/git
-      - backend-target:/app/backend/target
-
   frontend-build:
     build:
       context: .
