@@ -57,6 +57,7 @@ function EntryDetail(props) {
                 className: "rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6"
               });
   }
+  var onEdit = props.onEdit;
   var rating = entry.rating;
   return JsxRuntime.jsxs("section", {
               children: [
@@ -74,10 +75,23 @@ function EntryDetail(props) {
                                     })
                               ]
                             }),
-                        rating !== undefined ? JsxRuntime.jsx("span", {
-                                children: "Rating " + String(rating) + "/5",
-                                className: "rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800"
-                              }) : null
+                        JsxRuntime.jsxs("div", {
+                              children: [
+                                rating !== undefined ? JsxRuntime.jsx("span", {
+                                        children: "Rating " + String(rating) + "/5",
+                                        className: "rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800"
+                                      }) : null,
+                                JsxRuntime.jsx("button", {
+                                      children: "Edit entry",
+                                      className: "rounded-2xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950",
+                                      type: "button",
+                                      onClick: (function (param) {
+                                          onEdit();
+                                        })
+                                    })
+                              ],
+                              className: "flex flex-col items-start gap-3 md:items-end"
+                            })
                       ],
                       className: "flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
                     }),

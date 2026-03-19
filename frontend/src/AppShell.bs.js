@@ -14,6 +14,7 @@ function AppShell(props) {
   var onOpenEntryComposer = props.onOpenEntryComposer;
   var onInvite = props.onInvite;
   var onCreateCollection = props.onCreateCollection;
+  var entryComposerMode = props.entryComposerMode;
   var inviteForm = props.inviteForm;
   var selectedCollection = props.selectedCollection;
   var collectionForm = props.collectionForm;
@@ -198,7 +199,8 @@ function AppShell(props) {
                         tmp,
                         JsxRuntime.jsx("div", {
                               children: JsxRuntime.jsx(EntryDetail.make, {
-                                    entry: props.selectedEntry
+                                    entry: props.selectedEntry,
+                                    onEdit: props.onEditEntry
                                   }),
                               className: "mb-6"
                             }),
@@ -215,10 +217,11 @@ function AppShell(props) {
                               selectedCollectionId: Js_null_undefined.fromOption(props.selectedCollectionId),
                               onSelectCollection: props.onSelectCollection
                             }),
-                        props.isEntryComposerOpen ? JsxRuntime.jsx(EntryComposer.make, {
+                        entryComposerMode !== undefined ? JsxRuntime.jsx(EntryComposer.make, {
+                                mode: entryComposerMode,
                                 entryForm: props.entryForm,
                                 onEntryFormChange: props.onEntryFormChange,
-                                onCreateEntry: props.onCreateEntry,
+                                onSubmit: props.onCreateEntry,
                                 onClose: props.onCloseEntryComposer
                               }) : null
                       ],

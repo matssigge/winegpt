@@ -4,21 +4,32 @@ external target: ReactEvent.Form.t => Dom.eventTarget = "target"
 @get
 external targetValue: Dom.eventTarget => string = "value"
 
+type mode =
+  | Create
+  | Edit
+
 @react.component
 let make = (
+  ~mode,
   ~entryForm: EntryState.form,
   ~onEntryFormChange: (. string, string) => unit,
-  ~onCreateEntry: unit => unit,
+  ~onSubmit: unit => unit,
   ~onClose: unit => unit,
 ) => {
+  let (eyebrow, heading, buttonLabel, buttonBusyLabel) =
+    switch mode {
+    | Create => ("Add entry", "Capture a wine", "Save entry", "Saving...")
+    | Edit => ("Edit entry", "Update this memory", "Save changes", "Saving...")
+    }
+
   <div className="fixed inset-0 z-50 flex items-end justify-center bg-stone-950/40 p-4 md:items-center">
     <section className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] border border-stone-900/10 bg-white p-6 shadow-[0_24px_80px_rgba(81,46,23,0.2)] md:p-8">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-stone-500">
-            {React.string("Add entry")}
+            {React.string(eyebrow)}
           </p>
-          <h3 className="mt-2 text-2xl font-semibold text-stone-950"> {React.string("Capture a wine")} </h3>
+          <h3 className="mt-2 text-2xl font-semibold text-stone-950"> {React.string(heading)} </h3>
         </div>
         <button
           type_="button"
@@ -103,10 +114,10 @@ let make = (
         </div>
         <button
           type_="button"
-          onClick={_ => onCreateEntry()}
+          onClick={_ => onSubmit()}
           disabled={entryForm.isSubmitting}
           className="rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400">
-          {React.string(if entryForm.isSubmitting { "Saving..." } else { "Save entry" })}
+          {React.string(if entryForm.isSubmitting { buttonBusyLabel } else { buttonLabel })}
         </button>
       </div>
       {switch entryForm.error {

@@ -8,7 +8,7 @@ let make = (
   ~inviteForm: CollectionInvite.form,
   ~entryStatus: EntryState.status,
   ~entryForm: EntryState.form,
-  ~isEntryComposerOpen: bool,
+  ~entryComposerMode: option<EntryComposer.mode>,
   ~selectedEntry: option<EntryModel.entry>,
   ~selectedEntryId: option<int>,
   ~onCollectionFormChange: string => unit,
@@ -17,6 +17,7 @@ let make = (
   ~onInvite: unit => unit,
   ~onEntryFormChange: (. string, string) => unit,
   ~onCreateEntry: unit => unit,
+  ~onEditEntry: unit => unit,
   ~onOpenEntryComposer: unit => unit,
   ~onCloseEntryComposer: unit => unit,
   ~onSelectEntry: int => unit,
@@ -163,7 +164,7 @@ let make = (
       | None => React.null
       }}
       <div className="mb-6">
-        <EntryDetail entry=selectedEntry />
+        <EntryDetail entry=selectedEntry onEdit=onEditEntry />
       </div>
       <div className="mb-6">
         <EntryHistory status=entryStatus selectedEntryId onSelectEntry />
@@ -173,15 +174,16 @@ let make = (
         selectedCollectionId={selectedCollectionId->Js.Nullable.fromOption}
         onSelectCollection
       />
-      {if isEntryComposerOpen {
+      {switch entryComposerMode {
+       | Some(mode) =>
          <EntryComposer
+           mode
            entryForm
            onEntryFormChange
-           onCreateEntry
+           onSubmit=onCreateEntry
            onClose=onCloseEntryComposer
          />
-       } else {
-         React.null
+       | None => React.null
        }}
     </div>
   </section>

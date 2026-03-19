@@ -37,9 +37,34 @@ function createEntry(token, collectionId, producer, name, vintage, style, grape,
             });
 }
 
+function updateEntry(token, collectionId, entryId, producer, name, vintage, style, grape, region, country, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating, param) {
+  return ApiClient.request("/api/collections/" + String(collectionId) + "/entries/" + String(entryId), {
+              method: "PATCH",
+              headers: ApiClient.authHeaders(token, ApiClient.jsonHeaders),
+              body: Belt_Option.getExn(JSON.stringify({
+                        wine: {
+                          producer: producer,
+                          name: name,
+                          vintage: vintage,
+                          style: style,
+                          grape: grape,
+                          region: region,
+                          country: country
+                        },
+                        consumed_at: consumedAt,
+                        venue_name: venueName,
+                        location_text: locationText,
+                        pairing_notes: pairingNotes,
+                        tasting_notes: tastingNotes,
+                        rating: rating
+                      }))
+            });
+}
+
 export {
   stringify ,
   listEntries ,
   createEntry ,
+  updateEntry ,
 }
 /* ApiClient Not a pure module */

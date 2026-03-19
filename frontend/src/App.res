@@ -1,6 +1,10 @@
 @send
 external preventDefault: ReactEvent.Form.t => unit = "preventDefault"
 
+type entryComposerMode =
+  | CreateEntry
+  | EditEntry(int)
+
 @react.component
 let make = () => {
   let (mode, setMode) = React.useState(() => AuthForm.loginMode)
@@ -17,7 +21,7 @@ let make = () => {
   let (entryStatus, setEntryStatus) = React.useState(() => EntryState.initialStatus())
   let (entryForm, setEntryForm) = React.useState(() => EntryState.initialForm)
   let (selectedEntryId, setSelectedEntryId) = React.useState(() => None)
-  let (isEntryComposerOpen, setIsEntryComposerOpen) = React.useState(() => false)
+  let (entryComposerMode, setEntryComposerMode) = React.useState(() => None)
 
   React.useEffect0(() => {
     switch SessionBootstrap.loadSessionToken() {
@@ -38,7 +42,7 @@ let make = () => {
         setEntryStatus(_ => EntryState.initialStatus())
         setEntryForm(_ => EntryState.initialForm)
         setSelectedEntryId(_ => None)
-        setIsEntryComposerOpen(_ => false)
+        setEntryComposerMode(_ => None)
         setIsInitializing(_ => false)
         Js.Promise2.resolve()
       })
@@ -50,7 +54,7 @@ let make = () => {
       setEntryStatus(_ => EntryState.initialStatus())
       setEntryForm(_ => EntryState.initialForm)
       setSelectedEntryId(_ => None)
-      setIsEntryComposerOpen(_ => false)
+      setEntryComposerMode(_ => None)
       setIsInitializing(_ => false)
     }
 
@@ -77,7 +81,7 @@ let make = () => {
       setSelectedCollectionId(_ => None)
       setEntryStatus(_ => EntryState.initialStatus())
       setSelectedEntryId(_ => None)
-      setIsEntryComposerOpen(_ => false)
+      setEntryComposerMode(_ => None)
     }
 
     None
@@ -171,7 +175,7 @@ let make = () => {
     setEntryStatus(_ => EntryState.initialStatus())
     setEntryForm(_ => EntryState.initialForm)
     setSelectedEntryId(_ => None)
-    setIsEntryComposerOpen(_ => false)
+    setEntryComposerMode(_ => None)
     setError(_ => None)
     setMode(_ => AuthForm.loginMode)
   }
@@ -189,7 +193,7 @@ let make = () => {
         setInviteForm(_ => CollectionInvite.initialForm)
         setEntryForm(_ => EntryState.initialForm)
         setSelectedEntryId(_ => None)
-        setIsEntryComposerOpen(_ => false)
+        setEntryComposerMode(_ => None)
         setCollectionStatus(current => {
           let collections =
             if CollectionState.isReady(current) {
@@ -220,7 +224,7 @@ let make = () => {
     setInviteForm(_ => CollectionInvite.initialForm)
     setEntryForm(_ => EntryState.initialForm)
     setSelectedEntryId(_ => None)
-    setIsEntryComposerOpen(_ => false)
+    setEntryComposerMode(_ => None)
   }
 
   let selectedCollection =
@@ -248,7 +252,7 @@ let make = () => {
       setEntryStatus(_ => EntryState.initialStatus())
       setEntryForm(_ => EntryState.initialForm)
       setSelectedEntryId(_ => None)
-      setIsEntryComposerOpen(_ => false)
+      setEntryComposerMode(_ => None)
     }
 
     None
@@ -273,8 +277,33 @@ let make = () => {
     }
 
   let handleCreateEntry = () =>
-    switch (sessionToken, selectedCollection) {
-    | (Some(token), Some(collection)) if !entryForm.isSubmitting =>
+    switch (sessionToken, selectedCollection, entryComposerMode) {
+    | (Some(token), Some(collection), Some(EditEntry(entryId))) if !entryForm.isSubmitting =>
+      setEntryForm(current => EntryState.startSubmitting(current))
+
+      EntryState.updateEntry(token, collection.id, entryId, entryForm)
+      ->Js.Promise2.then(entry => {
+        setEntryStatus(current => {
+          let entries =
+            if EntryState.isReady(current) {
+              EntryState.entries(current)
+            } else {
+              []
+            }
+
+          EntryState.readyStatus(EntryState.replaceEntry(entries, entry))
+        })
+        setSelectedEntryId(_ => Some(entry.id))
+        setEntryForm(_ => EntryState.succeedForm())
+        setEntryComposerMode(_ => None)
+        Js.Promise2.resolve()
+      })
+      ->Js.Promise2.catch(reason => {
+        setEntryForm(current => EntryState.failForm(current, AuthAppSupport.describeEntryError(reason)))
+        Js.Promise2.resolve()
+      })
+      ->ignore
+    | (Some(token), Some(collection), _) if !entryForm.isSubmitting =>
       setEntryForm(current => EntryState.startSubmitting(current))
 
       EntryState.createEntry(token, collection.id, entryForm)
@@ -291,7 +320,7 @@ let make = () => {
         })
         setSelectedEntryId(_ => Some(entry.id))
         setEntryForm(_ => EntryState.succeedForm())
-        setIsEntryComposerOpen(_ => false)
+        setEntryComposerMode(_ => None)
         Js.Promise2.resolve()
       })
       ->Js.Promise2.catch(reason => {
@@ -308,12 +337,21 @@ let make = () => {
 
   let openEntryComposer = () => {
     setEntryForm(_ => EntryState.initialForm)
-    setIsEntryComposerOpen(_ => true)
+    setEntryComposerMode(_ => Some(CreateEntry))
+  }
+
+  let openEntryEditor = () => {
+    switch selectedEntry {
+    | Some(entry) =>
+      setEntryForm(_ => EntryState.formFromEntry(entry))
+      setEntryComposerMode(_ => Some(EditEntry(entry.id)))
+    | None => ()
+    }
   }
 
   let closeEntryComposer = () => {
     setEntryForm(_ => EntryState.initialForm)
-    setIsEntryComposerOpen(_ => false)
+    setEntryComposerMode(_ => None)
   }
 
   <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950">
@@ -334,7 +372,13 @@ let make = () => {
              inviteForm
              entryStatus
              entryForm
-             isEntryComposerOpen
+             entryComposerMode={
+               switch entryComposerMode {
+               | Some(CreateEntry) => Some(EntryComposer.Create)
+               | Some(EditEntry(_)) => Some(EntryComposer.Edit)
+               | None => None
+               }
+             }
              selectedEntry
              selectedEntryId
              onCollectionFormChange=updateCollectionForm
@@ -343,6 +387,7 @@ let make = () => {
              onInvite=handleInvite
              onEntryFormChange=updateEntryForm
              onCreateEntry=handleCreateEntry
+             onEditEntry=openEntryEditor
              onOpenEntryComposer=openEntryComposer
              onCloseEntryComposer=closeEntryComposer
              onSelectEntry=handleSelectEntry

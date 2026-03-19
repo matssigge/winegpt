@@ -5,9 +5,21 @@ import * as JsxRuntime from "react/jsx-runtime";
 
 function EntryComposer(props) {
   var onClose = props.onClose;
-  var onCreateEntry = props.onCreateEntry;
+  var onSubmit = props.onSubmit;
   var onEntryFormChange = props.onEntryFormChange;
   var entryForm = props.entryForm;
+  var match;
+  match = props.mode === "Create" ? [
+      "Add entry",
+      "Capture a wine",
+      "Save entry",
+      "Saving..."
+    ] : [
+      "Edit entry",
+      "Update this memory",
+      "Save changes",
+      "Saving..."
+    ];
   var message = entryForm.error;
   var message$1 = entryForm.success;
   return JsxRuntime.jsx("div", {
@@ -18,11 +30,11 @@ function EntryComposer(props) {
                               JsxRuntime.jsxs("div", {
                                     children: [
                                       JsxRuntime.jsx("p", {
-                                            children: "Add entry",
+                                            children: match[0],
                                             className: "text-xs font-medium uppercase tracking-[0.25em] text-stone-500"
                                           }),
                                       JsxRuntime.jsx("h3", {
-                                            children: "Capture a wine",
+                                            children: match[1],
                                             className: "mt-2 text-2xl font-semibold text-stone-950"
                                           })
                                     ]
@@ -147,12 +159,12 @@ function EntryComposer(props) {
                                     className: "md:w-40"
                                   }),
                               JsxRuntime.jsx("button", {
-                                    children: entryForm.isSubmitting ? "Saving..." : "Save entry",
+                                    children: entryForm.isSubmitting ? match[3] : match[2],
                                     className: "rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400",
                                     disabled: entryForm.isSubmitting,
                                     type: "button",
                                     onClick: (function (param) {
-                                        onCreateEntry();
+                                        onSubmit();
                                       })
                                   })
                             ],

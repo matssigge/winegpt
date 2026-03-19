@@ -1,6 +1,7 @@
 type headers = Js.Dict.t<string>
 type postOptions
 type getOptions
+type patchOptions
 type winePayload
 type createEntryPayload
 
@@ -11,6 +12,14 @@ external makePostOptions: (
   ~body: string,
   unit,
 ) => postOptions = ""
+
+@obj
+external makePatchOptions: (
+  @as("method") ~method_: string,
+  ~headers: headers,
+  ~body: string,
+  unit,
+) => patchOptions = ""
 
 @obj
 external makeGetOptions: (~headers: headers, unit) => getOptions = ""
@@ -104,4 +113,67 @@ let createEntry = (
       (),
     ),
   )
+  }
+
+let updateEntry = (
+  token,
+  collectionId,
+  entryId,
+  ~producer: option<string>,
+  ~name,
+  ~vintage: option<int>,
+  ~style: option<string>=?,
+  ~grape: option<string>=?,
+  ~region: option<string>=?,
+  ~country: option<string>=?,
+  ~consumedAt,
+  ~venueName: option<string>,
+  ~locationText: option<string>,
+  ~pairingNotes: option<string>,
+  ~tastingNotes: option<string>,
+  ~rating: option<int>,
+  (),
+) =>
+  {
+    let style = style
+    let grape = grape
+    let region = region
+    let country = country
+    let venue_name = venueName
+    let location_text = locationText
+    let pairing_notes = pairingNotes
+    let tasting_notes = tastingNotes
+
+    ApiClient.request(
+      "/api/collections/" ++
+      collectionId->Belt.Int.toString ++
+      "/entries/" ++
+      entryId->Belt.Int.toString,
+      makePatchOptions(
+        ~method_="PATCH",
+        ~headers=ApiClient.authHeaders(token, ApiClient.jsonHeaders),
+        ~body=
+          makeCreateEntryPayload(
+            ~wine=
+              makeWinePayload(
+                ~producer,
+                ~name,
+                ~vintage,
+                ~style,
+                ~grape,
+                ~region,
+                ~country,
+                (),
+              ),
+            ~consumed_at=consumedAt,
+            ~venue_name,
+            ~location_text,
+            ~pairing_notes,
+            ~tasting_notes,
+            ~rating,
+            (),
+          )->stringify,
+        (),
+      ),
+    )
   }

@@ -86,9 +86,10 @@ function App(props) {
   var setSelectedEntryId = match$13[1];
   var selectedEntryId = match$13[0];
   var match$14 = React.useState(function () {
-        return false;
+        
       });
-  var setIsEntryComposerOpen = match$14[1];
+  var setEntryComposerMode = match$14[1];
+  var entryComposerMode = match$14[0];
   React.useEffect((function () {
           var restoredToken = SessionBootstrap.loadSessionToken();
           if (restoredToken !== undefined) {
@@ -126,8 +127,8 @@ function App(props) {
                     setSelectedEntryId(function (param) {
                           
                         });
-                    setIsEntryComposerOpen(function (param) {
-                          return false;
+                    setEntryComposerMode(function (param) {
+                          
                         });
                     setIsInitializing(function (param) {
                           return false;
@@ -153,8 +154,8 @@ function App(props) {
             setSelectedEntryId(function (param) {
                   
                 });
-            setIsEntryComposerOpen(function (param) {
-                  return false;
+            setEntryComposerMode(function (param) {
+                  
                 });
             setIsInitializing(function (param) {
                   return false;
@@ -194,8 +195,8 @@ function App(props) {
             setSelectedEntryId(function (param) {
                   
                 });
-            setIsEntryComposerOpen(function (param) {
-                  return false;
+            setEntryComposerMode(function (param) {
+                  
                 });
           }
           
@@ -335,8 +336,8 @@ function App(props) {
     setSelectedEntryId(function (param) {
           
         });
-    setIsEntryComposerOpen(function (param) {
-          return false;
+    setEntryComposerMode(function (param) {
+          
         });
     setError(function (param) {
           
@@ -365,8 +366,8 @@ function App(props) {
                   setSelectedEntryId(function (param) {
                         
                       });
-                  setIsEntryComposerOpen(function (param) {
-                        return false;
+                  setEntryComposerMode(function (param) {
+                        
                       });
                   setCollectionStatus(function (current) {
                         var collections = CollectionState.isReady(current) ? CollectionState.collections(current) : [];
@@ -401,8 +402,8 @@ function App(props) {
     setSelectedEntryId(function (param) {
           
         });
-    setIsEntryComposerOpen(function (param) {
-          return false;
+    setEntryComposerMode(function (param) {
+          
         });
   };
   var selectedCollection = CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId);
@@ -443,8 +444,8 @@ function App(props) {
             setSelectedEntryId(function (param) {
                   
                 });
-            setIsEntryComposerOpen(function (param) {
-                  return false;
+            setEntryComposerMode(function (param) {
+                  
                 });
           }
           
@@ -474,7 +475,40 @@ function App(props) {
     
   };
   var handleCreateEntry = function () {
-    if (sessionToken !== undefined && selectedCollection !== undefined && !entryForm.isSubmitting) {
+    if (sessionToken === undefined) {
+      return ;
+    }
+    if (selectedCollection === undefined) {
+      return ;
+    }
+    if (entryComposerMode !== undefined && typeof entryComposerMode === "object" && !entryForm.isSubmitting) {
+      setEntryForm(function (current) {
+            return EntryState.startSubmitting(current);
+          });
+      Js_promise2.$$catch(Js_promise2.then(EntryState.updateEntry(sessionToken, selectedCollection.id, entryComposerMode._0, entryForm), (function (entry) {
+                  setEntryStatus(function (current) {
+                        var entries = EntryState.isReady(current) ? EntryState.entries(current) : [];
+                        return EntryState.readyStatus(EntryState.replaceEntry(entries, entry));
+                      });
+                  setSelectedEntryId(function (param) {
+                        return entry.id;
+                      });
+                  setEntryForm(function (param) {
+                        return EntryState.succeedForm();
+                      });
+                  setEntryComposerMode(function (param) {
+                        
+                      });
+                  return Promise.resolve();
+                })), (function (reason) {
+              setEntryForm(function (current) {
+                    return EntryState.failForm(current, AuthAppSupport.describeEntryError(reason));
+                  });
+              return Promise.resolve();
+            }));
+      return ;
+    }
+    if (!entryForm.isSubmitting) {
       setEntryForm(function (current) {
             return EntryState.startSubmitting(current);
           });
@@ -489,8 +523,8 @@ function App(props) {
                   setEntryForm(function (param) {
                         return EntryState.succeedForm();
                       });
-                  setIsEntryComposerOpen(function (param) {
-                        return false;
+                  setEntryComposerMode(function (param) {
+                        
                       });
                   return Promise.resolve();
                 })), (function (reason) {
@@ -512,57 +546,82 @@ function App(props) {
     setEntryForm(function (param) {
           return EntryState.initialForm;
         });
-    setIsEntryComposerOpen(function (param) {
-          return true;
+    setEntryComposerMode(function (param) {
+          return "CreateEntry";
         });
+  };
+  var openEntryEditor = function () {
+    if (selectedEntry !== undefined) {
+      setEntryForm(function (param) {
+            return EntryState.formFromEntry(selectedEntry);
+          });
+      return setEntryComposerMode(function (param) {
+                  return {
+                          TAG: "EditEntry",
+                          _0: selectedEntry.id
+                        };
+                });
+    }
+    
   };
   var closeEntryComposer = function () {
     setEntryForm(function (param) {
           return EntryState.initialForm;
         });
-    setIsEntryComposerOpen(function (param) {
-          return false;
+    setEntryComposerMode(function (param) {
+          
         });
   };
+  var tmp;
+  if (match$4[0]) {
+    tmp = JsxRuntime.jsx("section", {
+          children: "Checking your session...",
+          className: "w-full max-w-md rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 text-sm text-stone-600 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur"
+        });
+  } else if (currentUser !== undefined) {
+    var tmp$1;
+    tmp$1 = entryComposerMode !== undefined ? (
+        typeof entryComposerMode !== "object" ? "Create" : "Edit"
+      ) : undefined;
+    tmp = JsxRuntime.jsx(AppShell.make, {
+          user: currentUser,
+          collectionStatus: collectionStatus,
+          collectionForm: collectionForm,
+          selectedCollection: selectedCollection,
+          selectedCollectionId: selectedCollectionId,
+          inviteForm: inviteForm,
+          entryStatus: entryStatus,
+          entryForm: entryForm,
+          entryComposerMode: tmp$1,
+          selectedEntry: selectedEntry,
+          selectedEntryId: selectedEntryId,
+          onCollectionFormChange: updateCollectionForm,
+          onCreateCollection: handleCreateCollection,
+          onInviteFormChange: updateInviteForm,
+          onInvite: handleInvite,
+          onEntryFormChange: updateEntryForm,
+          onCreateEntry: handleCreateEntry,
+          onEditEntry: openEntryEditor,
+          onOpenEntryComposer: openEntryComposer,
+          onCloseEntryComposer: closeEntryComposer,
+          onSelectEntry: handleSelectEntry,
+          onSelectCollection: handleSelectCollection,
+          onLogout: handleLogout
+        });
+  } else {
+    tmp = JsxRuntime.jsx(AuthCard.make, {
+          mode: mode,
+          onModeChange: handleModeChange,
+          form: form,
+          onFormChange: updateForm,
+          onSubmit: handleSubmit,
+          isSubmitting: match$5[0],
+          error: Js_null_undefined.fromOption(match$6[0])
+        });
+  }
   return JsxRuntime.jsx("main", {
               children: JsxRuntime.jsx("div", {
-                    children: match$4[0] ? JsxRuntime.jsx("section", {
-                            children: "Checking your session...",
-                            className: "w-full max-w-md rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 text-sm text-stone-600 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur"
-                          }) : (
-                        currentUser !== undefined ? JsxRuntime.jsx(AppShell.make, {
-                                user: currentUser,
-                                collectionStatus: collectionStatus,
-                                collectionForm: collectionForm,
-                                selectedCollection: selectedCollection,
-                                selectedCollectionId: selectedCollectionId,
-                                inviteForm: inviteForm,
-                                entryStatus: entryStatus,
-                                entryForm: entryForm,
-                                isEntryComposerOpen: match$14[0],
-                                selectedEntry: selectedEntry,
-                                selectedEntryId: selectedEntryId,
-                                onCollectionFormChange: updateCollectionForm,
-                                onCreateCollection: handleCreateCollection,
-                                onInviteFormChange: updateInviteForm,
-                                onInvite: handleInvite,
-                                onEntryFormChange: updateEntryForm,
-                                onCreateEntry: handleCreateEntry,
-                                onOpenEntryComposer: openEntryComposer,
-                                onCloseEntryComposer: closeEntryComposer,
-                                onSelectEntry: handleSelectEntry,
-                                onSelectCollection: handleSelectCollection,
-                                onLogout: handleLogout
-                              }) : JsxRuntime.jsx(AuthCard.make, {
-                                mode: mode,
-                                onModeChange: handleModeChange,
-                                form: form,
-                                onFormChange: updateForm,
-                                onSubmit: handleSubmit,
-                                isSubmitting: match$5[0],
-                                error: Js_null_undefined.fromOption(match$6[0])
-                              })
-                      ),
+                    children: tmp,
                     className: "mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center"
                   }),
               className: "min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950"

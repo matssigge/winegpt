@@ -38,8 +38,21 @@ test("users can create an entry and see it in history", async ({ page }) => {
   await expect(page.getByRole("definition").filter({ hasText: "Roast chicken" })).toBeVisible()
   await expect(page.getByText("Rating 4/5")).toBeVisible()
 
+  await page.getByRole("button", { name: "Edit entry" }).click()
+  await expect(page.getByRole("heading", { name: "Update this memory" })).toBeVisible()
+  await page.getByLabel("Venue").fill("Corner Bistro")
+  await page.getByLabel("Location").fill("Copenhagen")
+  await page.getByLabel("Tasting notes").fill("More floral on the second glass")
+  await page.getByLabel("Rating").fill("5")
+  await page.getByRole("button", { name: "Save changes" }).click()
+
+  await expect(page.getByRole("button", { name: "Add entry" })).toBeVisible()
+  await expect(page.getByText("2022 · Copenhagen · Corner Bistro")).toBeVisible()
+  await expect(page.getByRole("definition").filter({ hasText: "More floral on the second glass" })).toBeVisible()
+  await expect(page.getByText("Rating 5/5")).toBeVisible()
+
   await page.reload()
   await expect(page.getByText("Envinate Taganan")).toBeVisible()
   await expect(page.getByText("Envinate · Taganan · 2022")).toBeVisible()
-  await expect(page.getByText("Rating 4/5")).toBeVisible()
+  await expect(page.getByText("Rating 5/5")).toBeVisible()
 })

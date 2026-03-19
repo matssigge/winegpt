@@ -37,6 +37,21 @@ external getTime: date => float = "getTime"
 @send
 external toISOString: date => string = "toISOString"
 
+@send
+external getFullYear: date => int = "getFullYear"
+
+@send
+external getMonth: date => int = "getMonth"
+
+@send
+external getDate: date => int = "getDate"
+
+@send
+external getHours: date => int = "getHours"
+
+@send
+external getMinutes: date => int = "getMinutes"
+
 let initialStatus = () => Idle
 let loadingStatus = () => Loading
 let emptyStatus = () => Ready([])
@@ -76,6 +91,44 @@ let startSubmitting = form => {...form, isSubmitting: true, error: None, success
 let failForm = (form, message) => {...form, isSubmitting: false, error: Some(message), success: None}
 let succeedForm = () => {...initialForm, success: Some("Entry saved.")}
 
+let padTwo = value => {
+  let text = value->Belt.Int.toString
+  if value < 10 {"0" ++ text} else {text}
+}
+
+let toDateTimeLocalValue = consumedAt => {
+  let date = makeDate(consumedAt)
+
+  if Js.Float.isNaN(date->getTime) {
+    ""
+  } else {
+    date->getFullYear->Belt.Int.toString ++
+    "-" ++
+    (date->getMonth + 1 |> padTwo) ++
+    "-" ++
+    (date->getDate |> padTwo) ++
+    "T" ++
+    (date->getHours |> padTwo) ++
+    ":" ++
+    (date->getMinutes |> padTwo)
+  }
+}
+
+let formFromEntry = (entry: entry) => {
+  wineName: entry.wine.name,
+  producer: entry.wine.producer->Belt.Option.getWithDefault(""),
+  vintage: entry.wine.vintage->Belt.Option.map(Belt.Int.toString)->Belt.Option.getWithDefault(""),
+  consumedAt: entry.consumedAt->toDateTimeLocalValue,
+  venueName: entry.venueName->Belt.Option.getWithDefault(""),
+  locationText: entry.locationText->Belt.Option.getWithDefault(""),
+  pairingNotes: entry.pairingNotes->Belt.Option.getWithDefault(""),
+  tastingNotes: entry.tastingNotes->Belt.Option.getWithDefault(""),
+  rating: entry.rating->Belt.Option.map(Belt.Int.toString)->Belt.Option.getWithDefault(""),
+  isSubmitting: false,
+  error: None,
+  success: None,
+}
+
 let entries = status =>
   switch status {
   | Ready(entries) => entries
@@ -99,6 +152,9 @@ let resolveSelectedEntryId = (entries: array<entry>, selectedEntryId) =>
   }
 
 let appendEntry = (entries: array<entry>, entry: entry) => Belt.Array.concat([entry], entries)
+
+let replaceEntry = (entries: array<entry>, nextEntry: entry) =>
+  Belt.Array.map(entries, entry => if entry.id == nextEntry.id {nextEntry} else {entry})
 
 let isReady = status =>
   switch status {
@@ -160,6 +216,44 @@ let createEntry = (token, collectionId, form: form) =>
             EntryApi.createEntry(
               token,
               collectionId,
+              ~producer,
+              ~name=form.wineName,
+              ~vintage,
+              ~consumedAt,
+              ~venueName,
+              ~locationText,
+              ~pairingNotes,
+              ~tastingNotes,
+              ~rating,
+              (),
+            ),
+            response =>
+              switch response->ResponseDecoder.parse->Belt.Option.flatMap(ResponseDecoder.entry) {
+              | Some(entry) => Js.Promise2.resolve(entry)
+              | None => Js.Promise2.reject(ApiClient.invalidResponse())
+              },
+          )
+        }
+      )
+    )
+  )
+
+let updateEntry = (token, collectionId, entryId, form: form) =>
+  Js.Promise2.then(normalizeConsumedAt(form.consumedAt), consumedAt =>
+    Js.Promise2.then(intOption(form.vintage, ~errorCode="invalid_wine_vintage"), vintage =>
+      Js.Promise2.then(intOption(form.rating, ~errorCode="invalid_rating"), rating =>
+        {
+          let producer = stringOption(form.producer)
+          let venueName = stringOption(form.venueName)
+          let locationText = stringOption(form.locationText)
+          let pairingNotes = stringOption(form.pairingNotes)
+          let tastingNotes = stringOption(form.tastingNotes)
+
+          Js.Promise2.then(
+            EntryApi.updateEntry(
+              token,
+              collectionId,
+              entryId,
               ~producer,
               ~name=form.wineName,
               ~vintage,

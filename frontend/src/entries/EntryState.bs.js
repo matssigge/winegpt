@@ -232,6 +232,45 @@ function succeedForm() {
         };
 }
 
+function padTwo(value) {
+  var text = String(value);
+  if (value < 10) {
+    return "0" + text;
+  } else {
+    return text;
+  }
+}
+
+function toDateTimeLocalValue(consumedAt) {
+  var date = new Date(consumedAt);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  } else {
+    return String(date.getFullYear()) + "-" + padTwo(date.getMonth() + 1 | 0) + "-" + padTwo(date.getDate()) + "T" + padTwo(date.getHours()) + ":" + padTwo(date.getMinutes());
+  }
+}
+
+function formFromEntry(entry) {
+  return {
+          wineName: entry.wine.name,
+          producer: Belt_Option.getWithDefault(entry.wine.producer, ""),
+          vintage: Belt_Option.getWithDefault(Belt_Option.map(entry.wine.vintage, (function (prim) {
+                      return String(prim);
+                    })), ""),
+          consumedAt: toDateTimeLocalValue(entry.consumedAt),
+          venueName: Belt_Option.getWithDefault(entry.venueName, ""),
+          locationText: Belt_Option.getWithDefault(entry.locationText, ""),
+          pairingNotes: Belt_Option.getWithDefault(entry.pairingNotes, ""),
+          tastingNotes: Belt_Option.getWithDefault(entry.tastingNotes, ""),
+          rating: Belt_Option.getWithDefault(Belt_Option.map(entry.rating, (function (prim) {
+                      return String(prim);
+                    })), ""),
+          isSubmitting: false,
+          error: undefined,
+          success: undefined
+        };
+}
+
 function entries(status) {
   if (typeof status !== "object") {
     return [];
@@ -265,6 +304,16 @@ function resolveSelectedEntryId(entries, selectedEntryId) {
 
 function appendEntry(entries, entry) {
   return Belt_Array.concat([entry], entries);
+}
+
+function replaceEntry(entries, nextEntry) {
+  return Belt_Array.map(entries, (function (entry) {
+                if (entry.id === nextEntry.id) {
+                  return nextEntry;
+                } else {
+                  return entry;
+                }
+              }));
 }
 
 function isReady(status) {
@@ -343,6 +392,28 @@ function createEntry(token, collectionId, form) {
               }));
 }
 
+function updateEntry(token, collectionId, entryId, form) {
+  return Js_promise2.then(normalizeConsumedAt(form.consumedAt), (function (consumedAt) {
+                return Js_promise2.then(intOption(form.vintage, "invalid_wine_vintage"), (function (vintage) {
+                              return Js_promise2.then(intOption(form.rating, "invalid_rating"), (function (rating) {
+                                            var producer = stringOption(form.producer);
+                                            var venueName = stringOption(form.venueName);
+                                            var locationText = stringOption(form.locationText);
+                                            var pairingNotes = stringOption(form.pairingNotes);
+                                            var tastingNotes = stringOption(form.tastingNotes);
+                                            return Js_promise2.then(EntryApi.updateEntry(token, collectionId, entryId, producer, form.wineName, vintage, undefined, undefined, undefined, undefined, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating, undefined), (function (response) {
+                                                          var entry = Belt_Option.flatMap(ResponseDecoder.parse(response), ResponseDecoder.entry);
+                                                          if (entry !== undefined) {
+                                                            return Promise.resolve(entry);
+                                                          } else {
+                                                            return Promise.reject(ApiClient.invalidResponse());
+                                                          }
+                                                        }));
+                                          }));
+                            }));
+              }));
+}
+
 var initialForm = {
   wineName: "",
   producer: "",
@@ -369,15 +440,20 @@ export {
   startSubmitting ,
   failForm ,
   succeedForm ,
+  padTwo ,
+  toDateTimeLocalValue ,
+  formFromEntry ,
   entries ,
   selectedEntry ,
   resolveSelectedEntryId ,
   appendEntry ,
+  replaceEntry ,
   isReady ,
   stringOption ,
   intOption ,
   normalizeConsumedAt ,
   listEntries ,
   createEntry ,
+  updateEntry ,
 }
 /* EntryApi Not a pure module */
