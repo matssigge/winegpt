@@ -29,6 +29,8 @@ test("users can share a collection", async ({ page }) => {
   await expect(page.getByRole("button", { name: collectionName })).toBeVisible()
   await expect(page.getByRole("heading", { name: collectionName })).toBeVisible()
 
+  await expect(page.getByLabel("Invite by email")).toHaveCount(0)
+  await page.getByRole("button", { name: "Share" }).click()
   await page.getByLabel("Invite by email").fill(inviteeEmail)
   await page.getByRole("button", { name: "Invite" }).click()
   await expect(page.getByText(`Invited ${inviteeEmail}.`)).toBeVisible()
@@ -37,6 +39,7 @@ test("users can share a collection", async ({ page }) => {
   await expect(page.getByText(`Signed in as ${ownerEmail}.`)).toBeVisible()
   await expect(page.getByRole("button", { name: collectionName })).toBeVisible()
   await expect(page.getByRole("heading", { name: collectionName })).toBeVisible()
+  await expect(page.getByLabel("Invite by email")).toHaveCount(0)
 
   await page.getByRole("button", { name: "Log out" }).click()
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible()
@@ -47,6 +50,7 @@ test("users can share a collection", async ({ page }) => {
   await expect(page.getByText(`Signed in as ${inviteeEmail}.`)).toBeVisible()
   await expect(page.getByRole("button", { name: collectionName })).toBeVisible()
   await expect(page.getByRole("heading", { name: collectionName })).toBeVisible()
-  await expect(page.getByText("You currently have member access to this collection.")).toBeVisible()
+  await expect(page.getByRole("button", { name: "Share" })).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Add entry" })).toBeVisible()
   await expect(page.getByLabel("Invite by email")).toHaveCount(0)
 })
