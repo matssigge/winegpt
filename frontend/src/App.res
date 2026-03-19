@@ -17,6 +17,7 @@ let make = () => {
   let (entryStatus, setEntryStatus) = React.useState(() => EntryState.initialStatus())
   let (entryForm, setEntryForm) = React.useState(() => EntryState.initialForm)
   let (selectedEntryId, setSelectedEntryId) = React.useState(() => None)
+  let (isEntryComposerOpen, setIsEntryComposerOpen) = React.useState(() => false)
 
   React.useEffect0(() => {
     switch SessionBootstrap.loadSessionToken() {
@@ -37,6 +38,7 @@ let make = () => {
         setEntryStatus(_ => EntryState.initialStatus())
         setEntryForm(_ => EntryState.initialForm)
         setSelectedEntryId(_ => None)
+        setIsEntryComposerOpen(_ => false)
         setIsInitializing(_ => false)
         Js.Promise2.resolve()
       })
@@ -48,6 +50,7 @@ let make = () => {
       setEntryStatus(_ => EntryState.initialStatus())
       setEntryForm(_ => EntryState.initialForm)
       setSelectedEntryId(_ => None)
+      setIsEntryComposerOpen(_ => false)
       setIsInitializing(_ => false)
     }
 
@@ -74,6 +77,7 @@ let make = () => {
       setSelectedCollectionId(_ => None)
       setEntryStatus(_ => EntryState.initialStatus())
       setSelectedEntryId(_ => None)
+      setIsEntryComposerOpen(_ => false)
     }
 
     None
@@ -167,6 +171,7 @@ let make = () => {
     setEntryStatus(_ => EntryState.initialStatus())
     setEntryForm(_ => EntryState.initialForm)
     setSelectedEntryId(_ => None)
+    setIsEntryComposerOpen(_ => false)
     setError(_ => None)
     setMode(_ => AuthForm.loginMode)
   }
@@ -184,6 +189,7 @@ let make = () => {
         setInviteForm(_ => CollectionInvite.initialForm)
         setEntryForm(_ => EntryState.initialForm)
         setSelectedEntryId(_ => None)
+        setIsEntryComposerOpen(_ => false)
         setCollectionStatus(current => {
           let collections =
             if CollectionState.isReady(current) {
@@ -214,6 +220,7 @@ let make = () => {
     setInviteForm(_ => CollectionInvite.initialForm)
     setEntryForm(_ => EntryState.initialForm)
     setSelectedEntryId(_ => None)
+    setIsEntryComposerOpen(_ => false)
   }
 
   let selectedCollection =
@@ -241,6 +248,7 @@ let make = () => {
       setEntryStatus(_ => EntryState.initialStatus())
       setEntryForm(_ => EntryState.initialForm)
       setSelectedEntryId(_ => None)
+      setIsEntryComposerOpen(_ => false)
     }
 
     None
@@ -283,6 +291,7 @@ let make = () => {
         })
         setSelectedEntryId(_ => Some(entry.id))
         setEntryForm(_ => EntryState.succeedForm())
+        setIsEntryComposerOpen(_ => false)
         Js.Promise2.resolve()
       })
       ->Js.Promise2.catch(reason => {
@@ -295,6 +304,16 @@ let make = () => {
 
   let handleSelectEntry = entryId => {
     setSelectedEntryId(_ => Some(entryId))
+  }
+
+  let openEntryComposer = () => {
+    setEntryForm(_ => EntryState.initialForm)
+    setIsEntryComposerOpen(_ => true)
+  }
+
+  let closeEntryComposer = () => {
+    setEntryForm(_ => EntryState.initialForm)
+    setIsEntryComposerOpen(_ => false)
   }
 
   <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950">
@@ -315,6 +334,7 @@ let make = () => {
              inviteForm
              entryStatus
              entryForm
+             isEntryComposerOpen
              selectedEntry
              selectedEntryId
              onCollectionFormChange=updateCollectionForm
@@ -323,6 +343,8 @@ let make = () => {
              onInvite=handleInvite
              onEntryFormChange=updateEntryForm
              onCreateEntry=handleCreateEntry
+             onOpenEntryComposer=openEntryComposer
+             onCloseEntryComposer=closeEntryComposer
              onSelectEntry=handleSelectEntry
              onSelectCollection=handleSelectCollection
              onLogout=handleLogout

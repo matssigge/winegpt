@@ -1,9 +1,3 @@
-@get
-external target: ReactEvent.Form.t => Dom.eventTarget = "target"
-
-@get
-external targetValue: Dom.eventTarget => string = "value"
-
 @react.component
 let make = (
   ~user: AuthSession.user,
@@ -14,6 +8,7 @@ let make = (
   ~inviteForm: CollectionInvite.form,
   ~entryStatus: EntryState.status,
   ~entryForm: EntryState.form,
+  ~isEntryComposerOpen: bool,
   ~selectedEntry: option<EntryModel.entry>,
   ~selectedEntryId: option<int>,
   ~onCollectionFormChange: string => unit,
@@ -22,6 +17,8 @@ let make = (
   ~onInvite: unit => unit,
   ~onEntryFormChange: (. string, string) => unit,
   ~onCreateEntry: unit => unit,
+  ~onOpenEntryComposer: unit => unit,
+  ~onCloseEntryComposer: unit => unit,
   ~onSelectEntry: int => unit,
   ~onSelectCollection: int => unit,
   ~onLogout: unit => unit,
@@ -31,12 +28,12 @@ let make = (
     <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
       <div>
         <h1 className="max-w-xl font-serif text-5xl leading-none tracking-[-0.04em] text-stone-950 md:text-6xl">
-          {React.string("Collections are ready for your first entries.")}
+          {React.string("Remember the bottles worth coming back to.")}
         </h1>
         <p className="mt-6 max-w-xl text-base leading-7 text-stone-700 md:text-lg">
           {React.string("Signed in as ")}
           <span className="font-semibold text-stone-900"> {React.string(user.email)} </span>
-          {React.string(". Capture bottles and notes inside each collection.")}
+          {React.string(". Browse your shared history first, then add a new entry when you need it.")}
         </p>
       </div>
       <button
@@ -104,6 +101,20 @@ let make = (
               {React.string(collection.role)}
             </span>
           </div>
+          <div className="mt-6 flex flex-col gap-3 border-t border-stone-200 pt-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-medium text-stone-900"> {React.string("History first")} </p>
+              <p className="mt-1 text-sm text-stone-600">
+                {React.string("Browse recent entries here, or add a new bottle when you want to capture one.")}
+              </p>
+            </div>
+            <button
+              type_="button"
+              onClick={_ => onOpenEntryComposer()}
+              className="rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800">
+              {React.string("Add entry")}
+            </button>
+          </div>
           {if collection->CollectionModel.isOwner {
              <div className="mt-6 border-t border-stone-200 pt-6">
                <div className="flex flex-col gap-4 md:flex-row md:items-end">
@@ -148,105 +159,6 @@ let make = (
            } else {
              React.null
            }}
-          <div className="mt-6 border-t border-stone-200 pt-6">
-            <h3 className="text-lg font-semibold text-stone-950"> {React.string("New entry")} </h3>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <TextField
-                label="Wine name"
-                value=entryForm.wineName
-                onChange={value => onEntryFormChange(. "wineName", value)}
-                autoComplete="off"
-              />
-              <TextField
-                label="Producer"
-                value=entryForm.producer
-                onChange={value => onEntryFormChange(. "producer", value)}
-                autoComplete="organization"
-              />
-              <TextField
-                label="Vintage"
-                type_="number"
-                value=entryForm.vintage
-                onChange={value => onEntryFormChange(. "vintage", value)}
-                autoComplete="off"
-              />
-              <TextField
-                label="Consumed at"
-                type_="datetime-local"
-                value=entryForm.consumedAt
-                onChange={value => onEntryFormChange(. "consumedAt", value)}
-                autoComplete="off"
-              />
-              <TextField
-                label="Venue"
-                value=entryForm.venueName
-                onChange={value => onEntryFormChange(. "venueName", value)}
-                autoComplete="off"
-              />
-              <TextField
-                label="Location"
-                value=entryForm.locationText
-                onChange={value => onEntryFormChange(. "locationText", value)}
-                autoComplete="street-address"
-              />
-            </div>
-            <div className="mt-4 grid gap-4">
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-stone-700">
-                  {React.string("Pairing notes")}
-                </span>
-                <textarea
-                  value=entryForm.pairingNotes
-                  onChange={event => onEntryFormChange(. "pairingNotes", event->target->targetValue)}
-                  rows=3
-                  className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-950 outline-none transition focus:border-stone-500"
-                />
-              </label>
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-stone-700">
-                  {React.string("Tasting notes")}
-                </span>
-                <textarea
-                  value=entryForm.tastingNotes
-                  onChange={event => onEntryFormChange(. "tastingNotes", event->target->targetValue)}
-                  rows=4
-                  className="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-950 outline-none transition focus:border-stone-500"
-                />
-              </label>
-            </div>
-            <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-end">
-              <div className="md:w-40">
-                <TextField
-                  label="Rating"
-                  type_="number"
-                  value=entryForm.rating
-                  onChange={value => onEntryFormChange(. "rating", value)}
-                  autoComplete="off"
-                />
-              </div>
-              <button
-                type_="button"
-                onClick={_ => onCreateEntry()}
-                disabled={entryForm.isSubmitting}
-                className="rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400">
-                {React.string(if entryForm.isSubmitting { "Saving..." } else { "Save entry" })}
-              </button>
-            </div>
-            {switch entryForm.error {
-            | Some(message) =>
-              <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                {React.string(message)}
-              </div>
-            | None => React.null
-            }}
-            {switch entryForm.success {
-            | Some(message) =>
-              <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                {React.string(message)}
-              </div>
-            | None => React.null
-            }}
-          </div>
         </section>
       | None => React.null
       }}
@@ -261,6 +173,16 @@ let make = (
         selectedCollectionId={selectedCollectionId->Js.Nullable.fromOption}
         onSelectCollection
       />
+      {if isEntryComposerOpen {
+         <EntryComposer
+           entryForm
+           onEntryFormChange
+           onCreateEntry
+           onClose=onCloseEntryComposer
+         />
+       } else {
+         React.null
+       }}
     </div>
   </section>
 }

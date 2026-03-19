@@ -85,6 +85,10 @@ function App(props) {
       });
   var setSelectedEntryId = match$13[1];
   var selectedEntryId = match$13[0];
+  var match$14 = React.useState(function () {
+        return false;
+      });
+  var setIsEntryComposerOpen = match$14[1];
   React.useEffect((function () {
           var restoredToken = SessionBootstrap.loadSessionToken();
           if (restoredToken !== undefined) {
@@ -122,6 +126,9 @@ function App(props) {
                     setSelectedEntryId(function (param) {
                           
                         });
+                    setIsEntryComposerOpen(function (param) {
+                          return false;
+                        });
                     setIsInitializing(function (param) {
                           return false;
                         });
@@ -145,6 +152,9 @@ function App(props) {
                 });
             setSelectedEntryId(function (param) {
                   
+                });
+            setIsEntryComposerOpen(function (param) {
+                  return false;
                 });
             setIsInitializing(function (param) {
                   return false;
@@ -183,6 +193,9 @@ function App(props) {
                 });
             setSelectedEntryId(function (param) {
                   
+                });
+            setIsEntryComposerOpen(function (param) {
+                  return false;
                 });
           }
           
@@ -322,6 +335,9 @@ function App(props) {
     setSelectedEntryId(function (param) {
           
         });
+    setIsEntryComposerOpen(function (param) {
+          return false;
+        });
     setError(function (param) {
           
         });
@@ -348,6 +364,9 @@ function App(props) {
                       });
                   setSelectedEntryId(function (param) {
                         
+                      });
+                  setIsEntryComposerOpen(function (param) {
+                        return false;
                       });
                   setCollectionStatus(function (current) {
                         var collections = CollectionState.isReady(current) ? CollectionState.collections(current) : [];
@@ -381,6 +400,9 @@ function App(props) {
         });
     setSelectedEntryId(function (param) {
           
+        });
+    setIsEntryComposerOpen(function (param) {
+          return false;
         });
   };
   var selectedCollection = CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId);
@@ -420,6 +442,9 @@ function App(props) {
                 });
             setSelectedEntryId(function (param) {
                   
+                });
+            setIsEntryComposerOpen(function (param) {
+                  return false;
                 });
           }
           
@@ -464,6 +489,9 @@ function App(props) {
                   setEntryForm(function (param) {
                         return EntryState.succeedForm();
                       });
+                  setIsEntryComposerOpen(function (param) {
+                        return false;
+                      });
                   return Promise.resolve();
                 })), (function (reason) {
               setEntryForm(function (current) {
@@ -478,6 +506,22 @@ function App(props) {
   var handleSelectEntry = function (entryId) {
     setSelectedEntryId(function (param) {
           return entryId;
+        });
+  };
+  var openEntryComposer = function () {
+    setEntryForm(function (param) {
+          return EntryState.initialForm;
+        });
+    setIsEntryComposerOpen(function (param) {
+          return true;
+        });
+  };
+  var closeEntryComposer = function () {
+    setEntryForm(function (param) {
+          return EntryState.initialForm;
+        });
+    setIsEntryComposerOpen(function (param) {
+          return false;
         });
   };
   return JsxRuntime.jsx("main", {
@@ -495,6 +539,7 @@ function App(props) {
                                 inviteForm: inviteForm,
                                 entryStatus: entryStatus,
                                 entryForm: entryForm,
+                                isEntryComposerOpen: match$14[0],
                                 selectedEntry: selectedEntry,
                                 selectedEntryId: selectedEntryId,
                                 onCollectionFormChange: updateCollectionForm,
@@ -503,6 +548,8 @@ function App(props) {
                                 onInvite: handleInvite,
                                 onEntryFormChange: updateEntryForm,
                                 onCreateEntry: handleCreateEntry,
+                                onOpenEntryComposer: openEntryComposer,
+                                onCloseEntryComposer: closeEntryComposer,
                                 onSelectEntry: handleSelectEntry,
                                 onSelectCollection: handleSelectCollection,
                                 onLogout: handleLogout

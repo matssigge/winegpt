@@ -18,6 +18,7 @@ test("users can create an entry and see it in history", async ({ page }) => {
   await page.getByRole("button", { name: "Create collection" }).click()
   await expect(page.getByRole("heading", { name: collectionName })).toBeVisible()
 
+  await page.getByRole("button", { name: "Add entry" }).click()
   await page.getByLabel("Wine name").fill("Taganan")
   await page.getByLabel("Producer").fill("Envinate")
   await page.getByLabel("Vintage").fill("2022")
@@ -29,7 +30,7 @@ test("users can create an entry and see it in history", async ({ page }) => {
   await page.getByLabel("Rating").fill("4")
   await page.getByRole("button", { name: "Save entry" }).click()
 
-  await expect(page.getByText("Entry saved.")).toBeVisible()
+  await expect(page.getByRole("button", { name: "Add entry" })).toBeVisible()
   await expect(page.getByText("Envinate Taganan")).toBeVisible()
   await expect(page.getByText("2022 · Stockholm · Home")).toBeVisible()
   await expect(page.getByText("Envinate · Taganan · 2022")).toBeVisible()

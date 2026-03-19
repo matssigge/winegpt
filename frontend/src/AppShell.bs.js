@@ -3,6 +3,7 @@
 import * as TextField from "./ui/TextField.bs.js";
 import * as EntryDetail from "./entries/EntryDetail.bs.js";
 import * as EntryHistory from "./entries/EntryHistory.bs.js";
+import * as EntryComposer from "./entries/EntryComposer.bs.js";
 import * as CollectionList from "./collections/CollectionList.bs.js";
 import * as CollectionModel from "./collections/CollectionModel.bs.js";
 import * as Js_null_undefined from "rescript/lib/es6/js_null_undefined.js";
@@ -10,11 +11,9 @@ import * as JsxRuntime from "react/jsx-runtime";
 
 function AppShell(props) {
   var onLogout = props.onLogout;
-  var onCreateEntry = props.onCreateEntry;
-  var onEntryFormChange = props.onEntryFormChange;
+  var onOpenEntryComposer = props.onOpenEntryComposer;
   var onInvite = props.onInvite;
   var onCreateCollection = props.onCreateCollection;
-  var entryForm = props.entryForm;
   var inviteForm = props.inviteForm;
   var selectedCollection = props.selectedCollection;
   var collectionForm = props.collectionForm;
@@ -65,8 +64,6 @@ function AppShell(props) {
     } else {
       tmp$1 = null;
     }
-    var message$3 = entryForm.error;
-    var message$4 = entryForm.success;
     tmp = JsxRuntime.jsxs("section", {
           children: [
             JsxRuntime.jsxs("div", {
@@ -94,144 +91,32 @@ function AppShell(props) {
                   ],
                   className: "flex flex-col gap-3 md:flex-row md:items-start md:justify-between"
                 }),
-            tmp$1,
             JsxRuntime.jsxs("div", {
                   children: [
-                    JsxRuntime.jsx("h3", {
-                          children: "New entry",
-                          className: "text-lg font-semibold text-stone-950"
-                        }),
                     JsxRuntime.jsxs("div", {
                           children: [
-                            JsxRuntime.jsx(TextField.make, {
-                                  label: "Wine name",
-                                  value: entryForm.wineName,
-                                  onChange: (function (value) {
-                                      onEntryFormChange("wineName", value);
-                                    }),
-                                  autoComplete: "off"
+                            JsxRuntime.jsx("p", {
+                                  children: "History first",
+                                  className: "text-sm font-medium text-stone-900"
                                 }),
-                            JsxRuntime.jsx(TextField.make, {
-                                  label: "Producer",
-                                  value: entryForm.producer,
-                                  onChange: (function (value) {
-                                      onEntryFormChange("producer", value);
-                                    }),
-                                  autoComplete: "organization"
-                                }),
-                            JsxRuntime.jsx(TextField.make, {
-                                  label: "Vintage",
-                                  value: entryForm.vintage,
-                                  onChange: (function (value) {
-                                      onEntryFormChange("vintage", value);
-                                    }),
-                                  autoComplete: "off",
-                                  type_: "number"
-                                }),
-                            JsxRuntime.jsx(TextField.make, {
-                                  label: "Consumed at",
-                                  value: entryForm.consumedAt,
-                                  onChange: (function (value) {
-                                      onEntryFormChange("consumedAt", value);
-                                    }),
-                                  autoComplete: "off",
-                                  type_: "datetime-local"
-                                }),
-                            JsxRuntime.jsx(TextField.make, {
-                                  label: "Venue",
-                                  value: entryForm.venueName,
-                                  onChange: (function (value) {
-                                      onEntryFormChange("venueName", value);
-                                    }),
-                                  autoComplete: "off"
-                                }),
-                            JsxRuntime.jsx(TextField.make, {
-                                  label: "Location",
-                                  value: entryForm.locationText,
-                                  onChange: (function (value) {
-                                      onEntryFormChange("locationText", value);
-                                    }),
-                                  autoComplete: "street-address"
+                            JsxRuntime.jsx("p", {
+                                  children: "Browse recent entries here, or add a new bottle when you want to capture one.",
+                                  className: "mt-1 text-sm text-stone-600"
                                 })
-                          ],
-                          className: "mt-4 grid gap-4 md:grid-cols-2"
+                          ]
                         }),
-                    JsxRuntime.jsxs("div", {
-                          children: [
-                            JsxRuntime.jsxs("label", {
-                                  children: [
-                                    JsxRuntime.jsx("span", {
-                                          children: "Pairing notes",
-                                          className: "mb-2 block text-sm font-medium text-stone-700"
-                                        }),
-                                    JsxRuntime.jsx("textarea", {
-                                          className: "w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-950 outline-none transition focus:border-stone-500",
-                                          rows: 3,
-                                          value: entryForm.pairingNotes,
-                                          onChange: (function ($$event) {
-                                              onEntryFormChange("pairingNotes", $$event.target.value);
-                                            })
-                                        })
-                                  ],
-                                  className: "block"
-                                }),
-                            JsxRuntime.jsxs("label", {
-                                  children: [
-                                    JsxRuntime.jsx("span", {
-                                          children: "Tasting notes",
-                                          className: "mb-2 block text-sm font-medium text-stone-700"
-                                        }),
-                                    JsxRuntime.jsx("textarea", {
-                                          className: "w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-950 outline-none transition focus:border-stone-500",
-                                          rows: 4,
-                                          value: entryForm.tastingNotes,
-                                          onChange: (function ($$event) {
-                                              onEntryFormChange("tastingNotes", $$event.target.value);
-                                            })
-                                        })
-                                  ],
-                                  className: "block"
-                                })
-                          ],
-                          className: "mt-4 grid gap-4"
-                        }),
-                    JsxRuntime.jsxs("div", {
-                          children: [
-                            JsxRuntime.jsx("div", {
-                                  children: JsxRuntime.jsx(TextField.make, {
-                                        label: "Rating",
-                                        value: entryForm.rating,
-                                        onChange: (function (value) {
-                                            onEntryFormChange("rating", value);
-                                          }),
-                                        autoComplete: "off",
-                                        type_: "number"
-                                      }),
-                                  className: "md:w-40"
-                                }),
-                            JsxRuntime.jsx("button", {
-                                  children: entryForm.isSubmitting ? "Saving..." : "Save entry",
-                                  className: "rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400",
-                                  disabled: entryForm.isSubmitting,
-                                  type: "button",
-                                  onClick: (function (param) {
-                                      onCreateEntry();
-                                    })
-                                })
-                          ],
-                          className: "mt-4 flex flex-col gap-4 md:flex-row md:items-end"
-                        }),
-                    message$3 !== undefined ? JsxRuntime.jsx("div", {
-                            children: message$3,
-                            className: "mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
-                          }) : null,
-                    message$4 !== undefined ? JsxRuntime.jsx("div", {
-                            children: message$4,
-                            className: "mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
-                          }) : null
+                    JsxRuntime.jsx("button", {
+                          children: "Add entry",
+                          className: "rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800",
+                          type: "button",
+                          onClick: (function (param) {
+                              onOpenEntryComposer();
+                            })
+                        })
                   ],
-                  className: "mt-6 border-t border-stone-200 pt-6"
-                })
+                  className: "mt-6 flex flex-col gap-3 border-t border-stone-200 pt-6 md:flex-row md:items-center md:justify-between"
+                }),
+            tmp$1
           ],
           className: "mb-6 rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6"
         });
@@ -249,7 +134,7 @@ function AppShell(props) {
                         JsxRuntime.jsxs("div", {
                               children: [
                                 JsxRuntime.jsx("h1", {
-                                      children: "Collections are ready for your first entries.",
+                                      children: "Remember the bottles worth coming back to.",
                                       className: "max-w-xl font-serif text-5xl leading-none tracking-[-0.04em] text-stone-950 md:text-6xl"
                                     }),
                                 JsxRuntime.jsxs("p", {
@@ -259,7 +144,7 @@ function AppShell(props) {
                                               children: props.user.email,
                                               className: "font-semibold text-stone-900"
                                             }),
-                                        ". Capture bottles and notes inside each collection."
+                                        ". Browse your shared history first, then add a new entry when you need it."
                                       ],
                                       className: "mt-6 max-w-xl text-base leading-7 text-stone-700 md:text-lg"
                                     })
@@ -329,7 +214,13 @@ function AppShell(props) {
                               status: props.collectionStatus,
                               selectedCollectionId: Js_null_undefined.fromOption(props.selectedCollectionId),
                               onSelectCollection: props.onSelectCollection
-                            })
+                            }),
+                        props.isEntryComposerOpen ? JsxRuntime.jsx(EntryComposer.make, {
+                                entryForm: props.entryForm,
+                                onEntryFormChange: props.onEntryFormChange,
+                                onCreateEntry: props.onCreateEntry,
+                                onClose: props.onCloseEntryComposer
+                              }) : null
                       ],
                       className: "mt-8"
                     })
