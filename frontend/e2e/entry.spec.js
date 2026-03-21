@@ -13,10 +13,11 @@ test("users can create an entry and see it in history", async ({ page }) => {
   await page.getByLabel("Password").fill("password123")
   await page.getByRole("button", { name: "Create account" }).click()
 
-  await expect(page.getByText(`Signed in as ${email}.`)).toBeVisible()
+  await page.getByRole("button", { name: "Open menu" }).click()
   await page.getByLabel("New collection").fill(collectionName)
   await page.getByRole("button", { name: "Create collection" }).click()
-  await expect(page.getByRole("heading", { name: collectionName })).toBeVisible()
+  await page.getByRole("button", { name: "Open menu" }).click()
+  await expect(page.getByText(`Collection: ${collectionName}`)).toBeVisible()
 
   await page.getByRole("button", { name: "Add wine" }).click()
   await page.getByLabel("Wine name").fill("Tondonia")
