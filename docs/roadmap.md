@@ -334,13 +334,13 @@ Acceptance criteria:
 - browser test can create a collection and see it appear in the UI
 - test runs only against the isolated test stack
 
-## Milestone 3: History and entry capture
+## Milestone 3: Wine browsing, history, and entry capture
 
-Goal: a user can browse collection history and quickly add a new wine-drinking occasion when needed.
+Goal: a user can browse wines within a collection, inspect their prior occasions, and quickly add a new wine-drinking occasion when needed.
 
 Notes:
 
-- treat history as the main collection screen
+- treat wines as the main collection screen
 - keep entry creation easy to reach, but do not make an inline capture form the default primary surface
 
 ### 3.1 Add wine create/reuse backend logic
@@ -382,22 +382,50 @@ Acceptance criteria:
 - non-member access is rejected
 - ordering is deterministic
 
-### 3.4 Add history-first collection screen
+### 3.4 Add collection wines endpoint
 
 Scope:
 
-- make history the primary content for the selected collection
-- show enough summary data for quick browsing
+- create `GET /api/collections/:id/wines`
+- return wines in a collection with enough summary data for browsing
+- include summary metadata needed for sorting and scanning
+
+Acceptance criteria:
+
+- collection member can browse wines for one collection
+- non-member access is rejected
+- response shape makes wine-first UI practical without extra client-side stitching
+
+### 3.5 Add wine-first collection screen
+
+Scope:
+
+- make wines the primary content for the selected collection
+- show enough wine summary data for quick browsing
 - include a clear empty state and a clearly accessible add action
 
 Acceptance criteria:
 
-- user can browse past entries from the main collection screen
-- empty history state is clear
-- the main screen is optimized for browsing rather than inline data entry
+- user can browse wines from the main collection screen
+- empty wine state is clear
+- the main screen is optimized for browsing wines rather than inline data entry
 - add-entry action is easy to find on mobile widths
 
-### 3.5 Add mobile-first entry creation flow
+### 3.6 Add wine detail with related entry history
+
+Scope:
+
+- let the user open a wine from the main wine list
+- show the related entries/occasions for that wine
+- keep wine identity and occasion details visually distinct
+
+Acceptance criteria:
+
+- user can open a wine from the main collection screen
+- user can browse the related occasions for that wine
+- repeated wines are clearly represented as one wine with multiple entries
+
+### 3.7 Add mobile-first entry creation flow
 
 Scope:
 
@@ -405,8 +433,9 @@ Scope:
 - start with essential fields only:
   - wine name
   - producer
+  - grape
   - vintage
-  - consumed date/time
+  - consumed date/time, which defaults to "now"
   - venue/location
   - pairing notes
   - tasting notes
@@ -418,7 +447,7 @@ Acceptance criteria:
 - form handles missing optional wine metadata gracefully
 - success and validation errors are visible in the UI
 
-### 3.6 Add entry detail screen
+### 3.8 Add entry detail screen
 
 Scope:
 
@@ -429,7 +458,7 @@ Acceptance criteria:
 - user can open an entry from history
 - detail screen shows stable wine data separately from occasion data
 
-### 3.7 Add entry editing
+### 3.9 Add entry editing
 
 Scope:
 

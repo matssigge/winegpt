@@ -24,7 +24,8 @@ Users can maintain their own records or share collections with other people such
 The system should make it easy for a user to:
 
 - quickly recall wines they have enjoyed before
-- browse and search past wine entries
+- browse and search wines within a collection
+- open a wine and inspect the occasions when they have had it before
 - compare past experiences with the same wine
 - remember what a wine paired well with
 - quickly log a wine from a mobile device when needed
@@ -35,7 +36,7 @@ The system should make it easy for a user to:
 
 The system should prioritize:
 
-- history browsing and recall over data entry density on the main screen
+- wine browsing and recall over data entry density on the main screen
 - low operational complexity
 - simple deployment
 - fast and reliable everyday use
@@ -52,7 +53,7 @@ Users can create a wine entry with structured and free-form information.
 
 Entry capture should be fast and easy to access, but it is not the primary focus of the main collection screen.
 
-The main collection screen should emphasize browsing history and opening past entries.
+The main collection screen should emphasize browsing wines and then opening their related history.
 
 Creating a new entry should happen through a clearly accessible action such as an add button that opens a dedicated capture flow.
 
@@ -97,17 +98,32 @@ Collections should be easy to create and share with another user.
 
 ---
 
-### Entry history
+### Wine browsing
 
-Users can browse wine entries within a collection.
-
-Entries should be sortable and filterable.
+Users can browse wines within a collection.
 
 This is the central product surface.
 
+The default collection view should help users:
+
+- scan the wines they have recorded before
+- search by producer, wine name, grape, vintage, pairings, or related text
+- open a wine to inspect prior occasions
+- quickly decide whether they are looking at a known wine or need to add a new one
+
+---
+
+### Entry history
+
+Users can browse wine entries within a collection, usually through a selected wine.
+
+Entries should be sortable and filterable.
+
+This is an important supporting surface, not the first thing the user should land on.
+
 Users should be able to:
 
-- quickly scan recent entries
+- open a wine and quickly scan its related entries
 - open an entry to inspect wine details and occasion details
 - search or filter when trying to remember a bottle, producer, pairing, or prior impression
 
@@ -191,15 +207,17 @@ Typical flow:
 1. User wants to remember a wine they had before
 2. User opens the app
 3. User selects a collection
-4. User browses or searches entry history
-5. User opens a matching entry to inspect the wine and occasion details
-6. If the wine is new, the user taps an add action
-7. User records wine details
-8. User adds notes, pairing information, and optionally photos
-9. User saves the entry
-10. Users in the same collection can later view that entry in history
+4. User browses or searches wines in the collection
+5. User opens a matching wine
+6. User inspects the related occasions and notes for that wine
+7. If needed, the user opens a specific entry to inspect the full wine and occasion details
+8. If the wine is new, the user taps an add action
+9. User records wine details
+10. User adds notes, pairing information, and optionally photos
+11. User saves the entry
+12. Users in the same collection can later find that wine again and review its prior occasions
 
-The logging flow should be fast and forgiving, but the default screen should optimize for recall and browsing.
+The logging flow should be fast and forgiving, but the default screen should optimize for finding wines first.
 
 Users may not always know every structured detail about a wine.
 
@@ -250,7 +268,8 @@ Initial version should support:
 - creating wine collections
 - inviting another user to a collection
 - creating wine entries in a collection
-- browsing entry history
+- browsing wines in a collection
+- opening a wine and seeing its entry history
 - opening an entry from history
 - attaching photos
 - basic search/filtering
