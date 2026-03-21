@@ -79,30 +79,35 @@ function App(props) {
   var setWineStatus = match$11[1];
   var wineStatus = match$11[0];
   var match$12 = React.useState(function () {
+        return "";
+      });
+  var setWineQuery = match$12[1];
+  var wineQuery = match$12[0];
+  var match$13 = React.useState(function () {
         
       });
-  var setSelectedWineId = match$12[1];
-  var selectedWineId = match$12[0];
-  var match$13 = React.useState(function () {
+  var setSelectedWineId = match$13[1];
+  var selectedWineId = match$13[0];
+  var match$14 = React.useState(function () {
         return EntryState.initialStatus();
       });
-  var setEntryStatus = match$13[1];
-  var entryStatus = match$13[0];
-  var match$14 = React.useState(function () {
+  var setEntryStatus = match$14[1];
+  var entryStatus = match$14[0];
+  var match$15 = React.useState(function () {
         return EntryState.initialForm;
       });
-  var setEntryForm = match$14[1];
-  var entryForm = match$14[0];
-  var match$15 = React.useState(function () {
-        
-      });
-  var setSelectedEntryId = match$15[1];
-  var selectedEntryId = match$15[0];
+  var setEntryForm = match$15[1];
+  var entryForm = match$15[0];
   var match$16 = React.useState(function () {
         
       });
-  var setEntryComposerMode = match$16[1];
-  var entryComposerMode = match$16[0];
+  var setSelectedEntryId = match$16[1];
+  var selectedEntryId = match$16[0];
+  var match$17 = React.useState(function () {
+        
+      });
+  var setEntryComposerMode = match$17[1];
+  var entryComposerMode = match$17[0];
   React.useEffect((function () {
           var restoredToken = SessionBootstrap.loadSessionToken();
           if (restoredToken !== undefined) {
@@ -133,6 +138,9 @@ function App(props) {
                         });
                     setWineStatus(function (param) {
                           return WineState.initialStatus();
+                        });
+                    setWineQuery(function (param) {
+                          return "";
                         });
                     setSelectedWineId(function (param) {
                           
@@ -166,6 +174,9 @@ function App(props) {
                 });
             setWineStatus(function (param) {
                   return WineState.initialStatus();
+                });
+            setWineQuery(function (param) {
+                  return "";
                 });
             setSelectedWineId(function (param) {
                   
@@ -361,6 +372,9 @@ function App(props) {
     setWineStatus(function (param) {
           return WineState.initialStatus();
         });
+    setWineQuery(function (param) {
+          return "";
+        });
     setSelectedWineId(function (param) {
           
         });
@@ -399,6 +413,9 @@ function App(props) {
                       });
                   setWineStatus(function (param) {
                         return WineState.readyStatus([]);
+                      });
+                  setWineQuery(function (param) {
+                        return "";
                       });
                   setSelectedWineId(function (param) {
                         
@@ -439,6 +456,9 @@ function App(props) {
     setInviteForm(function (param) {
           return CollectionInvite.initialForm;
         });
+    setWineQuery(function (param) {
+          return "";
+        });
     setSelectedWineId(function (param) {
           
         });
@@ -453,13 +473,15 @@ function App(props) {
         });
   };
   var selectedCollection = CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId);
+  var visibleWineStatus = WineState.filterStatus(wineStatus, wineQuery);
+  var visibleWines = WineState.wines(visibleWineStatus);
   var selectedWine = Belt_Option.flatMap(selectedWineId, (function (wineId) {
-          return Belt_Array.getBy(WineState.wines(wineStatus), (function (summary) {
+          return Belt_Array.getBy(visibleWines, (function (summary) {
                         return summary.wine.id === wineId;
                       }));
         }));
-  var filteredEntries = selectedWineId !== undefined ? Belt_Array.keep(EntryState.entries(entryStatus), (function (entry) {
-            return entry.wine.id === selectedWineId;
+  var filteredEntries = selectedWine !== undefined ? Belt_Array.keep(EntryState.entries(entryStatus), (function (entry) {
+            return entry.wine.id === selectedWine.wine.id;
           })) : [];
   var visibleEntryStatus;
   visibleEntryStatus = typeof entryStatus !== "object" ? (
@@ -520,6 +542,25 @@ function App(props) {
         sessionToken,
         collectionStatus,
         selectedCollectionId
+      ]);
+  React.useEffect((function () {
+          if (WineState.isReady(visibleWineStatus)) {
+            setSelectedWineId(function (current) {
+                  if (current !== undefined && Belt_Array.some(visibleWines, (function (summary) {
+                            return summary.wine.id === current;
+                          }))) {
+                    return current;
+                  }
+                  return Belt_Option.map(Belt_Array.get(visibleWines, 0), (function (summary) {
+                                return summary.wine.id;
+                              }));
+                });
+          }
+          
+        }), [
+        wineStatus,
+        selectedCollectionId,
+        wineQuery
       ]);
   React.useEffect((function () {
           var exit = 0;
@@ -686,6 +727,11 @@ function App(props) {
           return wineId;
         });
   };
+  var handleWineQueryChange = function (query) {
+    setWineQuery(function (param) {
+          return query;
+        });
+  };
   var openEntryComposer = function () {
     setEntryForm(function (param) {
           return EntryState.initialForm;
@@ -734,8 +780,10 @@ function App(props) {
           selectedCollection: selectedCollection,
           selectedCollectionId: selectedCollectionId,
           inviteForm: inviteForm,
-          wineStatus: wineStatus,
+          wineStatus: visibleWineStatus,
+          wineQuery: wineQuery,
           selectedWine: selectedWine,
+          totalWineCount: WineState.wines(wineStatus).length,
           selectedWineId: selectedWineId,
           entryStatus: visibleEntryStatus,
           entryForm: entryForm,
@@ -752,6 +800,7 @@ function App(props) {
           onOpenEntryComposer: openEntryComposer,
           onCloseEntryComposer: closeEntryComposer,
           onSelectWine: handleSelectWine,
+          onWineQueryChange: handleWineQueryChange,
           onSelectEntry: handleSelectEntry,
           onSelectCollection: handleSelectCollection,
           onLogout: handleLogout

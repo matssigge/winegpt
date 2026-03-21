@@ -22,8 +22,11 @@ let wineMeta = (summary: WineModel.summary) => {
 @react.component
 let make = (
   ~status,
+  ~wineQuery: string,
+  ~totalWineCount: int,
   ~selectedWineId: option<int>,
   ~onSelectWine: int => unit,
+  ~onWineQueryChange: string => unit,
 ) =>
   switch status {
   | WineState.Idle =>
@@ -46,18 +49,55 @@ let make = (
   | WineState.Ready(wines) =>
     if Belt.Array.length(wines) == 0 {
       <section className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6">
-        <h3 className="text-lg font-semibold text-stone-950"> {React.string("Wines")} </h3>
-        <p className="mt-2 text-sm leading-6 text-stone-600">
-          {React.string("No wines yet. Add the first bottle you want to remember in this collection.")}
-        </p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-stone-950"> {React.string("Wines")} </h3>
+            <p className="mt-2 text-sm leading-6 text-stone-600">
+              {React.string(
+                 if totalWineCount == 0 {
+                   "No wines yet. Add the first bottle you want to remember in this collection."
+                 } else {
+                   "No wines match this search yet. Try a different name, producer, grape, or vintage."
+                 },
+               )}
+            </p>
+          </div>
+          <div className="w-full md:w-72">
+            <TextField
+              label="Search wines"
+              value=wineQuery
+              onChange=onWineQueryChange
+              autoComplete="off"
+            />
+          </div>
+        </div>
       </section>
     } else {
       <section className="rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
-        <div className="flex items-center justify-between gap-4">
-          <h3 className="text-lg font-semibold text-stone-950"> {React.string("Wines")} </h3>
-          <span className="rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600">
-            {React.string(Belt.Array.length(wines)->Belt.Int.toString ++ " wines")}
-          </span>
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="flex items-center gap-4">
+            <h3 className="text-lg font-semibold text-stone-950"> {React.string("Wines")} </h3>
+            <span className="rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600">
+              {React.string(
+                 if wineQuery->String.trim == "" {
+                   Belt.Array.length(wines)->Belt.Int.toString ++ " wines"
+                 } else {
+                   Belt.Array.length(wines)->Belt.Int.toString ++
+                   " of " ++
+                   totalWineCount->Belt.Int.toString ++
+                   " wines"
+                 },
+               )}
+            </span>
+          </div>
+          <div className="w-full md:w-72">
+            <TextField
+              label="Search wines"
+              value=wineQuery
+              onChange=onWineQueryChange
+              autoComplete="off"
+            />
+          </div>
         </div>
         <ul className="mt-4 space-y-3">
           {wines

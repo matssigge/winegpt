@@ -352,8 +352,11 @@ function AppShell(props) {
                         JsxRuntime.jsx("div", {
                               children: JsxRuntime.jsx(WineList.make, {
                                     status: props.wineStatus,
+                                    wineQuery: props.wineQuery,
+                                    totalWineCount: props.totalWineCount,
                                     selectedWineId: props.selectedWineId,
-                                    onSelectWine: props.onSelectWine
+                                    onSelectWine: props.onSelectWine,
+                                    onWineQueryChange: props.onWineQueryChange
                                   }),
                               className: "mb-6"
                             }),
