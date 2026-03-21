@@ -120,9 +120,9 @@ function WineComposer(props) {
                               className: "mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
                             }) : null
                     ],
-                    className: "max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] border border-stone-900/10 bg-white p-6 shadow-[0_24px_80px_rgba(81,46,23,0.2)] md:p-8"
+                    className: "mx-auto w-full max-w-2xl rounded-[2rem] border border-stone-900/10 bg-white p-6 shadow-[0_24px_80px_rgba(81,46,23,0.2)] md:p-8"
                   }),
-              className: "fixed inset-0 z-50 flex items-end justify-center bg-stone-950/40 p-4 md:items-center"
+              className: "fixed inset-0 z-50 overflow-y-auto bg-stone-950/40 px-4 py-4 md:px-6 md:py-10"
             });
 }
 

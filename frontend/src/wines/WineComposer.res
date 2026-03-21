@@ -13,8 +13,8 @@ let make = (
     | Create => ("Add wine", "Remember a wine", "Save wine", "Saving...")
     }
 
-  <div className="fixed inset-0 z-50 flex items-end justify-center bg-stone-950/40 p-4 md:items-center">
-    <section className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] border border-stone-900/10 bg-white p-6 shadow-[0_24px_80px_rgba(81,46,23,0.2)] md:p-8">
+  <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/40 px-4 py-4 md:px-6 md:py-10">
+    <section className="mx-auto w-full max-w-2xl rounded-[2rem] border border-stone-900/10 bg-white p-6 shadow-[0_24px_80px_rgba(81,46,23,0.2)] md:p-8">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-stone-500">
