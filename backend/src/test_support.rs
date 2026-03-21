@@ -17,6 +17,10 @@ pub async fn test_database() -> PgPool {
         .execute(&database)
         .await
         .expect("wine entries should be cleared");
+    sqlx::query("DELETE FROM collection_wines")
+        .execute(&database)
+        .await
+        .expect("collection wines should be cleared");
     sqlx::query("DELETE FROM wines")
         .execute(&database)
         .await
