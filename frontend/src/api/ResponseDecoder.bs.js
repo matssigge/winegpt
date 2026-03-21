@@ -231,6 +231,38 @@ function entries(json) {
   
 }
 
+function wineSummary(json) {
+  var object_ = Js_json.decodeObject(json);
+  if (object_ === undefined) {
+    return ;
+  }
+  var match = Belt_Option.flatMap(Js_dict.get(object_, "wine"), wine);
+  var match$1 = intField(object_, "entry_count");
+  var match$2 = stringField(object_, "last_consumed_at");
+  if (match !== undefined && match$1 !== undefined && match$2 !== undefined) {
+    return {
+            wine: match,
+            entryCount: match$1,
+            lastConsumedAt: match$2
+          };
+  }
+  
+}
+
+function wineSummaries(json) {
+  var items = Js_json.decodeArray(json);
+  if (items !== undefined) {
+    return Belt_Array.reduce(items, [], (function (decoded, item) {
+                  var match = wineSummary(item);
+                  if (decoded !== undefined && match !== undefined) {
+                    return Belt_Array.concat(decoded, [match]);
+                  }
+                  
+                }));
+  }
+  
+}
+
 export {
   parse ,
   asObject ,
@@ -249,5 +281,7 @@ export {
   wine ,
   entry ,
   entries ,
+  wineSummary ,
+  wineSummaries ,
 }
 /* No side effect */

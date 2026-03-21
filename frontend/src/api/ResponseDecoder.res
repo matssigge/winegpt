@@ -214,3 +214,34 @@ let entries = json =>
     )
   | None => None
   }
+
+let wineSummary = json =>
+  switch json->asObject {
+  | Some(object_) =>
+    switch (
+      object_->field("wine")->Belt.Option.flatMap(wine),
+      object_->intField("entry_count"),
+      object_->stringField("last_consumed_at"),
+    ) {
+    | (Some(wine), Some(entryCount), Some(lastConsumedAt)) =>
+      Some({
+        wine: wine,
+        entryCount: entryCount,
+        lastConsumedAt: lastConsumedAt,
+      }: WineModel.summary)
+    | _ => None
+    }
+  | None => None
+  }
+
+let wineSummaries = json =>
+  switch json->Js.Json.decodeArray {
+  | Some(items) =>
+    Belt.Array.reduce(items, Some([]), (decoded, item) =>
+      switch (decoded, item->wineSummary) {
+      | (Some(wines), Some(wineSummary)) => Some(Belt.Array.concat(wines, [wineSummary]))
+      | _ => None
+      }
+    )
+  | None => None
+  }
