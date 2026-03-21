@@ -399,6 +399,29 @@ function formFromEntry(entry) {
         };
 }
 
+function formFromWineSummary(summary) {
+  return {
+          wineName: summary.wine.name,
+          producer: Belt_Option.getWithDefault(summary.wine.producer, ""),
+          style: Belt_Option.getWithDefault(summary.wine.style, ""),
+          grape: Belt_Option.getWithDefault(summary.wine.grape, ""),
+          region: Belt_Option.getWithDefault(summary.wine.region, ""),
+          country: Belt_Option.getWithDefault(summary.wine.country, ""),
+          vintage: Belt_Option.getWithDefault(Belt_Option.map(summary.wine.vintage, (function (prim) {
+                      return String(prim);
+                    })), ""),
+          consumedAt: "",
+          venueName: "",
+          locationText: "",
+          pairingNotes: "",
+          tastingNotes: "",
+          rating: "",
+          isSubmitting: false,
+          error: undefined,
+          success: undefined
+        };
+}
+
 function entries(status) {
   if (typeof status !== "object") {
     return [];
@@ -583,6 +606,7 @@ export {
   padTwo ,
   toDateTimeLocalValue ,
   formFromEntry ,
+  formFromWineSummary ,
   entries ,
   selectedEntry ,
   resolveSelectedEntryId ,

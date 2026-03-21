@@ -818,7 +818,11 @@ function App(props) {
   };
   var openEntryComposer = function () {
     setEntryForm(function (param) {
-          return EntryState.initialForm;
+          if (selectedWine !== undefined) {
+            return EntryState.formFromWineSummary(selectedWine);
+          } else {
+            return EntryState.initialForm;
+          }
         });
     setEntryComposerMode(function (param) {
           return "CreateEntry";

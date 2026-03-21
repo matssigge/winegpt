@@ -145,6 +145,25 @@ let formFromEntry = (entry: entry) => {
   success: None,
 }
 
+let formFromWineSummary = (summary: WineModel.summary) => {
+  wineName: summary.wine.name,
+  producer: summary.wine.producer->Belt.Option.getWithDefault(""),
+  style: summary.wine.style->Belt.Option.getWithDefault(""),
+  grape: summary.wine.grape->Belt.Option.getWithDefault(""),
+  region: summary.wine.region->Belt.Option.getWithDefault(""),
+  country: summary.wine.country->Belt.Option.getWithDefault(""),
+  vintage: summary.wine.vintage->Belt.Option.map(Belt.Int.toString)->Belt.Option.getWithDefault(""),
+  consumedAt: "",
+  venueName: "",
+  locationText: "",
+  pairingNotes: "",
+  tastingNotes: "",
+  rating: "",
+  isSubmitting: false,
+  error: None,
+  success: None,
+}
+
 let entries = status =>
   switch status {
   | Ready(entries) => entries

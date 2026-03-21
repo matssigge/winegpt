@@ -487,7 +487,12 @@ let make = () => {
   }
 
   let openEntryComposer = () => {
-    setEntryForm(_ => EntryState.initialForm)
+    setEntryForm(_ =>
+      switch selectedWine {
+      | Some(summary) => EntryState.formFromWineSummary(summary)
+      | None => EntryState.initialForm
+      }
+    )
     setEntryComposerMode(_ => Some(CreateEntry))
     setWineComposerMode(_ => None)
   }
