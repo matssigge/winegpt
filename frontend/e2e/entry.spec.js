@@ -33,6 +33,12 @@ test("users can create an entry and see it in history", async ({ page }) => {
   await expect(page.getByText("No occasions recorded yet for Lopez de Heredia Tondonia.")).toBeVisible()
 
   await page.getByRole("button", { name: "Add entry" }).click()
+  await expect(page.getByLabel("Wine name")).toHaveValue("Tondonia")
+  await expect(page.getByLabel("Producer")).toHaveValue("Lopez de Heredia")
+  await expect(page.getByLabel("Grape")).toHaveValue("Tempranillo")
+  await page.getByRole("button", { name: "Close" }).click()
+
+  await page.getByRole("button", { name: "Add entry" }).click()
   await page.getByLabel("Wine name").fill("Taganan")
   await page.getByLabel("Producer").fill("Envinate")
   await page.getByLabel("Style").fill("Red")
