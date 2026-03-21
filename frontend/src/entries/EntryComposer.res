@@ -52,6 +52,12 @@ let make = (
           autoComplete="organization"
         />
         <TextField
+          label="Grape"
+          value=entryForm.grape
+          onChange={value => onEntryFormChange(. "grape", value)}
+          autoComplete="off"
+        />
+        <TextField
           label="Vintage"
           type_="number"
           value=entryForm.vintage
