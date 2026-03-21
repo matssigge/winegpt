@@ -41,3 +41,11 @@ let describeEntryError = error =>
   }
 
 let describeEntryHistoryError = () => "Could not load collection history. Try refreshing."
+
+let describeWineError = error =>
+  switch error->message {
+  | "invalid_wine_name" => "Enter a wine name."
+  | "invalid_wine_vintage" => "Vintage must be a year between 1900 and 2100."
+  | "forbidden" => "You no longer have access to this collection."
+  | _ => "Could not save the wine. Try again."
+  }

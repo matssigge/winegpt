@@ -10,6 +10,7 @@ import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as EntryState from "./entries/EntryState.bs.js";
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
 import * as Js_promise2 from "rescript/lib/es6/js_promise2.js";
+import * as WineCapture from "./wines/WineCapture.bs.js";
 import * as AuthAppSupport from "./auth/AuthAppSupport.bs.js";
 import * as SessionStorage from "./auth/SessionStorage.bs.js";
 import * as CollectionModel from "./collections/CollectionModel.bs.js";
@@ -79,35 +80,45 @@ function App(props) {
   var setWineStatus = match$11[1];
   var wineStatus = match$11[0];
   var match$12 = React.useState(function () {
+        return WineCapture.initialForm;
+      });
+  var setWineForm = match$12[1];
+  var wineForm = match$12[0];
+  var match$13 = React.useState(function () {
         return "";
       });
-  var setWineQuery = match$12[1];
-  var wineQuery = match$12[0];
-  var match$13 = React.useState(function () {
+  var setWineQuery = match$13[1];
+  var wineQuery = match$13[0];
+  var match$14 = React.useState(function () {
         
       });
-  var setSelectedWineId = match$13[1];
-  var selectedWineId = match$13[0];
-  var match$14 = React.useState(function () {
+  var setSelectedWineId = match$14[1];
+  var selectedWineId = match$14[0];
+  var match$15 = React.useState(function () {
         return EntryState.initialStatus();
       });
-  var setEntryStatus = match$14[1];
-  var entryStatus = match$14[0];
-  var match$15 = React.useState(function () {
+  var setEntryStatus = match$15[1];
+  var entryStatus = match$15[0];
+  var match$16 = React.useState(function () {
         return EntryState.initialForm;
       });
-  var setEntryForm = match$15[1];
-  var entryForm = match$15[0];
-  var match$16 = React.useState(function () {
-        
-      });
-  var setSelectedEntryId = match$16[1];
-  var selectedEntryId = match$16[0];
+  var setEntryForm = match$16[1];
+  var entryForm = match$16[0];
   var match$17 = React.useState(function () {
         
       });
-  var setEntryComposerMode = match$17[1];
-  var entryComposerMode = match$17[0];
+  var setSelectedEntryId = match$17[1];
+  var selectedEntryId = match$17[0];
+  var match$18 = React.useState(function () {
+        
+      });
+  var setWineComposerMode = match$18[1];
+  var wineComposerMode = match$18[0];
+  var match$19 = React.useState(function () {
+        
+      });
+  var setEntryComposerMode = match$19[1];
+  var entryComposerMode = match$19[0];
   React.useEffect((function () {
           var restoredToken = SessionBootstrap.loadSessionToken();
           if (restoredToken !== undefined) {
@@ -139,6 +150,9 @@ function App(props) {
                     setWineStatus(function (param) {
                           return WineState.initialStatus();
                         });
+                    setWineForm(function (param) {
+                          return WineCapture.initialForm;
+                        });
                     setWineQuery(function (param) {
                           return "";
                         });
@@ -152,6 +166,9 @@ function App(props) {
                           return EntryState.initialForm;
                         });
                     setSelectedEntryId(function (param) {
+                          
+                        });
+                    setWineComposerMode(function (param) {
                           
                         });
                     setEntryComposerMode(function (param) {
@@ -175,6 +192,9 @@ function App(props) {
             setWineStatus(function (param) {
                   return WineState.initialStatus();
                 });
+            setWineForm(function (param) {
+                  return WineCapture.initialForm;
+                });
             setWineQuery(function (param) {
                   return "";
                 });
@@ -188,6 +208,9 @@ function App(props) {
                   return EntryState.initialForm;
                 });
             setSelectedEntryId(function (param) {
+                  
+                });
+            setWineComposerMode(function (param) {
                   
                 });
             setEntryComposerMode(function (param) {
@@ -228,6 +251,9 @@ function App(props) {
             setWineStatus(function (param) {
                   return WineState.initialStatus();
                 });
+            setWineForm(function (param) {
+                  return WineCapture.initialForm;
+                });
             setSelectedWineId(function (param) {
                   
                 });
@@ -235,6 +261,9 @@ function App(props) {
                   return EntryState.initialStatus();
                 });
             setSelectedEntryId(function (param) {
+                  
+                });
+            setWineComposerMode(function (param) {
                   
                 });
             setEntryComposerMode(function (param) {
@@ -305,6 +334,11 @@ function App(props) {
           return EntryState.updateForm(current, field, value);
         });
   };
+  var updateWineForm = function (field, value) {
+    setWineForm(function (current) {
+          return WineCapture.updateForm(current, field, value);
+        });
+  };
   var handleSubmit = function ($$event) {
     $$event.preventDefault();
     setIsSubmitting(function (param) {
@@ -372,6 +406,9 @@ function App(props) {
     setWineStatus(function (param) {
           return WineState.initialStatus();
         });
+    setWineForm(function (param) {
+          return WineCapture.initialForm;
+        });
     setWineQuery(function (param) {
           return "";
         });
@@ -385,6 +422,9 @@ function App(props) {
           return EntryState.initialForm;
         });
     setSelectedEntryId(function (param) {
+          
+        });
+    setWineComposerMode(function (param) {
           
         });
     setEntryComposerMode(function (param) {
@@ -414,6 +454,9 @@ function App(props) {
                   setWineStatus(function (param) {
                         return WineState.readyStatus([]);
                       });
+                  setWineForm(function (param) {
+                        return WineCapture.initialForm;
+                      });
                   setWineQuery(function (param) {
                         return "";
                       });
@@ -424,6 +467,9 @@ function App(props) {
                         return EntryState.initialForm;
                       });
                   setSelectedEntryId(function (param) {
+                        
+                      });
+                  setWineComposerMode(function (param) {
                         
                       });
                   setEntryComposerMode(function (param) {
@@ -462,10 +508,16 @@ function App(props) {
     setSelectedWineId(function (param) {
           
         });
+    setWineForm(function (param) {
+          return WineCapture.initialForm;
+        });
     setEntryForm(function (param) {
           return EntryState.initialForm;
         });
     setSelectedEntryId(function (param) {
+          
+        });
+    setWineComposerMode(function (param) {
           
         });
     setEntryComposerMode(function (param) {
@@ -717,6 +769,38 @@ function App(props) {
     }
     
   };
+  var handleCreateWine = function () {
+    if (sessionToken !== undefined && selectedCollection !== undefined && wineComposerMode !== undefined && !wineForm.isSubmitting) {
+      setWineForm(function (current) {
+            return WineCapture.startSubmitting(current);
+          });
+      Js_promise2.$$catch(Js_promise2.then(WineCapture.createWine(sessionToken, selectedCollection.id, wineForm), (function (summary) {
+                  Js_promise2.then(WineState.listWines(sessionToken, selectedCollection.id), (function (wines) {
+                          setWineStatus(function (param) {
+                                return WineState.readyStatus(wines);
+                              });
+                          setSelectedWineId(function (param) {
+                                return summary.wine.id;
+                              });
+                          return Promise.resolve();
+                        }));
+                  setWineForm(function (param) {
+                        return WineCapture.initialForm;
+                      });
+                  setWineComposerMode(function (param) {
+                        
+                      });
+                  return Promise.resolve();
+                })), (function (reason) {
+              setWineForm(function (current) {
+                    return WineCapture.failForm(current, AuthAppSupport.describeWineError(reason));
+                  });
+              return Promise.resolve();
+            }));
+      return ;
+    }
+    
+  };
   var handleSelectEntry = function (entryId) {
     setSelectedEntryId(function (param) {
           return entryId;
@@ -738,6 +822,20 @@ function App(props) {
         });
     setEntryComposerMode(function (param) {
           return "CreateEntry";
+        });
+    setWineComposerMode(function (param) {
+          
+        });
+  };
+  var openWineComposer = function () {
+    setWineForm(function (param) {
+          return WineCapture.initialForm;
+        });
+    setWineComposerMode(function (param) {
+          return "Create";
+        });
+    setEntryComposerMode(function (param) {
+          
         });
   };
   var openEntryEditor = function () {
@@ -762,6 +860,14 @@ function App(props) {
           
         });
   };
+  var closeWineComposer = function () {
+    setWineForm(function (param) {
+          return WineCapture.initialForm;
+        });
+    setWineComposerMode(function (param) {
+          
+        });
+  };
   var tmp;
   if (match$4[0]) {
     tmp = JsxRuntime.jsx("section", {
@@ -781,6 +887,7 @@ function App(props) {
           selectedCollectionId: selectedCollectionId,
           inviteForm: inviteForm,
           wineStatus: visibleWineStatus,
+          wineForm: wineForm,
           wineQuery: wineQuery,
           selectedWine: selectedWine,
           totalWineCount: WineState.wines(wineStatus).length,
@@ -788,6 +895,7 @@ function App(props) {
           entryStatus: visibleEntryStatus,
           entryForm: entryForm,
           entryComposerMode: tmp$1,
+          wineComposerMode: wineComposerMode,
           selectedEntry: selectedEntry,
           selectedEntryId: selectedEntryId,
           onCollectionFormChange: updateCollectionForm,
@@ -795,9 +903,13 @@ function App(props) {
           onInviteFormChange: updateInviteForm,
           onInvite: handleInvite,
           onEntryFormChange: updateEntryForm,
+          onWineFormChange: updateWineForm,
+          onCreateWine: handleCreateWine,
           onCreateEntry: handleCreateEntry,
+          onOpenWineComposer: openWineComposer,
           onEditEntry: openEntryEditor,
           onOpenEntryComposer: openEntryComposer,
+          onCloseWineComposer: closeWineComposer,
           onCloseEntryComposer: closeEntryComposer,
           onSelectWine: handleSelectWine,
           onWineQueryChange: handleWineQueryChange,

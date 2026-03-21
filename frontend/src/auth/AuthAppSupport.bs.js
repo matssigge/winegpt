@@ -68,6 +68,20 @@ function describeEntryHistoryError() {
   return "Could not load collection history. Try refreshing.";
 }
 
+function describeWineError(error) {
+  var match = error.message;
+  switch (match) {
+    case "forbidden" :
+        return "You no longer have access to this collection.";
+    case "invalid_wine_name" :
+        return "Enter a wine name.";
+    case "invalid_wine_vintage" :
+        return "Vintage must be a year between 1900 and 2100.";
+    default:
+      return "Could not save the wine. Try again.";
+  }
+}
+
 export {
   describeError ,
   describeCollectionError ,
@@ -75,5 +89,6 @@ export {
   describeInviteError ,
   describeEntryError ,
   describeEntryHistoryError ,
+  describeWineError ,
 }
 /* No side effect */

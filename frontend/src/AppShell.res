@@ -7,6 +7,7 @@ let make = (
   ~selectedCollectionId: option<int>,
   ~inviteForm: CollectionInvite.form,
   ~wineStatus: WineState.status,
+  ~wineForm: WineCapture.form,
   ~wineQuery: string,
   ~selectedWine: option<WineModel.summary>,
   ~totalWineCount: int,
@@ -14,6 +15,7 @@ let make = (
   ~entryStatus: EntryState.status,
   ~entryForm: EntryState.form,
   ~entryComposerMode: option<EntryComposer.mode>,
+  ~wineComposerMode: option<WineComposer.mode>,
   ~selectedEntry: option<EntryModel.entry>,
   ~selectedEntryId: option<int>,
   ~onCollectionFormChange: string => unit,
@@ -21,9 +23,13 @@ let make = (
   ~onInviteFormChange: string => unit,
   ~onInvite: unit => unit,
   ~onEntryFormChange: (. string, string) => unit,
+  ~onWineFormChange: (. string, string) => unit,
+  ~onCreateWine: unit => unit,
   ~onCreateEntry: unit => unit,
+  ~onOpenWineComposer: unit => unit,
   ~onEditEntry: unit => unit,
   ~onOpenEntryComposer: unit => unit,
+  ~onCloseWineComposer: unit => unit,
   ~onCloseEntryComposer: unit => unit,
   ~onSelectWine: int => unit,
   ~onWineQueryChange: string => unit,
@@ -115,6 +121,12 @@ let make = (
                  }}
                 <button
                   type_="button"
+                  onClick={_ => onOpenWineComposer()}
+                  className="rounded-2xl border border-stone-300 px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950">
+                  {React.string("Add wine")}
+                </button>
+                <button
+                  type_="button"
                   onClick={_ => onOpenEntryComposer()}
                   className="rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800">
                   {React.string("Add entry")}
@@ -195,6 +207,17 @@ let make = (
            onEntryFormChange
            onSubmit=onCreateEntry
            onClose=onCloseEntryComposer
+         />
+       | None => React.null
+       }}
+      {switch wineComposerMode {
+       | Some(mode) =>
+         <WineComposer
+           mode
+           wineForm
+           onWineFormChange
+           onSubmit=onCreateWine
+           onClose=onCloseWineComposer
          />
        | None => React.null
        }}

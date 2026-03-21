@@ -4,6 +4,7 @@ import * as React from "react";
 import * as WineList from "./wines/WineList.bs.js";
 import * as TextField from "./ui/TextField.bs.js";
 import * as WineDetail from "./wines/WineDetail.bs.js";
+import * as WineComposer from "./wines/WineComposer.bs.js";
 import * as EntryComposer from "./entries/EntryComposer.bs.js";
 import * as CollectionList from "./collections/CollectionList.bs.js";
 import * as CollectionModel from "./collections/CollectionModel.bs.js";
@@ -13,8 +14,10 @@ import * as JsxRuntime from "react/jsx-runtime";
 function AppShell(props) {
   var onLogout = props.onLogout;
   var onOpenEntryComposer = props.onOpenEntryComposer;
+  var onOpenWineComposer = props.onOpenWineComposer;
   var onInvite = props.onInvite;
   var onCreateCollection = props.onCreateCollection;
+  var wineComposerMode = props.wineComposerMode;
   var entryComposerMode = props.entryComposerMode;
   var inviteForm = props.inviteForm;
   var selectedCollection = props.selectedCollection;
@@ -108,6 +111,14 @@ function AppShell(props) {
                                             });
                                       })
                                   }) : null,
+                            JsxRuntime.jsx("button", {
+                                  children: "Add wine",
+                                  className: "rounded-2xl border border-stone-300 px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950",
+                                  type: "button",
+                                  onClick: (function (param) {
+                                      onOpenWineComposer();
+                                    })
+                                }),
                             JsxRuntime.jsx("button", {
                                   children: "Add entry",
                                   className: "rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800",
@@ -238,6 +249,13 @@ function AppShell(props) {
                                 onEntryFormChange: props.onEntryFormChange,
                                 onSubmit: props.onCreateEntry,
                                 onClose: props.onCloseEntryComposer
+                              }) : null,
+                        wineComposerMode !== undefined ? JsxRuntime.jsx(WineComposer.make, {
+                                mode: wineComposerMode,
+                                wineForm: props.wineForm,
+                                onWineFormChange: props.onWineFormChange,
+                                onSubmit: props.onCreateWine,
+                                onClose: props.onCloseWineComposer
                               }) : null
                       ],
                       className: "mt-8"
