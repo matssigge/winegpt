@@ -8,6 +8,7 @@ let make = (
   ~inviteForm: CollectionInvite.form,
   ~wineStatus: WineState.status,
   ~wineForm: WineCapture.form,
+  ~wineOccasionFilter: WineState.occasionFilter,
   ~wineQuery: string,
   ~selectedWine: option<WineModel.summary>,
   ~totalWineCount: int,
@@ -34,6 +35,7 @@ let make = (
   ~onCloseWineComposer: unit => unit,
   ~onCloseEntryComposer: unit => unit,
   ~onSelectWine: int => unit,
+  ~onSelectOccasionFilter: WineState.occasionFilter => unit,
   ~onWineQueryChange: string => unit,
   ~onSelectEntry: int => unit,
   ~onSelectCollection: int => unit,
@@ -184,7 +186,16 @@ let make = (
         }}
       </div>
       <div className="mb-6">
-        <WineList status=wineStatus wineQuery totalWineCount selectedWineId onSelectWine onWineQueryChange />
+        <WineList
+          status=wineStatus
+          wineQuery
+          occasionFilter=wineOccasionFilter
+          totalWineCount
+          selectedWineId
+          onSelectWine
+          onSelectOccasionFilter
+          onWineQueryChange
+        />
       </div>
       <div className="mb-6">
         <WineDetail

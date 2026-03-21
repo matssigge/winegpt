@@ -221,9 +221,11 @@ function AppShell(props) {
                               children: JsxRuntime.jsx(WineList.make, {
                                     status: props.wineStatus,
                                     wineQuery: props.wineQuery,
+                                    occasionFilter: props.wineOccasionFilter,
                                     totalWineCount: props.totalWineCount,
                                     selectedWineId: props.selectedWineId,
                                     onSelectWine: props.onSelectWine,
+                                    onSelectOccasionFilter: props.onSelectOccasionFilter,
                                     onWineQueryChange: props.onWineQueryChange
                                   }),
                               className: "mb-6"

@@ -61,18 +61,31 @@ function searchableText(summary) {
                   })).join(" ").toLowerCase();
 }
 
-function filterWines(wines, query) {
-  var normalizedQuery = $$String.trim(query).toLowerCase();
-  if (normalizedQuery === "") {
-    return wines;
-  } else {
-    return Belt_Array.keep(wines, (function (summary) {
-                  return searchableText(summary).includes(normalizedQuery);
-                }));
+function matchesOccasionFilter(summary, occasionFilter) {
+  switch (occasionFilter) {
+    case "All" :
+        return true;
+    case "WithOccasions" :
+        return summary.entryCount > 0;
+    case "WithoutOccasions" :
+        return summary.entryCount === 0;
+    
   }
 }
 
-function filterStatus(status, query) {
+function filterWines(wines, query, occasionFilter) {
+  var normalizedQuery = $$String.trim(query).toLowerCase();
+  return Belt_Array.keep(wines, (function (summary) {
+                var matchesQuery = normalizedQuery === "" ? true : searchableText(summary).includes(normalizedQuery);
+                if (matchesQuery) {
+                  return matchesOccasionFilter(summary, occasionFilter);
+                } else {
+                  return false;
+                }
+              }));
+}
+
+function filterStatus(status, query, occasionFilter) {
   if (typeof status !== "object") {
     if (status === "Idle") {
       return "Idle";
@@ -82,7 +95,7 @@ function filterStatus(status, query) {
   } else if (status.TAG === "Ready") {
     return {
             TAG: "Ready",
-            _0: filterWines(status._0, query)
+            _0: filterWines(status._0, query, occasionFilter)
           };
   } else {
     return {
@@ -103,14 +116,18 @@ function listWines(token, collectionId) {
               }));
 }
 
+var initialOccasionFilter = "All";
+
 export {
   initialStatus ,
   loadingStatus ,
   readyStatus ,
   errorStatus ,
+  initialOccasionFilter ,
   wines ,
   isReady ,
   searchableText ,
+  matchesOccasionFilter ,
   filterWines ,
   filterStatus ,
   listWines ,

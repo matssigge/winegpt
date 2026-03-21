@@ -28,11 +28,21 @@ function wineMeta(summary) {
   return segments.join(" · ");
 }
 
+function shouldShowFilteredCount(wineQuery, occasionFilter) {
+  if ($$String.trim(wineQuery) !== "") {
+    return true;
+  } else {
+    return occasionFilter !== "All";
+  }
+}
+
 function WineList(props) {
   var onWineQueryChange = props.onWineQueryChange;
+  var onSelectOccasionFilter = props.onSelectOccasionFilter;
   var onSelectWine = props.onSelectWine;
   var selectedWineId = props.selectedWineId;
   var totalWineCount = props.totalWineCount;
+  var occasionFilter = props.occasionFilter;
   var wineQuery = props.wineQuery;
   var status = props.status;
   if (typeof status !== "object") {
@@ -106,6 +116,35 @@ function WineList(props) {
                                     autoComplete: "off"
                                   }),
                               className: "w-full md:w-72"
+                            }),
+                        JsxRuntime.jsxs("div", {
+                              children: [
+                                JsxRuntime.jsx("button", {
+                                      children: "All",
+                                      className: occasionFilter === "All" ? "rounded-full bg-stone-950 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white" : "rounded-full border border-stone-300 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition hover:border-stone-500 hover:text-stone-950",
+                                      type: "button",
+                                      onClick: (function (param) {
+                                          onSelectOccasionFilter("All");
+                                        })
+                                    }),
+                                JsxRuntime.jsx("button", {
+                                      children: "With occasions",
+                                      className: occasionFilter === "WithOccasions" ? "rounded-full bg-stone-950 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white" : "rounded-full border border-stone-300 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition hover:border-stone-500 hover:text-stone-950",
+                                      type: "button",
+                                      onClick: (function (param) {
+                                          onSelectOccasionFilter("WithOccasions");
+                                        })
+                                    }),
+                                JsxRuntime.jsx("button", {
+                                      children: "No occasions yet",
+                                      className: occasionFilter === "WithoutOccasions" ? "rounded-full bg-stone-950 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white" : "rounded-full border border-stone-300 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition hover:border-stone-500 hover:text-stone-950",
+                                      type: "button",
+                                      onClick: (function (param) {
+                                          onSelectOccasionFilter("WithoutOccasions");
+                                        })
+                                    })
+                              ],
+                              className: "flex flex-wrap gap-2"
                             })
                       ],
                       className: "flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
@@ -124,7 +163,7 @@ function WineList(props) {
                                         className: "text-lg font-semibold text-stone-950"
                                       }),
                                   JsxRuntime.jsx("span", {
-                                        children: $$String.trim(wineQuery) === "" ? String(wines.length) + " wines" : String(wines.length) + " of " + String(totalWineCount) + " wines",
+                                        children: shouldShowFilteredCount(wineQuery, occasionFilter) ? String(wines.length) + " of " + String(totalWineCount) + " wines" : String(wines.length) + " wines",
                                         className: "rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600"
                                       })
                                 ],
@@ -138,6 +177,35 @@ function WineList(props) {
                                       autoComplete: "off"
                                     }),
                                 className: "w-full md:w-72"
+                              }),
+                          JsxRuntime.jsxs("div", {
+                                children: [
+                                  JsxRuntime.jsx("button", {
+                                        children: "All",
+                                        className: occasionFilter === "All" ? "rounded-full bg-stone-950 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white" : "rounded-full border border-stone-300 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition hover:border-stone-500 hover:text-stone-950",
+                                        type: "button",
+                                        onClick: (function (param) {
+                                            onSelectOccasionFilter("All");
+                                          })
+                                      }),
+                                  JsxRuntime.jsx("button", {
+                                        children: "With occasions",
+                                        className: occasionFilter === "WithOccasions" ? "rounded-full bg-stone-950 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white" : "rounded-full border border-stone-300 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition hover:border-stone-500 hover:text-stone-950",
+                                        type: "button",
+                                        onClick: (function (param) {
+                                            onSelectOccasionFilter("WithOccasions");
+                                          })
+                                      }),
+                                  JsxRuntime.jsx("button", {
+                                        children: "No occasions yet",
+                                        className: occasionFilter === "WithoutOccasions" ? "rounded-full bg-stone-950 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white" : "rounded-full border border-stone-300 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition hover:border-stone-500 hover:text-stone-950",
+                                        type: "button",
+                                        onClick: (function (param) {
+                                            onSelectOccasionFilter("WithoutOccasions");
+                                          })
+                                      })
+                                ],
+                                className: "flex flex-wrap gap-2"
                               })
                         ],
                         className: "flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
@@ -190,6 +258,7 @@ var make = WineList;
 export {
   wineLabel ,
   wineMeta ,
+  shouldShowFilteredCount ,
   make ,
 }
 /* TextField Not a pure module */

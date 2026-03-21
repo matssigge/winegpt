@@ -1,5 +1,10 @@
 type summary = WineModel.summary
 
+type occasionFilter =
+  | All
+  | WithOccasions
+  | WithoutOccasions
+
 @send
 external toLowerCase: string => string = "toLowerCase"
 
@@ -16,6 +21,7 @@ let initialStatus = () => Idle
 let loadingStatus = () => Loading
 let readyStatus = wines => Ready(wines)
 let errorStatus = message => Error(message)
+let initialOccasionFilter = All
 
 let wines = status =>
   switch status {
@@ -42,19 +48,31 @@ let searchableText = (summary: summary) =>
   ->Js.Array2.joinWith(" ")
   ->toLowerCase
 
-let filterWines = (wines: array<summary>, query: string) => {
+let matchesOccasionFilter = (summary: summary, occasionFilter) =>
+  switch occasionFilter {
+  | All => true
+  | WithOccasions => summary.entryCount > 0
+  | WithoutOccasions => summary.entryCount == 0
+  }
+
+let filterWines = (wines: array<summary>, query: string, occasionFilter) => {
   let normalizedQuery = query->String.trim->toLowerCase
 
-  if normalizedQuery == "" {
-    wines
-  } else {
-    wines->Belt.Array.keep(summary => summary->searchableText->includes(normalizedQuery))
-  }
+  wines->Belt.Array.keep(summary => {
+    let matchesQuery =
+      if normalizedQuery == "" {
+        true
+      } else {
+        summary->searchableText->includes(normalizedQuery)
+      }
+
+    matchesQuery && matchesOccasionFilter(summary, occasionFilter)
+  })
 }
 
-let filterStatus = (status, query: string) =>
+let filterStatus = (status, query: string, occasionFilter) =>
   switch status {
-  | Ready(wines) => Ready(filterWines(wines, query))
+  | Ready(wines) => Ready(filterWines(wines, query, occasionFilter))
   | Idle => Idle
   | Loading => Loading
   | Error(message) => Error(message)

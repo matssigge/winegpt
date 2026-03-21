@@ -20,6 +20,7 @@ let make = () => {
   let (inviteForm, setInviteForm) = React.useState(() => CollectionInvite.initialForm)
   let (wineStatus, setWineStatus) = React.useState(() => WineState.initialStatus())
   let (wineForm, setWineForm) = React.useState(() => WineCapture.initialForm)
+  let (wineOccasionFilter, setWineOccasionFilter) = React.useState(() => WineState.initialOccasionFilter)
   let (wineQuery, setWineQuery) = React.useState(() => "")
   let (selectedWineId, setSelectedWineId) = React.useState(() => None)
   let (entryStatus, setEntryStatus) = React.useState(() => EntryState.initialStatus())
@@ -46,6 +47,7 @@ let make = () => {
         setSelectedCollectionId(_ => None)
         setWineStatus(_ => WineState.initialStatus())
         setWineForm(_ => WineCapture.initialForm)
+        setWineOccasionFilter(_ => WineState.initialOccasionFilter)
         setWineQuery(_ => "")
         setSelectedWineId(_ => None)
         setEntryStatus(_ => EntryState.initialStatus())
@@ -63,6 +65,7 @@ let make = () => {
       setSelectedCollectionId(_ => None)
       setWineStatus(_ => WineState.initialStatus())
       setWineForm(_ => WineCapture.initialForm)
+      setWineOccasionFilter(_ => WineState.initialOccasionFilter)
       setWineQuery(_ => "")
       setSelectedWineId(_ => None)
       setEntryStatus(_ => EntryState.initialStatus())
@@ -96,6 +99,7 @@ let make = () => {
       setSelectedCollectionId(_ => None)
       setWineStatus(_ => WineState.initialStatus())
       setWineForm(_ => WineCapture.initialForm)
+      setWineOccasionFilter(_ => WineState.initialOccasionFilter)
       setSelectedWineId(_ => None)
       setEntryStatus(_ => EntryState.initialStatus())
       setSelectedEntryId(_ => None)
@@ -197,6 +201,7 @@ let make = () => {
     setInviteForm(_ => CollectionInvite.initialForm)
     setWineStatus(_ => WineState.initialStatus())
     setWineForm(_ => WineCapture.initialForm)
+    setWineOccasionFilter(_ => WineState.initialOccasionFilter)
     setWineQuery(_ => "")
     setSelectedWineId(_ => None)
     setEntryStatus(_ => EntryState.initialStatus())
@@ -221,6 +226,7 @@ let make = () => {
         setInviteForm(_ => CollectionInvite.initialForm)
         setWineStatus(_ => WineState.readyStatus([]))
         setWineForm(_ => WineCapture.initialForm)
+        setWineOccasionFilter(_ => WineState.initialOccasionFilter)
         setWineQuery(_ => "")
         setSelectedWineId(_ => None)
         setEntryForm(_ => EntryState.initialForm)
@@ -255,6 +261,7 @@ let make = () => {
     setSelectedCollectionId(_ => nextSelectedCollectionId)
     CollectionSelectionStorage.saveSelectedCollectionId(collectionId)
     setInviteForm(_ => CollectionInvite.initialForm)
+    setWineOccasionFilter(_ => WineState.initialOccasionFilter)
     setWineQuery(_ => "")
     setSelectedWineId(_ => None)
     setWineForm(_ => WineCapture.initialForm)
@@ -266,7 +273,7 @@ let make = () => {
 
   let selectedCollection =
     CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId)
-  let visibleWineStatus = WineState.filterStatus(wineStatus, wineQuery)
+  let visibleWineStatus = WineState.filterStatus(wineStatus, wineQuery, wineOccasionFilter)
   let visibleWines = WineState.wines(visibleWineStatus)
   let selectedWine =
     selectedWineId->Belt.Option.flatMap(wineId =>
@@ -316,7 +323,7 @@ let make = () => {
     None
   }, (sessionToken, collectionStatus, selectedCollectionId))
 
-  React.useEffect3(() => {
+  React.useEffect2(() => {
     if WineState.isReady(visibleWineStatus) {
       setSelectedWineId(current =>
         switch current {
@@ -327,7 +334,7 @@ let make = () => {
     }
 
     None
-  }, (wineStatus, selectedCollectionId, wineQuery))
+  }, (visibleWineStatus, selectedCollectionId))
 
   React.useEffect3(() => {
     switch (sessionToken, selectedCollection) {
@@ -486,6 +493,10 @@ let make = () => {
     setWineQuery(_ => query)
   }
 
+  let handleWineOccasionFilterChange = nextFilter => {
+    setWineOccasionFilter(_ => nextFilter)
+  }
+
   let openEntryComposer = () => {
     setEntryForm(_ =>
       switch selectedWine {
@@ -550,6 +561,7 @@ let make = () => {
              inviteForm
              wineStatus=visibleWineStatus
              wineForm
+             wineOccasionFilter
              wineQuery
              selectedWine
              totalWineCount={WineState.wines(wineStatus)->Belt.Array.length}
@@ -582,6 +594,7 @@ let make = () => {
              onCloseWineComposer=closeWineComposer
              onCloseEntryComposer=closeEntryComposer
              onSelectWine=handleSelectWine
+             onSelectOccasionFilter=handleWineOccasionFilterChange
              onWineQueryChange=handleWineQueryChange
              onSelectEntry=handleSelectEntry
              onSelectCollection=handleSelectCollection

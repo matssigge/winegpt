@@ -85,40 +85,45 @@ function App(props) {
   var setWineForm = match$12[1];
   var wineForm = match$12[0];
   var match$13 = React.useState(function () {
+        return WineState.initialOccasionFilter;
+      });
+  var setWineOccasionFilter = match$13[1];
+  var wineOccasionFilter = match$13[0];
+  var match$14 = React.useState(function () {
         return "";
       });
-  var setWineQuery = match$13[1];
-  var wineQuery = match$13[0];
-  var match$14 = React.useState(function () {
+  var setWineQuery = match$14[1];
+  var wineQuery = match$14[0];
+  var match$15 = React.useState(function () {
         
       });
-  var setSelectedWineId = match$14[1];
-  var selectedWineId = match$14[0];
-  var match$15 = React.useState(function () {
+  var setSelectedWineId = match$15[1];
+  var selectedWineId = match$15[0];
+  var match$16 = React.useState(function () {
         return EntryState.initialStatus();
       });
-  var setEntryStatus = match$15[1];
-  var entryStatus = match$15[0];
-  var match$16 = React.useState(function () {
+  var setEntryStatus = match$16[1];
+  var entryStatus = match$16[0];
+  var match$17 = React.useState(function () {
         return EntryState.initialForm;
       });
-  var setEntryForm = match$16[1];
-  var entryForm = match$16[0];
-  var match$17 = React.useState(function () {
-        
-      });
-  var setSelectedEntryId = match$17[1];
-  var selectedEntryId = match$17[0];
+  var setEntryForm = match$17[1];
+  var entryForm = match$17[0];
   var match$18 = React.useState(function () {
         
       });
-  var setWineComposerMode = match$18[1];
-  var wineComposerMode = match$18[0];
+  var setSelectedEntryId = match$18[1];
+  var selectedEntryId = match$18[0];
   var match$19 = React.useState(function () {
         
       });
-  var setEntryComposerMode = match$19[1];
-  var entryComposerMode = match$19[0];
+  var setWineComposerMode = match$19[1];
+  var wineComposerMode = match$19[0];
+  var match$20 = React.useState(function () {
+        
+      });
+  var setEntryComposerMode = match$20[1];
+  var entryComposerMode = match$20[0];
   React.useEffect((function () {
           var restoredToken = SessionBootstrap.loadSessionToken();
           if (restoredToken !== undefined) {
@@ -152,6 +157,9 @@ function App(props) {
                         });
                     setWineForm(function (param) {
                           return WineCapture.initialForm;
+                        });
+                    setWineOccasionFilter(function (param) {
+                          return WineState.initialOccasionFilter;
                         });
                     setWineQuery(function (param) {
                           return "";
@@ -194,6 +202,9 @@ function App(props) {
                 });
             setWineForm(function (param) {
                   return WineCapture.initialForm;
+                });
+            setWineOccasionFilter(function (param) {
+                  return WineState.initialOccasionFilter;
                 });
             setWineQuery(function (param) {
                   return "";
@@ -253,6 +264,9 @@ function App(props) {
                 });
             setWineForm(function (param) {
                   return WineCapture.initialForm;
+                });
+            setWineOccasionFilter(function (param) {
+                  return WineState.initialOccasionFilter;
                 });
             setSelectedWineId(function (param) {
                   
@@ -409,6 +423,9 @@ function App(props) {
     setWineForm(function (param) {
           return WineCapture.initialForm;
         });
+    setWineOccasionFilter(function (param) {
+          return WineState.initialOccasionFilter;
+        });
     setWineQuery(function (param) {
           return "";
         });
@@ -457,6 +474,9 @@ function App(props) {
                   setWineForm(function (param) {
                         return WineCapture.initialForm;
                       });
+                  setWineOccasionFilter(function (param) {
+                        return WineState.initialOccasionFilter;
+                      });
                   setWineQuery(function (param) {
                         return "";
                       });
@@ -502,6 +522,9 @@ function App(props) {
     setInviteForm(function (param) {
           return CollectionInvite.initialForm;
         });
+    setWineOccasionFilter(function (param) {
+          return WineState.initialOccasionFilter;
+        });
     setWineQuery(function (param) {
           return "";
         });
@@ -525,7 +548,7 @@ function App(props) {
         });
   };
   var selectedCollection = CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId);
-  var visibleWineStatus = WineState.filterStatus(wineStatus, wineQuery);
+  var visibleWineStatus = WineState.filterStatus(wineStatus, wineQuery, wineOccasionFilter);
   var visibleWines = WineState.wines(visibleWineStatus);
   var selectedWine = Belt_Option.flatMap(selectedWineId, (function (wineId) {
           return Belt_Array.getBy(visibleWines, (function (summary) {
@@ -610,9 +633,8 @@ function App(props) {
           }
           
         }), [
-        wineStatus,
-        selectedCollectionId,
-        wineQuery
+        visibleWineStatus,
+        selectedCollectionId
       ]);
   React.useEffect((function () {
           var exit = 0;
@@ -816,6 +838,11 @@ function App(props) {
           return query;
         });
   };
+  var handleWineOccasionFilterChange = function (nextFilter) {
+    setWineOccasionFilter(function (param) {
+          return nextFilter;
+        });
+  };
   var openEntryComposer = function () {
     setEntryForm(function (param) {
           if (selectedWine !== undefined) {
@@ -905,6 +932,7 @@ function App(props) {
           inviteForm: inviteForm,
           wineStatus: visibleWineStatus,
           wineForm: wineForm,
+          wineOccasionFilter: wineOccasionFilter,
           wineQuery: wineQuery,
           selectedWine: selectedWine,
           totalWineCount: WineState.wines(wineStatus).length,
@@ -931,6 +959,7 @@ function App(props) {
           onCloseWineComposer: closeWineComposer,
           onCloseEntryComposer: closeEntryComposer,
           onSelectWine: handleSelectWine,
+          onSelectOccasionFilter: handleWineOccasionFilterChange,
           onWineQueryChange: handleWineQueryChange,
           onSelectEntry: handleSelectEntry,
           onSelectCollection: handleSelectCollection,
