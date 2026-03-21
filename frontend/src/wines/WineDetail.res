@@ -74,6 +74,7 @@ let make = (
               </dd>
             </div>
             {optionalDetailLine(~label="Producer", ~value=summary.wine.producer)}
+            {optionalDetailLine(~label="Style", ~value=summary.wine.style)}
             {optionalDetailLine(~label="Grape", ~value=summary.wine.grape)}
             {optionalDetailLine(~label="Region", ~value=summary.wine.region)}
             {optionalDetailLine(~label="Country", ~value=summary.wine.country)}

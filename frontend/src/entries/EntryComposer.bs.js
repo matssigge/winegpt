@@ -69,6 +69,14 @@ function EntryComposer(props) {
                                     autoComplete: "organization"
                                   }),
                               JsxRuntime.jsx(TextField.make, {
+                                    label: "Style",
+                                    value: entryForm.style,
+                                    onChange: (function (value) {
+                                        onEntryFormChange("style", value);
+                                      }),
+                                    autoComplete: "off"
+                                  }),
+                              JsxRuntime.jsx(TextField.make, {
                                     label: "Grape",
                                     value: entryForm.grape,
                                     onChange: (function (value) {

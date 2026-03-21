@@ -9,6 +9,7 @@ type status =
 type form = {
   wineName: string,
   producer: string,
+  style: string,
   grape: string,
   region: string,
   country: string,
@@ -64,6 +65,7 @@ let errorStatus = message => Error(message)
 let initialForm = {
   wineName: "",
   producer: "",
+  style: "",
   grape: "",
   region: "",
   country: "",
@@ -83,6 +85,7 @@ let updateForm = (form, field, value) =>
   switch field {
   | "wineName" => {...form, wineName: value, error: None, success: None}
   | "producer" => {...form, producer: value, error: None, success: None}
+  | "style" => {...form, style: value, error: None, success: None}
   | "grape" => {...form, grape: value, error: None, success: None}
   | "region" => {...form, region: value, error: None, success: None}
   | "country" => {...form, country: value, error: None, success: None}
@@ -126,6 +129,7 @@ let toDateTimeLocalValue = consumedAt => {
 let formFromEntry = (entry: entry) => {
   wineName: entry.wine.name,
   producer: entry.wine.producer->Belt.Option.getWithDefault(""),
+  style: entry.wine.style->Belt.Option.getWithDefault(""),
   grape: entry.wine.grape->Belt.Option.getWithDefault(""),
   region: entry.wine.region->Belt.Option.getWithDefault(""),
   country: entry.wine.country->Belt.Option.getWithDefault(""),
@@ -219,6 +223,7 @@ let createEntry = (token, collectionId, form: form) =>
       Js.Promise2.then(intOption(form.rating, ~errorCode="invalid_rating"), rating =>
         {
           let producer = stringOption(form.producer)
+          let style = stringOption(form.style)
           let grape = stringOption(form.grape)
           let region = stringOption(form.region)
           let country = stringOption(form.country)
@@ -234,6 +239,7 @@ let createEntry = (token, collectionId, form: form) =>
               ~producer,
               ~name=form.wineName,
               ~vintage,
+              ~style?,
               ~grape?,
               ~region?,
               ~country?,
@@ -262,6 +268,7 @@ let updateEntry = (token, collectionId, entryId, form: form) =>
       Js.Promise2.then(intOption(form.rating, ~errorCode="invalid_rating"), rating =>
         {
           let producer = stringOption(form.producer)
+          let style = stringOption(form.style)
           let grape = stringOption(form.grape)
           let region = stringOption(form.region)
           let country = stringOption(form.country)
@@ -278,6 +285,7 @@ let updateEntry = (token, collectionId, entryId, form: form) =>
               ~producer,
               ~name=form.wineName,
               ~vintage,
+              ~style?,
               ~grape?,
               ~region?,
               ~country?,

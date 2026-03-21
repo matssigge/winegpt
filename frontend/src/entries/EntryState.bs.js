@@ -45,6 +45,7 @@ function updateForm(form, field, value) {
         return {
                 wineName: form.wineName,
                 producer: form.producer,
+                style: form.style,
                 grape: form.grape,
                 region: form.region,
                 country: form.country,
@@ -63,6 +64,7 @@ function updateForm(form, field, value) {
         return {
                 wineName: form.wineName,
                 producer: form.producer,
+                style: form.style,
                 grape: form.grape,
                 region: form.region,
                 country: value,
@@ -81,6 +83,7 @@ function updateForm(form, field, value) {
         return {
                 wineName: form.wineName,
                 producer: form.producer,
+                style: form.style,
                 grape: value,
                 region: form.region,
                 country: form.country,
@@ -99,6 +102,7 @@ function updateForm(form, field, value) {
         return {
                 wineName: form.wineName,
                 producer: form.producer,
+                style: form.style,
                 grape: form.grape,
                 region: form.region,
                 country: form.country,
@@ -117,6 +121,7 @@ function updateForm(form, field, value) {
         return {
                 wineName: form.wineName,
                 producer: form.producer,
+                style: form.style,
                 grape: form.grape,
                 region: form.region,
                 country: form.country,
@@ -135,6 +140,7 @@ function updateForm(form, field, value) {
         return {
                 wineName: form.wineName,
                 producer: value,
+                style: form.style,
                 grape: form.grape,
                 region: form.region,
                 country: form.country,
@@ -153,6 +159,7 @@ function updateForm(form, field, value) {
         return {
                 wineName: form.wineName,
                 producer: form.producer,
+                style: form.style,
                 grape: form.grape,
                 region: form.region,
                 country: form.country,
@@ -171,8 +178,28 @@ function updateForm(form, field, value) {
         return {
                 wineName: form.wineName,
                 producer: form.producer,
+                style: form.style,
                 grape: form.grape,
                 region: value,
+                country: form.country,
+                vintage: form.vintage,
+                consumedAt: form.consumedAt,
+                venueName: form.venueName,
+                locationText: form.locationText,
+                pairingNotes: form.pairingNotes,
+                tastingNotes: form.tastingNotes,
+                rating: form.rating,
+                isSubmitting: form.isSubmitting,
+                error: undefined,
+                success: undefined
+              };
+    case "style" :
+        return {
+                wineName: form.wineName,
+                producer: form.producer,
+                style: value,
+                grape: form.grape,
+                region: form.region,
                 country: form.country,
                 vintage: form.vintage,
                 consumedAt: form.consumedAt,
@@ -189,6 +216,7 @@ function updateForm(form, field, value) {
         return {
                 wineName: form.wineName,
                 producer: form.producer,
+                style: form.style,
                 grape: form.grape,
                 region: form.region,
                 country: form.country,
@@ -207,6 +235,7 @@ function updateForm(form, field, value) {
         return {
                 wineName: form.wineName,
                 producer: form.producer,
+                style: form.style,
                 grape: form.grape,
                 region: form.region,
                 country: form.country,
@@ -225,6 +254,7 @@ function updateForm(form, field, value) {
         return {
                 wineName: form.wineName,
                 producer: form.producer,
+                style: form.style,
                 grape: form.grape,
                 region: form.region,
                 country: form.country,
@@ -243,6 +273,7 @@ function updateForm(form, field, value) {
         return {
                 wineName: value,
                 producer: form.producer,
+                style: form.style,
                 grape: form.grape,
                 region: form.region,
                 country: form.country,
@@ -266,6 +297,7 @@ function startSubmitting(form) {
   return {
           wineName: form.wineName,
           producer: form.producer,
+          style: form.style,
           grape: form.grape,
           region: form.region,
           country: form.country,
@@ -286,6 +318,7 @@ function failForm(form, message) {
   return {
           wineName: form.wineName,
           producer: form.producer,
+          style: form.style,
           grape: form.grape,
           region: form.region,
           country: form.country,
@@ -306,6 +339,7 @@ function succeedForm() {
   return {
           wineName: "",
           producer: "",
+          style: "",
           grape: "",
           region: "",
           country: "",
@@ -344,6 +378,7 @@ function formFromEntry(entry) {
   return {
           wineName: entry.wine.name,
           producer: Belt_Option.getWithDefault(entry.wine.producer, ""),
+          style: Belt_Option.getWithDefault(entry.wine.style, ""),
           grape: Belt_Option.getWithDefault(entry.wine.grape, ""),
           region: Belt_Option.getWithDefault(entry.wine.region, ""),
           country: Belt_Option.getWithDefault(entry.wine.country, ""),
@@ -468,6 +503,7 @@ function createEntry(token, collectionId, form) {
                 return Js_promise2.then(intOption(form.vintage, "invalid_wine_vintage"), (function (vintage) {
                               return Js_promise2.then(intOption(form.rating, "invalid_rating"), (function (rating) {
                                             var producer = stringOption(form.producer);
+                                            var style = stringOption(form.style);
                                             var grape = stringOption(form.grape);
                                             var region = stringOption(form.region);
                                             var country = stringOption(form.country);
@@ -475,7 +511,7 @@ function createEntry(token, collectionId, form) {
                                             var locationText = stringOption(form.locationText);
                                             var pairingNotes = stringOption(form.pairingNotes);
                                             var tastingNotes = stringOption(form.tastingNotes);
-                                            return Js_promise2.then(EntryApi.createEntry(token, collectionId, producer, form.wineName, vintage, undefined, grape, region, country, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating, undefined), (function (response) {
+                                            return Js_promise2.then(EntryApi.createEntry(token, collectionId, producer, form.wineName, vintage, style, grape, region, country, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating, undefined), (function (response) {
                                                           var entry = Belt_Option.flatMap(ResponseDecoder.parse(response), ResponseDecoder.entry);
                                                           if (entry !== undefined) {
                                                             return Promise.resolve(entry);
@@ -493,6 +529,7 @@ function updateEntry(token, collectionId, entryId, form) {
                 return Js_promise2.then(intOption(form.vintage, "invalid_wine_vintage"), (function (vintage) {
                               return Js_promise2.then(intOption(form.rating, "invalid_rating"), (function (rating) {
                                             var producer = stringOption(form.producer);
+                                            var style = stringOption(form.style);
                                             var grape = stringOption(form.grape);
                                             var region = stringOption(form.region);
                                             var country = stringOption(form.country);
@@ -500,7 +537,7 @@ function updateEntry(token, collectionId, entryId, form) {
                                             var locationText = stringOption(form.locationText);
                                             var pairingNotes = stringOption(form.pairingNotes);
                                             var tastingNotes = stringOption(form.tastingNotes);
-                                            return Js_promise2.then(EntryApi.updateEntry(token, collectionId, entryId, producer, form.wineName, vintage, undefined, grape, region, country, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating, undefined), (function (response) {
+                                            return Js_promise2.then(EntryApi.updateEntry(token, collectionId, entryId, producer, form.wineName, vintage, style, grape, region, country, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating, undefined), (function (response) {
                                                           var entry = Belt_Option.flatMap(ResponseDecoder.parse(response), ResponseDecoder.entry);
                                                           if (entry !== undefined) {
                                                             return Promise.resolve(entry);
@@ -516,6 +553,7 @@ function updateEntry(token, collectionId, entryId, form) {
 var initialForm = {
   wineName: "",
   producer: "",
+  style: "",
   grape: "",
   region: "",
   country: "",

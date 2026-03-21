@@ -92,6 +92,7 @@ function WineDetail(props) {
                                                 ]
                                               }),
                                           optionalDetailLine("Producer", selectedWine.wine.producer),
+                                          optionalDetailLine("Style", selectedWine.wine.style),
                                           optionalDetailLine("Grape", selectedWine.wine.grape),
                                           optionalDetailLine("Region", selectedWine.wine.region),
                                           optionalDetailLine("Country", selectedWine.wine.country),
