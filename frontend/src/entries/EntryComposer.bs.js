@@ -77,6 +77,22 @@ function EntryComposer(props) {
                                     autoComplete: "off"
                                   }),
                               JsxRuntime.jsx(TextField.make, {
+                                    label: "Region",
+                                    value: entryForm.region,
+                                    onChange: (function (value) {
+                                        onEntryFormChange("region", value);
+                                      }),
+                                    autoComplete: "off"
+                                  }),
+                              JsxRuntime.jsx(TextField.make, {
+                                    label: "Country",
+                                    value: entryForm.country,
+                                    onChange: (function (value) {
+                                        onEntryFormChange("country", value);
+                                      }),
+                                    autoComplete: "country-name"
+                                  }),
+                              JsxRuntime.jsx(TextField.make, {
                                     label: "Vintage",
                                     value: entryForm.vintage,
                                     onChange: (function (value) {

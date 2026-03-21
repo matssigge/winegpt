@@ -10,6 +10,8 @@ type form = {
   wineName: string,
   producer: string,
   grape: string,
+  region: string,
+  country: string,
   vintage: string,
   consumedAt: string,
   venueName: string,
@@ -63,6 +65,8 @@ let initialForm = {
   wineName: "",
   producer: "",
   grape: "",
+  region: "",
+  country: "",
   vintage: "",
   consumedAt: "",
   venueName: "",
@@ -80,6 +84,8 @@ let updateForm = (form, field, value) =>
   | "wineName" => {...form, wineName: value, error: None, success: None}
   | "producer" => {...form, producer: value, error: None, success: None}
   | "grape" => {...form, grape: value, error: None, success: None}
+  | "region" => {...form, region: value, error: None, success: None}
+  | "country" => {...form, country: value, error: None, success: None}
   | "vintage" => {...form, vintage: value, error: None, success: None}
   | "consumedAt" => {...form, consumedAt: value, error: None, success: None}
   | "venueName" => {...form, venueName: value, error: None, success: None}
@@ -121,6 +127,8 @@ let formFromEntry = (entry: entry) => {
   wineName: entry.wine.name,
   producer: entry.wine.producer->Belt.Option.getWithDefault(""),
   grape: entry.wine.grape->Belt.Option.getWithDefault(""),
+  region: entry.wine.region->Belt.Option.getWithDefault(""),
+  country: entry.wine.country->Belt.Option.getWithDefault(""),
   vintage: entry.wine.vintage->Belt.Option.map(Belt.Int.toString)->Belt.Option.getWithDefault(""),
   consumedAt: entry.consumedAt->toDateTimeLocalValue,
   venueName: entry.venueName->Belt.Option.getWithDefault(""),
@@ -212,6 +220,8 @@ let createEntry = (token, collectionId, form: form) =>
         {
           let producer = stringOption(form.producer)
           let grape = stringOption(form.grape)
+          let region = stringOption(form.region)
+          let country = stringOption(form.country)
           let venueName = stringOption(form.venueName)
           let locationText = stringOption(form.locationText)
           let pairingNotes = stringOption(form.pairingNotes)
@@ -225,6 +235,8 @@ let createEntry = (token, collectionId, form: form) =>
               ~name=form.wineName,
               ~vintage,
               ~grape?,
+              ~region?,
+              ~country?,
               ~consumedAt,
               ~venueName,
               ~locationText,
@@ -251,6 +263,8 @@ let updateEntry = (token, collectionId, entryId, form: form) =>
         {
           let producer = stringOption(form.producer)
           let grape = stringOption(form.grape)
+          let region = stringOption(form.region)
+          let country = stringOption(form.country)
           let venueName = stringOption(form.venueName)
           let locationText = stringOption(form.locationText)
           let pairingNotes = stringOption(form.pairingNotes)
@@ -265,6 +279,8 @@ let updateEntry = (token, collectionId, entryId, form: form) =>
               ~name=form.wineName,
               ~vintage,
               ~grape?,
+              ~region?,
+              ~country?,
               ~consumedAt,
               ~venueName,
               ~locationText,

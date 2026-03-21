@@ -75,6 +75,8 @@ let make = (
             </div>
             {optionalDetailLine(~label="Producer", ~value=summary.wine.producer)}
             {optionalDetailLine(~label="Grape", ~value=summary.wine.grape)}
+            {optionalDetailLine(~label="Region", ~value=summary.wine.region)}
+            {optionalDetailLine(~label="Country", ~value=summary.wine.country)}
             {optionalDetailLine(
                ~label="Vintage",
                ~value=summary.wine.vintage->Belt.Option.map(Belt.Int.toString),

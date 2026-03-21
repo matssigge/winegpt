@@ -58,6 +58,18 @@ let make = (
           autoComplete="off"
         />
         <TextField
+          label="Region"
+          value=entryForm.region
+          onChange={value => onEntryFormChange(. "region", value)}
+          autoComplete="off"
+        />
+        <TextField
+          label="Country"
+          value=entryForm.country
+          onChange={value => onEntryFormChange(. "country", value)}
+          autoComplete="country-name"
+        />
+        <TextField
           label="Vintage"
           type_="number"
           value=entryForm.vintage

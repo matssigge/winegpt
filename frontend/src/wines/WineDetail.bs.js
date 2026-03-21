@@ -93,6 +93,8 @@ function WineDetail(props) {
                                               }),
                                           optionalDetailLine("Producer", selectedWine.wine.producer),
                                           optionalDetailLine("Grape", selectedWine.wine.grape),
+                                          optionalDetailLine("Region", selectedWine.wine.region),
+                                          optionalDetailLine("Country", selectedWine.wine.country),
                                           optionalDetailLine("Vintage", Belt_Option.map(selectedWine.wine.vintage, (function (prim) {
                                                       return String(prim);
                                                     })))
