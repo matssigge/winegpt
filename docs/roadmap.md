@@ -336,12 +336,13 @@ Acceptance criteria:
 
 ## Milestone 3: Wine browsing, history, and entry capture
 
-Goal: a user can browse wines within a collection, inspect their prior occasions, and quickly add a new wine-drinking occasion when needed.
+Goal: a user can browse wines within a collection, inspect their prior occasions, add a wine without an occasion, and quickly add a new wine-drinking occasion when needed.
 
 Notes:
 
 - treat wines as the main collection screen
 - keep entry creation easy to reach, but do not make an inline capture form the default primary surface
+- support both wine-only capture and occasion capture
 
 ### 3.1 Add wine create/reuse backend logic
 
@@ -356,7 +357,34 @@ Acceptance criteria:
 - repeated entries can reference the same wine
 - separate occasions remain separate entries
 
-### 3.2 Add create-entry endpoint
+### 3.2 Add wine-only collection backend behavior
+
+Scope:
+
+- allow a wine to be added to a collection without creating an occasion
+- keep collection-scoped wine membership/query logic explicit
+- avoid requiring `consumed_at` for this flow
+
+Acceptance criteria:
+
+- authenticated collection member can add a wine without an occasion
+- a wine can appear in collection browsing even if it has no related occasions yet
+- the first implementation is covered by focused backend tests
+
+### 3.3 Add create-wine endpoint
+
+Scope:
+
+- create `POST /api/collections/:id/wines`
+- accept essential wine identity fields only
+
+Acceptance criteria:
+
+- authenticated collection member can create a wine without an occasion
+- invalid input is rejected with explicit errors
+- response shape is explicit and useful to the frontend
+
+### 3.4 Add create-entry endpoint
 
 Scope:
 
@@ -369,7 +397,7 @@ Acceptance criteria:
 - entry is linked to both collection and wine
 - invalid input is rejected with explicit errors
 
-### 3.3 Add entry history endpoint
+### 3.5 Add entry history endpoint
 
 Scope:
 
@@ -382,21 +410,23 @@ Acceptance criteria:
 - non-member access is rejected
 - ordering is deterministic
 
-### 3.4 Add collection wines endpoint
+### 3.6 Add collection wines endpoint
 
 Scope:
 
 - create `GET /api/collections/:id/wines`
 - return wines in a collection with enough summary data for browsing
 - include summary metadata needed for sorting and scanning
+- include wines that have no related occasions yet
 
 Acceptance criteria:
 
 - collection member can browse wines for one collection
 - non-member access is rejected
+- wines without occasions are still visible in the collection wine list
 - response shape makes wine-first UI practical without extra client-side stitching
 
-### 3.5 Add wine-first collection screen
+### 3.7 Add wine-first collection screen
 
 Scope:
 
@@ -411,7 +441,21 @@ Acceptance criteria:
 - the main screen is optimized for browsing wines rather than inline data entry
 - add-entry action is easy to find on mobile widths
 
-### 3.6 Add wine detail with related entry history
+### 3.8 Add wine-only capture flow
+
+Scope:
+
+- add a dedicated frontend flow for creating a wine without an occasion
+- place it alongside, not behind, the occasion capture path
+- keep the first form focused on wine identity rather than occasion context
+
+Acceptance criteria:
+
+- user can add a wine without entering `consumed_at`
+- the new wine appears in the collection wine list immediately
+- the UX makes it clear that occasions can be added later
+
+### 3.9 Add wine detail with related entry history
 
 Scope:
 
@@ -425,7 +469,7 @@ Acceptance criteria:
 - user can browse the related occasions for that wine
 - repeated wines are clearly represented as one wine with multiple entries
 
-### 3.7 Add mobile-first entry creation flow
+### 3.10 Add mobile-first entry creation flow
 
 Scope:
 
@@ -447,7 +491,7 @@ Acceptance criteria:
 - form handles missing optional wine metadata gracefully
 - success and validation errors are visible in the UI
 
-### 3.8 Add entry detail screen
+### 3.11 Add entry detail screen
 
 Scope:
 
@@ -458,7 +502,7 @@ Acceptance criteria:
 - user can open an entry from history
 - detail screen shows stable wine data separately from occasion data
 
-### 3.9 Add entry editing
+### 3.12 Add entry editing
 
 Scope:
 

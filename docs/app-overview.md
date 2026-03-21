@@ -47,23 +47,29 @@ The system should prioritize:
 
 ## Core Capabilities
 
-### Entry capture
+### Wine capture and occasion capture
 
-Users can create a wine entry with structured and free-form information.
+Users need two related capture flows:
 
-Entry capture should be fast and easy to access, but it is not the primary focus of the main collection screen.
+- adding a wine to a collection without recording a specific occasion
+- adding an occasion for a wine, either by choosing an existing wine or creating a new one
+
+Both flows matter, but wine-only capture is important because users may start with bottles they already know about and only add occasion details later.
 
 The main collection screen should emphasize browsing wines and then opening their related history.
 
-Creating a new entry should happen through a clearly accessible action such as an add button that opens a dedicated capture flow.
+Creating a new wine or occasion should happen through clearly accessible actions such as add buttons that open dedicated capture flows.
 
-A wine entry may include:
+A wine may include:
 
 - wine name
 - producer
 - vintage
 - grape or style
 - region or country
+
+An occasion may include:
+
 - date and time consumed
 - venue or location
 - pairing notes
@@ -110,12 +116,13 @@ The default collection view should help users:
 - search by producer, wine name, grape, vintage, pairings, or related text
 - open a wine to inspect prior occasions
 - quickly decide whether they are looking at a known wine or need to add a new one
+- add a wine they already know, even if they do not want to record an occasion yet
 
 ---
 
 ### Entry history
 
-Users can browse wine entries within a collection, usually through a selected wine.
+Users can browse occasions within a collection, usually through a selected wine.
 
 Entries should be sortable and filterable.
 
@@ -123,15 +130,15 @@ This is an important supporting surface, not the first thing the user should lan
 
 Users should be able to:
 
-- open a wine and quickly scan its related entries
-- open an entry to inspect wine details and occasion details
+- open a wine and quickly scan its related occasions
+- open an occasion to inspect wine details and occasion details
 - search or filter when trying to remember a bottle, producer, pairing, or prior impression
 
 ---
 
 ### Search and filtering
 
-Users can find entries by fields such as:
+Users can find wines or occasions by fields such as:
 
 - wine name
 - producer
@@ -148,6 +155,8 @@ Users can find entries by fields such as:
 Users should be able to record the same wine multiple times on different occasions.
 
 Each drinking occasion should be preserved as a separate entry, but linked to the same wine.
+
+Users should also be able to keep wines in a collection even if no occasion has been recorded yet.
 
 ---
 
@@ -212,10 +221,11 @@ Typical flow:
 6. User inspects the related occasions and notes for that wine
 7. If needed, the user opens a specific entry to inspect the full wine and occasion details
 8. If the wine is new, the user taps an add action
-9. User records wine details
-10. User adds notes, pairing information, and optionally photos
-11. User saves the entry
-12. Users in the same collection can later find that wine again and review its prior occasions
+9. User either:
+   - adds a wine to the collection without an occasion
+   - or records a new occasion for a wine
+10. If recording an occasion, the user adds notes, pairing information, and optionally photos
+11. Users in the same collection can later find that wine again and review its prior occasions
 
 The logging flow should be fast and forgiving, but the default screen should optimize for finding wines first.
 
