@@ -15,7 +15,7 @@ use wine_backend::{
         InvitedCollectionMember,
     },
     entries::{self, CreateEntryInput, EntryError, WineEntry},
-    wines::{self, CollectionWineSummary},
+    wines::{self, CollectionWineError, CollectionWineSummary, WineInput},
     allowed_frontend_origins, backend_bind_address, database_url, db, health_response,
     HealthResponse,
 };
@@ -28,7 +28,10 @@ async fn main() {
         .route("/api/auth/login", post(login))
         .route("/api/auth/register", post(register))
         .route("/api/collections", get(list_collections).post(create_collection))
-        .route("/api/collections/{id}/wines", get(list_collection_wines))
+        .route(
+            "/api/collections/{id}/wines",
+            get(list_collection_wines).post(create_collection_wine),
+        )
         .route(
             "/api/collections/{id}/entries",
             get(list_entries).post(create_entry),
@@ -145,6 +148,22 @@ async fn list_collection_wines(
         .await
         .map(Json)
         .map_err(map_collection_error)
+}
+
+async fn create_collection_wine(
+    State(state): State<AppState>,
+    Path(collection_id): Path<i64>,
+    headers: HeaderMap,
+    Json(input): Json<WineInput>,
+) -> Result<Json<CollectionWineSummary>, (StatusCode, Json<ErrorResponse>)> {
+    let user = authenticate_user(&state.database, &headers)
+        .await
+        .map_err(map_auth_error)?;
+
+    wines::add_to_collection(&state.database, user.id, collection_id, input)
+        .await
+        .map(Json)
+        .map_err(map_collection_wine_error)
 }
 
 async fn invite_collection_member(
@@ -296,6 +315,24 @@ fn map_entry_error(error: EntryError) -> (StatusCode, Json<ErrorResponse>) {
             (StatusCode::BAD_REQUEST, "invalid_wine_vintage")
         }
         EntryError::Database | EntryError::Wine(wine_backend::wines::WineError::Database) => {
+            (StatusCode::INTERNAL_SERVER_ERROR, "internal_error")
+        }
+    };
+
+    (status, Json(ErrorResponse { error: code }))
+}
+
+fn map_collection_wine_error(error: CollectionWineError) -> (StatusCode, Json<ErrorResponse>) {
+    let (status, code) = match error {
+        CollectionWineError::Forbidden => (StatusCode::FORBIDDEN, "forbidden"),
+        CollectionWineError::Wine(wine_backend::wines::WineError::InvalidName) => {
+            (StatusCode::BAD_REQUEST, "invalid_wine_name")
+        }
+        CollectionWineError::Wine(wine_backend::wines::WineError::InvalidVintage) => {
+            (StatusCode::BAD_REQUEST, "invalid_wine_vintage")
+        }
+        CollectionWineError::Database
+        | CollectionWineError::Wine(wine_backend::wines::WineError::Database) => {
             (StatusCode::INTERNAL_SERVER_ERROR, "internal_error")
         }
     };
