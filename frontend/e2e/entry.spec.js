@@ -33,12 +33,15 @@ test("users can create an entry and see it in history", async ({ page }) => {
   await expect(page.getByText("No occasions recorded yet for Lopez de Heredia Tondonia.")).toBeVisible()
 
   await page.getByRole("button", { name: "Add entry" }).click()
-  await expect(page.getByLabel("Wine name")).toHaveValue("Tondonia")
-  await expect(page.getByLabel("Producer")).toHaveValue("Lopez de Heredia")
-  await expect(page.getByLabel("Grape")).toHaveValue("Tempranillo")
+  await expect(page.getByRole("button", { name: "Selected wine" })).toBeVisible()
+  await expect(page.getByText("Tempranillo · 2011 · Rioja · Spain")).toBeVisible()
+  await page.getByRole("button", { name: "Different wine" }).click()
+  await expect(page.getByLabel("Wine name")).toHaveValue("")
+  await expect(page.getByLabel("Producer")).toHaveValue("")
   await page.getByRole("button", { name: "Close" }).click()
 
   await page.getByRole("button", { name: "Add entry" }).click()
+  await page.getByRole("button", { name: "Different wine" }).click()
   await page.getByLabel("Wine name").fill("Taganan")
   await page.getByLabel("Producer").fill("Envinate")
   await page.getByLabel("Style").fill("Red")
@@ -55,6 +58,7 @@ test("users can create an entry and see it in history", async ({ page }) => {
   await page.getByRole("button", { name: "Save entry" }).click()
 
   await page.getByRole("button", { name: "Add entry" }).click()
+  await page.getByRole("button", { name: "Different wine" }).click()
   await page.getByLabel("Wine name").fill("SP68")
   await page.getByLabel("Producer").fill("Occhipinti")
   await page.getByLabel("Style").fill("Red")
