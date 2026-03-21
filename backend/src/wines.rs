@@ -39,6 +39,13 @@ pub enum WineError {
     Database,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum CollectionWineError {
+    Forbidden,
+    Wine(WineError),
+    Database,
+}
+
 pub async fn create_or_find(database: &PgPool, input: WineInput) -> Result<Wine, WineError> {
     let normalized = NormalizedWine::from_input(input)?;
 
@@ -166,6 +173,40 @@ pub async fn list_for_collection(
     .map_err(|_| CollectionError::Database)?;
 
     rows.into_iter().map(summary_from_row).collect()
+}
+
+pub async fn add_to_collection(
+    database: &PgPool,
+    user_id: i64,
+    collection_id: i64,
+    input: WineInput,
+) -> Result<CollectionWineSummary, CollectionWineError> {
+    collections::require_membership(database, user_id, collection_id)
+        .await
+        .map_err(map_membership_error)?;
+
+    let mut transaction = database
+        .begin()
+        .await
+        .map_err(|_| CollectionWineError::Database)?;
+    let wine = create_or_find_in_transaction(&mut transaction, input)
+        .await
+        .map_err(CollectionWineError::Wine)?;
+
+    ensure_in_collection(&mut transaction, collection_id, wine.id, user_id)
+        .await
+        .map_err(CollectionWineError::Wine)?;
+
+    transaction
+        .commit()
+        .await
+        .map_err(|_| CollectionWineError::Database)?;
+
+    Ok(CollectionWineSummary {
+        wine,
+        entry_count: 0,
+        last_consumed_at: "".to_string(),
+    })
 }
 
 #[derive(Debug)]
@@ -328,11 +369,18 @@ fn normalize_vintage(vintage: Option<i32>) -> Result<Option<i32>, WineError> {
     }
 }
 
+fn map_membership_error(error: CollectionError) -> CollectionWineError {
+    match error {
+        CollectionError::Forbidden => CollectionWineError::Forbidden,
+        _ => CollectionWineError::Database,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        create_or_find, ensure_in_collection, list_for_collection, CollectionWineSummary,
-        WineError, WineInput,
+        add_to_collection, create_or_find, ensure_in_collection, list_for_collection,
+        CollectionWineError, CollectionWineSummary, WineError, WineInput,
     };
     use crate::{
         auth::{register, RegisterInput},
@@ -609,6 +657,122 @@ mod tests {
         assert_eq!(wines[0].wine.name, "Taganan");
         assert_eq!(wines[0].entry_count, 0);
         assert_eq!(wines[0].last_consumed_at, "");
+    }
+
+    #[tokio::test]
+    async fn adds_wine_to_collection_without_occasion() {
+        let database = test_database().await;
+        let user = register_user(&database).await;
+        let collection = collections::create(&database, user.id, "Home").await.unwrap();
+
+        let summary = add_to_collection(
+            &database,
+            user.id,
+            collection.id,
+            WineInput {
+                producer: Some("Envinate".to_string()),
+                name: "Taganan".to_string(),
+                vintage: Some(2022),
+                style: Some("Red".to_string()),
+                grape: Some("Listan Negro".to_string()),
+                region: Some("Tenerife".to_string()),
+                country: Some("Spain".to_string()),
+            },
+        )
+        .await
+        .expect("wine should be added to collection");
+
+        assert_eq!(summary.wine.name, "Taganan");
+        assert_eq!(summary.entry_count, 0);
+        assert_eq!(summary.last_consumed_at, "");
+
+        let wines = list_for_collection(&database, user.id, collection.id)
+            .await
+            .expect("collection wines should list");
+
+        assert_eq!(wines.len(), 1);
+        assert_eq!(wines[0], summary);
+    }
+
+    #[tokio::test]
+    async fn reuses_existing_collection_wine_without_duplicates() {
+        let database = test_database().await;
+        let user = register_user(&database).await;
+        let collection = collections::create(&database, user.id, "Home").await.unwrap();
+
+        let first = add_to_collection(
+            &database,
+            user.id,
+            collection.id,
+            WineInput {
+                producer: Some("Envinate".to_string()),
+                name: "Taganan".to_string(),
+                vintage: Some(2022),
+                style: Some("Red".to_string()),
+                grape: Some("Listan Negro".to_string()),
+                region: Some("Tenerife".to_string()),
+                country: Some("Spain".to_string()),
+            },
+        )
+        .await
+        .expect("first collection wine should be added");
+
+        let second = add_to_collection(
+            &database,
+            user.id,
+            collection.id,
+            WineInput {
+                producer: Some(" Envinate ".to_string()),
+                name: " Taganan ".to_string(),
+                vintage: Some(2022),
+                style: Some("Red".to_string()),
+                grape: Some("Listan Negro".to_string()),
+                region: Some("Tenerife".to_string()),
+                country: Some("Spain".to_string()),
+            },
+        )
+        .await
+        .expect("second collection wine should reuse existing row");
+
+        let count = sqlx::query_scalar::<_, i64>(
+            "SELECT COUNT(*)
+             FROM collection_wines
+             WHERE collection_id = $1 AND wine_id = $2",
+        )
+        .bind(collection.id)
+        .bind(first.wine.id)
+        .fetch_one(&database)
+        .await
+        .expect("collection wine count should query");
+
+        assert_eq!(first, second);
+        assert_eq!(count, 1);
+    }
+
+    #[tokio::test]
+    async fn rejects_non_member_collection_wine_creation() {
+        let database = test_database().await;
+        let owner = register_user(&database).await;
+        let stranger = register_user(&database).await;
+        let collection = collections::create(&database, owner.id, "Home").await.unwrap();
+
+        let result = add_to_collection(
+            &database,
+            stranger.id,
+            collection.id,
+            WineInput {
+                producer: Some("Envinate".to_string()),
+                name: "Taganan".to_string(),
+                vintage: Some(2022),
+                style: Some("Red".to_string()),
+                grape: Some("Listan Negro".to_string()),
+                region: Some("Tenerife".to_string()),
+                country: Some("Spain".to_string()),
+            },
+        )
+        .await;
+
+        assert_eq!(result, Err(CollectionWineError::Forbidden));
     }
 
     async fn register_user(database: &sqlx::PgPool) -> crate::auth::AuthUser {
