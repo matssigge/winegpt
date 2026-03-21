@@ -3,8 +3,7 @@
 import * as React from "react";
 import * as WineList from "./wines/WineList.bs.js";
 import * as TextField from "./ui/TextField.bs.js";
-import * as EntryDetail from "./entries/EntryDetail.bs.js";
-import * as EntryHistory from "./entries/EntryHistory.bs.js";
+import * as WineDetail from "./wines/WineDetail.bs.js";
 import * as EntryComposer from "./entries/EntryComposer.bs.js";
 import * as CollectionList from "./collections/CollectionList.bs.js";
 import * as CollectionModel from "./collections/CollectionModel.bs.js";
@@ -17,7 +16,6 @@ function AppShell(props) {
   var onInvite = props.onInvite;
   var onCreateCollection = props.onCreateCollection;
   var entryComposerMode = props.entryComposerMode;
-  var selectedWine = props.selectedWine;
   var inviteForm = props.inviteForm;
   var selectedCollection = props.selectedCollection;
   var collectionForm = props.collectionForm;
@@ -26,13 +24,6 @@ function AppShell(props) {
       });
   var setIsShareOpen = match[1];
   var isShareOpen = match[0];
-  var selectedWineLabel;
-  if (selectedWine !== undefined) {
-    var producer = selectedWine.wine.producer;
-    selectedWineLabel = producer !== undefined ? producer + " " + selectedWine.wine.name : selectedWine.wine.name;
-  } else {
-    selectedWineLabel = "this wine";
-  }
   var message = collectionForm.error;
   var tmp;
   if (selectedCollection !== undefined) {
@@ -138,141 +129,6 @@ function AppShell(props) {
   } else {
     tmp = null;
   }
-  var tmp$2;
-  if (selectedWine !== undefined) {
-    var producer$1 = selectedWine.wine.producer;
-    var producer$2 = selectedWine.wine.producer;
-    var grape = selectedWine.wine.grape;
-    var vintage = selectedWine.wine.vintage;
-    tmp$2 = JsxRuntime.jsxs("section", {
-          children: [
-            JsxRuntime.jsxs("div", {
-                  children: [
-                    JsxRuntime.jsxs("div", {
-                          children: [
-                            JsxRuntime.jsx("p", {
-                                  children: "Wine detail",
-                                  className: "text-xs font-medium uppercase tracking-[0.25em] text-stone-500"
-                                }),
-                            JsxRuntime.jsx("h3", {
-                                  children: producer$1 !== undefined ? producer$1 + " " + selectedWine.wine.name : selectedWine.wine.name,
-                                  className: "mt-2 text-2xl font-semibold text-stone-950"
-                                })
-                          ]
-                        }),
-                    JsxRuntime.jsxs("div", {
-                          children: [
-                            JsxRuntime.jsx("p", {
-                                  children: "Occasions",
-                                  className: "text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
-                                }),
-                            JsxRuntime.jsx("p", {
-                                  children: String(selectedWine.entryCount),
-                                  className: "mt-1 text-lg font-semibold text-stone-950"
-                                })
-                          ],
-                          className: "rounded-2xl border border-stone-200 bg-white px-4 py-3 text-right"
-                        })
-                  ],
-                  className: "flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
-                }),
-            JsxRuntime.jsxs("div", {
-                  children: [
-                    JsxRuntime.jsxs("section", {
-                          children: [
-                            JsxRuntime.jsx("h4", {
-                                  children: "Identity",
-                                  className: "text-sm font-semibold uppercase tracking-[0.2em] text-stone-600"
-                                }),
-                            JsxRuntime.jsxs("dl", {
-                                  children: [
-                                    JsxRuntime.jsxs("div", {
-                                          children: [
-                                            JsxRuntime.jsx("dt", {
-                                                  children: "Name",
-                                                  className: "text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
-                                                }),
-                                            JsxRuntime.jsx("dd", {
-                                                  children: selectedWine.wine.name,
-                                                  className: "mt-1 text-sm leading-6 text-stone-700"
-                                                })
-                                          ]
-                                        }),
-                                    producer$2 !== undefined ? JsxRuntime.jsxs("div", {
-                                            children: [
-                                              JsxRuntime.jsx("dt", {
-                                                    children: "Producer",
-                                                    className: "text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
-                                                  }),
-                                              JsxRuntime.jsx("dd", {
-                                                    children: producer$2,
-                                                    className: "mt-1 text-sm leading-6 text-stone-700"
-                                                  })
-                                            ]
-                                          }) : null,
-                                    grape !== undefined ? JsxRuntime.jsxs("div", {
-                                            children: [
-                                              JsxRuntime.jsx("dt", {
-                                                    children: "Grape",
-                                                    className: "text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
-                                                  }),
-                                              JsxRuntime.jsx("dd", {
-                                                    children: grape,
-                                                    className: "mt-1 text-sm leading-6 text-stone-700"
-                                                  })
-                                            ]
-                                          }) : null,
-                                    vintage !== undefined ? JsxRuntime.jsxs("div", {
-                                            children: [
-                                              JsxRuntime.jsx("dt", {
-                                                    children: "Vintage",
-                                                    className: "text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
-                                                  }),
-                                              JsxRuntime.jsx("dd", {
-                                                    children: String(vintage),
-                                                    className: "mt-1 text-sm leading-6 text-stone-700"
-                                                  })
-                                            ]
-                                          }) : null
-                                  ],
-                                  className: "mt-4 grid gap-4"
-                                })
-                          ],
-                          className: "rounded-2xl border border-stone-200 bg-white p-5"
-                        }),
-                    JsxRuntime.jsxs("section", {
-                          children: [
-                            JsxRuntime.jsx("h4", {
-                                  children: "Memory",
-                                  className: "text-sm font-semibold uppercase tracking-[0.2em] text-stone-600"
-                                }),
-                            JsxRuntime.jsx("dl", {
-                                  children: JsxRuntime.jsxs("div", {
-                                        children: [
-                                          JsxRuntime.jsx("dt", {
-                                                children: "Most recent",
-                                                className: "text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
-                                              }),
-                                          JsxRuntime.jsx("dd", {
-                                                children: selectedWine.lastConsumedAt,
-                                                className: "mt-1 text-sm leading-6 text-stone-700"
-                                              })
-                                        ]
-                                      }),
-                                  className: "mt-4 grid gap-4"
-                                })
-                          ],
-                          className: "rounded-2xl border border-stone-200 bg-white p-5"
-                        })
-                  ],
-                  className: "mt-6 grid gap-6 md:grid-cols-2"
-                })
-          ],
-          className: "rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6"
-        });
-  } else {
-    tmp$2 = null;
-  }
   return JsxRuntime.jsxs("section", {
               children: [
                 JsxRuntime.jsx("p", {
@@ -361,25 +217,13 @@ function AppShell(props) {
                               className: "mb-6"
                             }),
                         JsxRuntime.jsx("div", {
-                              children: tmp$2,
-                              className: "mb-6"
-                            }),
-                        JsxRuntime.jsx("div", {
-                              children: JsxRuntime.jsx(EntryHistory.make, {
-                                    status: props.entryStatus,
-                                    title: "Occasions for " + selectedWineLabel,
-                                    idleMessage: "Select a wine to browse its recorded occasions.",
-                                    loadingMessage: "Loading occasions for " + selectedWineLabel + "...",
-                                    emptyMessage: "No occasions recorded yet for " + selectedWineLabel + ".",
+                              children: JsxRuntime.jsx(WineDetail.make, {
+                                    selectedWine: props.selectedWine,
+                                    entryStatus: props.entryStatus,
+                                    selectedEntry: props.selectedEntry,
                                     selectedEntryId: props.selectedEntryId,
-                                    onSelectEntry: props.onSelectEntry
-                                  }),
-                              className: "mb-6"
-                            }),
-                        JsxRuntime.jsx("div", {
-                              children: JsxRuntime.jsx(EntryDetail.make, {
-                                    entry: props.selectedEntry,
-                                    onEdit: props.onEditEntry
+                                    onSelectEntry: props.onSelectEntry,
+                                    onEditEntry: props.onEditEntry
                                   }),
                               className: "mb-6"
                             }),
