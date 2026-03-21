@@ -18,6 +18,8 @@ let make = () => {
   let (selectedCollectionId, setSelectedCollectionId) = React.useState(() => None)
   let (collectionForm, setCollectionForm) = React.useState(() => CollectionState.initialCollectionForm)
   let (inviteForm, setInviteForm) = React.useState(() => CollectionInvite.initialForm)
+  let (wineStatus, setWineStatus) = React.useState(() => WineState.initialStatus())
+  let (selectedWineId, setSelectedWineId) = React.useState(() => None)
   let (entryStatus, setEntryStatus) = React.useState(() => EntryState.initialStatus())
   let (entryForm, setEntryForm) = React.useState(() => EntryState.initialForm)
   let (selectedEntryId, setSelectedEntryId) = React.useState(() => None)
@@ -39,6 +41,8 @@ let make = () => {
         setCurrentUser(_ => None)
         setCollectionStatus(_ => CollectionState.emptyCollectionStatus())
         setSelectedCollectionId(_ => None)
+        setWineStatus(_ => WineState.initialStatus())
+        setSelectedWineId(_ => None)
         setEntryStatus(_ => EntryState.initialStatus())
         setEntryForm(_ => EntryState.initialForm)
         setSelectedEntryId(_ => None)
@@ -51,6 +55,8 @@ let make = () => {
       setSessionToken(_ => None)
       setCollectionStatus(_ => CollectionState.emptyCollectionStatus())
       setSelectedCollectionId(_ => None)
+      setWineStatus(_ => WineState.initialStatus())
+      setSelectedWineId(_ => None)
       setEntryStatus(_ => EntryState.initialStatus())
       setEntryForm(_ => EntryState.initialForm)
       setSelectedEntryId(_ => None)
@@ -79,6 +85,8 @@ let make = () => {
     | _ =>
       setCollectionStatus(_ => CollectionState.emptyCollectionStatus())
       setSelectedCollectionId(_ => None)
+      setWineStatus(_ => WineState.initialStatus())
+      setSelectedWineId(_ => None)
       setEntryStatus(_ => EntryState.initialStatus())
       setSelectedEntryId(_ => None)
       setEntryComposerMode(_ => None)
@@ -172,6 +180,8 @@ let make = () => {
     CollectionSelectionStorage.clearSelectedCollectionId()
     setCollectionForm(_ => CollectionState.finishCollectionForm())
     setInviteForm(_ => CollectionInvite.initialForm)
+    setWineStatus(_ => WineState.initialStatus())
+    setSelectedWineId(_ => None)
     setEntryStatus(_ => EntryState.initialStatus())
     setEntryForm(_ => EntryState.initialForm)
     setSelectedEntryId(_ => None)
@@ -191,6 +201,8 @@ let make = () => {
         setSelectedCollectionId(_ => nextSelectedCollectionId)
         CollectionSelectionStorage.saveSelectedCollectionId(collection.id)
         setInviteForm(_ => CollectionInvite.initialForm)
+        setWineStatus(_ => WineState.readyStatus([]))
+        setSelectedWineId(_ => None)
         setEntryForm(_ => EntryState.initialForm)
         setSelectedEntryId(_ => None)
         setEntryComposerMode(_ => None)
@@ -222,6 +234,7 @@ let make = () => {
     setSelectedCollectionId(_ => nextSelectedCollectionId)
     CollectionSelectionStorage.saveSelectedCollectionId(collectionId)
     setInviteForm(_ => CollectionInvite.initialForm)
+    setSelectedWineId(_ => None)
     setEntryForm(_ => EntryState.initialForm)
     setSelectedEntryId(_ => None)
     setEntryComposerMode(_ => None)
@@ -229,7 +242,53 @@ let make = () => {
 
   let selectedCollection =
     CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId)
-  let selectedEntry = EntryState.selectedEntry(EntryState.entries(entryStatus), selectedEntryId)
+  let selectedWine =
+    selectedWineId->Belt.Option.flatMap(wineId =>
+      WineState.wines(wineStatus)->Belt.Array.getBy(summary => summary.wine.id == wineId)
+    )
+  let filteredEntries =
+    switch selectedWineId {
+    | Some(wineId) => EntryState.entries(entryStatus)->Belt.Array.keep(entry => entry.wine.id == wineId)
+    | None => []
+    }
+  let visibleEntryStatus =
+    switch entryStatus {
+    | EntryState.Idle => EntryState.Idle
+    | EntryState.Loading => EntryState.Loading
+    | EntryState.Error(message) => EntryState.Error(message)
+    | EntryState.Ready(_) => EntryState.Ready(filteredEntries)
+    }
+  let selectedEntry = EntryState.selectedEntry(filteredEntries, selectedEntryId)
+
+  React.useEffect3(() => {
+    switch (sessionToken, selectedCollection) {
+    | (Some(token), Some(collection)) =>
+      setWineStatus(_ => WineState.loadingStatus())
+
+      WineState.listWines(token, collection.id)
+      ->Js.Promise2.then(wines => {
+        setWineStatus(_ => WineState.readyStatus(wines))
+        setSelectedWineId(current =>
+          switch current {
+          | Some(wineId) if wines->Belt.Array.some(summary => summary.wine.id == wineId) => current
+          | _ => wines->Belt.Array.get(0)->Belt.Option.map(summary => summary.wine.id)
+          }
+        )
+        Js.Promise2.resolve()
+      })
+      ->Js.Promise2.catch(_ => {
+        setWineStatus(_ => WineState.errorStatus(AuthAppSupport.describeEntryHistoryError()))
+        setSelectedWineId(_ => None)
+        Js.Promise2.resolve()
+      })
+      ->ignore
+    | _ =>
+      setWineStatus(_ => WineState.initialStatus())
+      setSelectedWineId(_ => None)
+    }
+
+    None
+  }, (sessionToken, collectionStatus, selectedCollectionId))
 
   React.useEffect3(() => {
     switch (sessionToken, selectedCollection) {
@@ -258,6 +317,11 @@ let make = () => {
     None
   }, (sessionToken, collectionStatus, selectedCollectionId))
 
+  React.useEffect2(() => {
+    setSelectedEntryId(current => EntryState.resolveSelectedEntryId(filteredEntries, current))
+    None
+  }, (entryStatus, selectedWineId))
+
   let handleInvite = () =>
     switch (sessionToken, selectedCollection) {
     | (Some(token), Some(collection)) if collection->CollectionModel.isOwner && !inviteForm.isSubmitting =>
@@ -283,6 +347,13 @@ let make = () => {
 
       EntryState.updateEntry(token, collection.id, entryId, entryForm)
       ->Js.Promise2.then(entry => {
+        WineState.listWines(token, collection.id)
+        ->Js.Promise2.then(wines => {
+          setWineStatus(_ => WineState.readyStatus(wines))
+          setSelectedWineId(_ => Some(entry.wine.id))
+          Js.Promise2.resolve()
+        })
+        ->ignore
         setEntryStatus(current => {
           let entries =
             if EntryState.isReady(current) {
@@ -308,6 +379,13 @@ let make = () => {
 
       EntryState.createEntry(token, collection.id, entryForm)
       ->Js.Promise2.then(entry => {
+        WineState.listWines(token, collection.id)
+        ->Js.Promise2.then(wines => {
+          setWineStatus(_ => WineState.readyStatus(wines))
+          setSelectedWineId(_ => Some(entry.wine.id))
+          Js.Promise2.resolve()
+        })
+        ->ignore
         setEntryStatus(current => {
           let entries =
             if EntryState.isReady(current) {
@@ -333,6 +411,10 @@ let make = () => {
 
   let handleSelectEntry = entryId => {
     setSelectedEntryId(_ => Some(entryId))
+  }
+
+  let handleSelectWine = wineId => {
+    setSelectedWineId(_ => Some(wineId))
   }
 
   let openEntryComposer = () => {
@@ -370,7 +452,10 @@ let make = () => {
              selectedCollection
              selectedCollectionId
              inviteForm
-             entryStatus
+             wineStatus
+             selectedWine
+             selectedWineId
+             entryStatus=visibleEntryStatus
              entryForm
              entryComposerMode={
                switch entryComposerMode {
@@ -390,6 +475,7 @@ let make = () => {
              onEditEntry=openEntryEditor
              onOpenEntryComposer=openEntryComposer
              onCloseEntryComposer=closeEntryComposer
+             onSelectWine=handleSelectWine
              onSelectEntry=handleSelectEntry
              onSelectCollection=handleSelectCollection
              onLogout=handleLogout

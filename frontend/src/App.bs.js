@@ -5,7 +5,10 @@ import * as AppShell from "./AppShell.bs.js";
 import * as AuthCard from "./auth/AuthCard.bs.js";
 import * as AuthForm from "./auth/AuthForm.bs.js";
 import * as Caml_obj from "rescript/lib/es6/caml_obj.js";
+import * as WineState from "./wines/WineState.bs.js";
+import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as EntryState from "./entries/EntryState.bs.js";
+import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
 import * as Js_promise2 from "rescript/lib/es6/js_promise2.js";
 import * as AuthAppSupport from "./auth/AuthAppSupport.bs.js";
 import * as SessionStorage from "./auth/SessionStorage.bs.js";
@@ -71,25 +74,35 @@ function App(props) {
   var setInviteForm = match$10[1];
   var inviteForm = match$10[0];
   var match$11 = React.useState(function () {
+        return WineState.initialStatus();
+      });
+  var setWineStatus = match$11[1];
+  var wineStatus = match$11[0];
+  var match$12 = React.useState(function () {
+        
+      });
+  var setSelectedWineId = match$12[1];
+  var selectedWineId = match$12[0];
+  var match$13 = React.useState(function () {
         return EntryState.initialStatus();
       });
-  var setEntryStatus = match$11[1];
-  var entryStatus = match$11[0];
-  var match$12 = React.useState(function () {
+  var setEntryStatus = match$13[1];
+  var entryStatus = match$13[0];
+  var match$14 = React.useState(function () {
         return EntryState.initialForm;
       });
-  var setEntryForm = match$12[1];
-  var entryForm = match$12[0];
-  var match$13 = React.useState(function () {
+  var setEntryForm = match$14[1];
+  var entryForm = match$14[0];
+  var match$15 = React.useState(function () {
         
       });
-  var setSelectedEntryId = match$13[1];
-  var selectedEntryId = match$13[0];
-  var match$14 = React.useState(function () {
+  var setSelectedEntryId = match$15[1];
+  var selectedEntryId = match$15[0];
+  var match$16 = React.useState(function () {
         
       });
-  var setEntryComposerMode = match$14[1];
-  var entryComposerMode = match$14[0];
+  var setEntryComposerMode = match$16[1];
+  var entryComposerMode = match$16[0];
   React.useEffect((function () {
           var restoredToken = SessionBootstrap.loadSessionToken();
           if (restoredToken !== undefined) {
@@ -118,6 +131,12 @@ function App(props) {
                     setSelectedCollectionId(function (param) {
                           
                         });
+                    setWineStatus(function (param) {
+                          return WineState.initialStatus();
+                        });
+                    setSelectedWineId(function (param) {
+                          
+                        });
                     setEntryStatus(function (param) {
                           return EntryState.initialStatus();
                         });
@@ -143,6 +162,12 @@ function App(props) {
                   return CollectionState.emptyCollectionStatus();
                 });
             setSelectedCollectionId(function (param) {
+                  
+                });
+            setWineStatus(function (param) {
+                  return WineState.initialStatus();
+                });
+            setSelectedWineId(function (param) {
                   
                 });
             setEntryStatus(function (param) {
@@ -187,6 +212,12 @@ function App(props) {
                   return CollectionState.emptyCollectionStatus();
                 });
             setSelectedCollectionId(function (param) {
+                  
+                });
+            setWineStatus(function (param) {
+                  return WineState.initialStatus();
+                });
+            setSelectedWineId(function (param) {
                   
                 });
             setEntryStatus(function (param) {
@@ -327,6 +358,12 @@ function App(props) {
     setInviteForm(function (param) {
           return CollectionInvite.initialForm;
         });
+    setWineStatus(function (param) {
+          return WineState.initialStatus();
+        });
+    setSelectedWineId(function (param) {
+          
+        });
     setEntryStatus(function (param) {
           return EntryState.initialStatus();
         });
@@ -359,6 +396,12 @@ function App(props) {
                   CollectionSelectionStorage.saveSelectedCollectionId(collection.id);
                   setInviteForm(function (param) {
                         return CollectionInvite.initialForm;
+                      });
+                  setWineStatus(function (param) {
+                        return WineState.readyStatus([]);
+                      });
+                  setSelectedWineId(function (param) {
+                        
                       });
                   setEntryForm(function (param) {
                         return EntryState.initialForm;
@@ -396,6 +439,9 @@ function App(props) {
     setInviteForm(function (param) {
           return CollectionInvite.initialForm;
         });
+    setSelectedWineId(function (param) {
+          
+        });
     setEntryForm(function (param) {
           return EntryState.initialForm;
         });
@@ -407,7 +453,74 @@ function App(props) {
         });
   };
   var selectedCollection = CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId);
-  var selectedEntry = EntryState.selectedEntry(EntryState.entries(entryStatus), selectedEntryId);
+  var selectedWine = Belt_Option.flatMap(selectedWineId, (function (wineId) {
+          return Belt_Array.getBy(WineState.wines(wineStatus), (function (summary) {
+                        return summary.wine.id === wineId;
+                      }));
+        }));
+  var filteredEntries = selectedWineId !== undefined ? Belt_Array.keep(EntryState.entries(entryStatus), (function (entry) {
+            return entry.wine.id === selectedWineId;
+          })) : [];
+  var visibleEntryStatus;
+  visibleEntryStatus = typeof entryStatus !== "object" ? (
+      entryStatus === "Idle" ? "Idle" : "Loading"
+    ) : (
+      entryStatus.TAG === "Ready" ? ({
+            TAG: "Ready",
+            _0: filteredEntries
+          }) : ({
+            TAG: "Error",
+            _0: entryStatus._0
+          })
+    );
+  var selectedEntry = EntryState.selectedEntry(filteredEntries, selectedEntryId);
+  React.useEffect((function () {
+          var exit = 0;
+          if (sessionToken !== undefined && selectedCollection !== undefined) {
+            setWineStatus(function (param) {
+                  return WineState.loadingStatus();
+                });
+            Js_promise2.$$catch(Js_promise2.then(WineState.listWines(sessionToken, selectedCollection.id), (function (wines) {
+                        setWineStatus(function (param) {
+                              return WineState.readyStatus(wines);
+                            });
+                        setSelectedWineId(function (current) {
+                              if (current !== undefined && Belt_Array.some(wines, (function (summary) {
+                                        return summary.wine.id === current;
+                                      }))) {
+                                return current;
+                              }
+                              return Belt_Option.map(Belt_Array.get(wines, 0), (function (summary) {
+                                            return summary.wine.id;
+                                          }));
+                            });
+                        return Promise.resolve();
+                      })), (function (param) {
+                    setWineStatus(function (param) {
+                          return WineState.errorStatus(AuthAppSupport.describeEntryHistoryError());
+                        });
+                    setSelectedWineId(function (param) {
+                          
+                        });
+                    return Promise.resolve();
+                  }));
+          } else {
+            exit = 1;
+          }
+          if (exit === 1) {
+            setWineStatus(function (param) {
+                  return WineState.initialStatus();
+                });
+            setSelectedWineId(function (param) {
+                  
+                });
+          }
+          
+        }), [
+        sessionToken,
+        collectionStatus,
+        selectedCollectionId
+      ]);
   React.useEffect((function () {
           var exit = 0;
           if (sessionToken !== undefined && selectedCollection !== undefined) {
@@ -454,6 +567,14 @@ function App(props) {
         collectionStatus,
         selectedCollectionId
       ]);
+  React.useEffect((function () {
+          setSelectedEntryId(function (current) {
+                return EntryState.resolveSelectedEntryId(filteredEntries, current);
+              });
+        }), [
+        entryStatus,
+        selectedWineId
+      ]);
   var handleInvite = function () {
     if (sessionToken !== undefined && selectedCollection !== undefined && CollectionModel.isOwner(selectedCollection) && !inviteForm.isSubmitting) {
       setInviteForm(function (current) {
@@ -486,6 +607,15 @@ function App(props) {
             return EntryState.startSubmitting(current);
           });
       Js_promise2.$$catch(Js_promise2.then(EntryState.updateEntry(sessionToken, selectedCollection.id, entryComposerMode._0, entryForm), (function (entry) {
+                  Js_promise2.then(WineState.listWines(sessionToken, selectedCollection.id), (function (wines) {
+                          setWineStatus(function (param) {
+                                return WineState.readyStatus(wines);
+                              });
+                          setSelectedWineId(function (param) {
+                                return entry.wine.id;
+                              });
+                          return Promise.resolve();
+                        }));
                   setEntryStatus(function (current) {
                         var entries = EntryState.isReady(current) ? EntryState.entries(current) : [];
                         return EntryState.readyStatus(EntryState.replaceEntry(entries, entry));
@@ -513,6 +643,15 @@ function App(props) {
             return EntryState.startSubmitting(current);
           });
       Js_promise2.$$catch(Js_promise2.then(EntryState.createEntry(sessionToken, selectedCollection.id, entryForm), (function (entry) {
+                  Js_promise2.then(WineState.listWines(sessionToken, selectedCollection.id), (function (wines) {
+                          setWineStatus(function (param) {
+                                return WineState.readyStatus(wines);
+                              });
+                          setSelectedWineId(function (param) {
+                                return entry.wine.id;
+                              });
+                          return Promise.resolve();
+                        }));
                   setEntryStatus(function (current) {
                         var entries = EntryState.isReady(current) ? EntryState.entries(current) : [];
                         return EntryState.readyStatus(EntryState.appendEntry(entries, entry));
@@ -540,6 +679,11 @@ function App(props) {
   var handleSelectEntry = function (entryId) {
     setSelectedEntryId(function (param) {
           return entryId;
+        });
+  };
+  var handleSelectWine = function (wineId) {
+    setSelectedWineId(function (param) {
+          return wineId;
         });
   };
   var openEntryComposer = function () {
@@ -590,7 +734,10 @@ function App(props) {
           selectedCollection: selectedCollection,
           selectedCollectionId: selectedCollectionId,
           inviteForm: inviteForm,
-          entryStatus: entryStatus,
+          wineStatus: wineStatus,
+          selectedWine: selectedWine,
+          selectedWineId: selectedWineId,
+          entryStatus: visibleEntryStatus,
           entryForm: entryForm,
           entryComposerMode: tmp$1,
           selectedEntry: selectedEntry,
@@ -604,6 +751,7 @@ function App(props) {
           onEditEntry: openEntryEditor,
           onOpenEntryComposer: openEntryComposer,
           onCloseEntryComposer: closeEntryComposer,
+          onSelectWine: handleSelectWine,
           onSelectEntry: handleSelectEntry,
           onSelectCollection: handleSelectCollection,
           onLogout: handleLogout

@@ -6,6 +6,9 @@ let make = (
   ~selectedCollection: option<CollectionModel.collection>,
   ~selectedCollectionId: option<int>,
   ~inviteForm: CollectionInvite.form,
+  ~wineStatus: WineState.status,
+  ~selectedWine: option<WineModel.summary>,
+  ~selectedWineId: option<int>,
   ~entryStatus: EntryState.status,
   ~entryForm: EntryState.form,
   ~entryComposerMode: option<EntryComposer.mode>,
@@ -20,6 +23,7 @@ let make = (
   ~onEditEntry: unit => unit,
   ~onOpenEntryComposer: unit => unit,
   ~onCloseEntryComposer: unit => unit,
+  ~onSelectWine: int => unit,
   ~onSelectEntry: int => unit,
   ~onSelectCollection: int => unit,
   ~onLogout: unit => unit,
@@ -36,7 +40,7 @@ let make = (
         <p className="mt-6 max-w-xl text-base leading-7 text-stone-700 md:text-lg">
           {React.string("Signed in as ")}
           <span className="font-semibold text-stone-900"> {React.string(user.email)} </span>
-          {React.string(". Browse your shared history first, then add a new entry when you need it.")}
+          {React.string(". Browse the wines you know first, then open the occasions behind them when you need more context.")}
         </p>
       </div>
       <button
@@ -158,6 +162,35 @@ let make = (
              } else {
                React.null
              }}
+          </section>
+        | None => React.null
+        }}
+      </div>
+      <div className="mb-6">
+        <WineList status=wineStatus selectedWineId onSelectWine />
+      </div>
+      <div className="mb-6">
+        {switch selectedWine {
+        | Some(summary) =>
+          <section className="rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
+            <p className="text-xs font-medium uppercase tracking-[0.25em] text-stone-500">
+              {React.string("Selected wine")}
+            </p>
+            <h3 className="mt-2 text-2xl font-semibold text-stone-950">
+              {React.string(
+                 switch summary.wine.producer {
+                 | Some(producer) => producer ++ " " ++ summary.wine.name
+                 | None => summary.wine.name
+                 },
+               )}
+            </h3>
+            <p className="mt-2 text-sm text-stone-600">
+              {React.string(
+                 summary.entryCount->Belt.Int.toString ++
+                 " recorded occasions. Most recent: " ++
+                 summary.lastConsumedAt,
+               )}
+            </p>
           </section>
         | None => React.null
         }}
