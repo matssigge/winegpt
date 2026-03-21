@@ -14,9 +14,10 @@ test("users can create an entry and see it in history", async ({ page }) => {
   await page.getByRole("button", { name: "Create account" }).click()
 
   await page.getByRole("button", { name: "Open menu" }).click()
+  await page.getByRole("button", { name: "Create collection" }).click()
   await page.getByLabel("New collection").fill(collectionName)
   await page.getByRole("button", { name: "Create collection" }).click()
-  await page.getByRole("button", { name: "Open menu" }).click()
+  await page.getByRole("button", { name: "Close" }).click()
   await expect(page.getByText(`Collection: ${collectionName}`)).toBeVisible()
 
   await page.getByRole("button", { name: "Add wine" }).click()
