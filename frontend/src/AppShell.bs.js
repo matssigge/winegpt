@@ -19,6 +19,7 @@ function AppShell(props) {
   var onCreateCollection = props.onCreateCollection;
   var wineComposerMode = props.wineComposerMode;
   var entryComposerMode = props.entryComposerMode;
+  var selectedWine = props.selectedWine;
   var inviteForm = props.inviteForm;
   var selectedCollection = props.selectedCollection;
   var collectionForm = props.collectionForm;
@@ -229,7 +230,7 @@ function AppShell(props) {
                             }),
                         JsxRuntime.jsx("div", {
                               children: JsxRuntime.jsx(WineDetail.make, {
-                                    selectedWine: props.selectedWine,
+                                    selectedWine: selectedWine,
                                     entryStatus: props.entryStatus,
                                     selectedEntry: props.selectedEntry,
                                     selectedEntryId: props.selectedEntryId,
@@ -246,7 +247,10 @@ function AppShell(props) {
                         entryComposerMode !== undefined ? JsxRuntime.jsx(EntryComposer.make, {
                                 mode: entryComposerMode,
                                 entryForm: props.entryForm,
+                                selectedWine: selectedWine,
                                 onEntryFormChange: props.onEntryFormChange,
+                                onUseSelectedWine: props.onUseSelectedWineForEntry,
+                                onUseNewWine: props.onUseNewWineForEntry,
                                 onSubmit: props.onCreateEntry,
                                 onClose: props.onCloseEntryComposer
                               }) : null,

@@ -1,4 +1,9 @@
 type entry = EntryModel.entry
+type wine = EntryModel.wine
+
+type wineSource =
+  | ExistingWine(wine)
+  | NewWine
 
 type status =
   | Idle
@@ -7,6 +12,7 @@ type status =
   | Error(string)
 
 type form = {
+  wineSource: wineSource,
   wineName: string,
   producer: string,
   style: string,
@@ -63,6 +69,7 @@ let readyStatus = entries => Ready(entries)
 let errorStatus = message => Error(message)
 
 let initialForm = {
+  wineSource: NewWine,
   wineName: "",
   producer: "",
   style: "",
@@ -127,6 +134,7 @@ let toDateTimeLocalValue = consumedAt => {
 }
 
 let formFromEntry = (entry: entry) => {
+  wineSource: NewWine,
   wineName: entry.wine.name,
   producer: entry.wine.producer->Belt.Option.getWithDefault(""),
   style: entry.wine.style->Belt.Option.getWithDefault(""),
@@ -146,6 +154,7 @@ let formFromEntry = (entry: entry) => {
 }
 
 let formFromWineSummary = (summary: WineModel.summary) => {
+  wineSource: ExistingWine(summary.wine),
   wineName: summary.wine.name,
   producer: summary.wine.producer->Belt.Option.getWithDefault(""),
   style: summary.wine.style->Belt.Option.getWithDefault(""),
@@ -159,6 +168,46 @@ let formFromWineSummary = (summary: WineModel.summary) => {
   pairingNotes: "",
   tastingNotes: "",
   rating: "",
+  isSubmitting: false,
+  error: None,
+  success: None,
+}
+
+let useNewWine = form => {
+  wineSource: NewWine,
+  wineName: "",
+  producer: "",
+  style: "",
+  grape: "",
+  region: "",
+  country: "",
+  vintage: "",
+  consumedAt: form.consumedAt,
+  venueName: form.venueName,
+  locationText: form.locationText,
+  pairingNotes: form.pairingNotes,
+  tastingNotes: form.tastingNotes,
+  rating: form.rating,
+  isSubmitting: false,
+  error: None,
+  success: None,
+}
+
+let useExistingWine = (form, wine: wine) => {
+  wineSource: ExistingWine(wine),
+  wineName: wine.name,
+  producer: wine.producer->Belt.Option.getWithDefault(""),
+  style: wine.style->Belt.Option.getWithDefault(""),
+  grape: wine.grape->Belt.Option.getWithDefault(""),
+  region: wine.region->Belt.Option.getWithDefault(""),
+  country: wine.country->Belt.Option.getWithDefault(""),
+  vintage: wine.vintage->Belt.Option.map(Belt.Int.toString)->Belt.Option.getWithDefault(""),
+  consumedAt: form.consumedAt,
+  venueName: form.venueName,
+  locationText: form.locationText,
+  pairingNotes: form.pairingNotes,
+  tastingNotes: form.tastingNotes,
+  rating: form.rating,
   isSubmitting: false,
   error: None,
   success: None,
@@ -241,11 +290,27 @@ let createEntry = (token, collectionId, form: form) =>
     Js.Promise2.then(intOption(form.vintage, ~errorCode="invalid_wine_vintage"), vintage =>
       Js.Promise2.then(intOption(form.rating, ~errorCode="invalid_rating"), rating =>
         {
-          let producer = stringOption(form.producer)
-          let style = stringOption(form.style)
-          let grape = stringOption(form.grape)
-          let region = stringOption(form.region)
-          let country = stringOption(form.country)
+          let (producer, name, vintage, style, grape, region, country) =
+            switch form.wineSource {
+            | ExistingWine(wine) => (
+                wine.producer,
+                wine.name,
+                wine.vintage,
+                wine.style,
+                wine.grape,
+                wine.region,
+                wine.country,
+              )
+            | NewWine => (
+                stringOption(form.producer),
+                form.wineName,
+                vintage,
+                stringOption(form.style),
+                stringOption(form.grape),
+                stringOption(form.region),
+                stringOption(form.country),
+              )
+            }
           let venueName = stringOption(form.venueName)
           let locationText = stringOption(form.locationText)
           let pairingNotes = stringOption(form.pairingNotes)
@@ -256,7 +321,7 @@ let createEntry = (token, collectionId, form: form) =>
               token,
               collectionId,
               ~producer,
-              ~name=form.wineName,
+              ~name,
               ~vintage,
               ~style?,
               ~grape?,

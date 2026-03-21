@@ -8,11 +8,20 @@ type mode =
   | Create
   | Edit
 
+let wineLabel = (wine: EntryModel.wine) =>
+  switch wine.producer {
+  | Some(producer) => producer ++ " " ++ wine.name
+  | None => wine.name
+  }
+
 @react.component
 let make = (
   ~mode,
   ~entryForm: EntryState.form,
+  ~selectedWine: option<WineModel.summary>,
   ~onEntryFormChange: (. string, string) => unit,
+  ~onUseSelectedWine: unit => unit,
+  ~onUseNewWine: unit => unit,
   ~onSubmit: unit => unit,
   ~onClose: unit => unit,
 ) => {
@@ -39,49 +48,163 @@ let make = (
         </button>
       </div>
       <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <TextField
-          label="Wine name"
-          value=entryForm.wineName
-          onChange={value => onEntryFormChange(. "wineName", value)}
-          autoComplete="off"
-        />
-        <TextField
-          label="Producer"
-          value=entryForm.producer
-          onChange={value => onEntryFormChange(. "producer", value)}
-          autoComplete="organization"
-        />
-        <TextField
-          label="Style"
-          value=entryForm.style
-          onChange={value => onEntryFormChange(. "style", value)}
-          autoComplete="off"
-        />
-        <TextField
-          label="Grape"
-          value=entryForm.grape
-          onChange={value => onEntryFormChange(. "grape", value)}
-          autoComplete="off"
-        />
-        <TextField
-          label="Region"
-          value=entryForm.region
-          onChange={value => onEntryFormChange(. "region", value)}
-          autoComplete="off"
-        />
-        <TextField
-          label="Country"
-          value=entryForm.country
-          onChange={value => onEntryFormChange(. "country", value)}
-          autoComplete="country-name"
-        />
-        <TextField
-          label="Vintage"
-          type_="number"
-          value=entryForm.vintage
-          onChange={value => onEntryFormChange(. "vintage", value)}
-          autoComplete="off"
-        />
+        {switch (mode, selectedWine) {
+         | (Create, Some(_)) =>
+           <div className="md:col-span-2">
+             <div className="flex flex-wrap gap-3">
+               <button
+                 type_="button"
+                 onClick={_ => onUseSelectedWine()}
+                 className={
+                   switch entryForm.wineSource {
+                   | EntryState.ExistingWine(_) =>
+                     "rounded-2xl bg-stone-950 px-4 py-3 text-sm font-semibold text-white"
+                   | EntryState.NewWine =>
+                     "rounded-2xl border border-stone-300 px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950"
+                   }
+                 }>
+                 {React.string("Selected wine")}
+               </button>
+               <button
+                 type_="button"
+                 onClick={_ => onUseNewWine()}
+                 className={
+                   switch entryForm.wineSource {
+                   | EntryState.NewWine =>
+                     "rounded-2xl bg-stone-950 px-4 py-3 text-sm font-semibold text-white"
+                   | EntryState.ExistingWine(_) =>
+                     "rounded-2xl border border-stone-300 px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950"
+                   }
+                 }>
+                 {React.string("Different wine")}
+               </button>
+             </div>
+             {switch entryForm.wineSource {
+             | EntryState.ExistingWine(wine) =>
+               <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4">
+                 <p className="text-xs font-medium uppercase tracking-[0.2em] text-stone-500">
+                   {React.string("Using")}
+                 </p>
+                 <p className="mt-2 text-base font-semibold text-stone-950">
+                   {React.string(wine->wineLabel)}
+                 </p>
+                 <p className="mt-1 text-sm text-stone-600">
+                   {React.string(
+                      Belt.Array.keepMap(
+                        [
+                          wine.grape,
+                          wine.vintage->Belt.Option.map(Belt.Int.toString),
+                          wine.region,
+                          wine.country,
+                        ],
+                        value => value,
+                      )->Js.Array2.joinWith(" · "),
+                    )}
+                 </p>
+               </div>
+             | EntryState.NewWine => React.null
+             }}
+           </div>
+         | _ => React.null
+         }}
+        {switch entryForm.wineSource {
+         | EntryState.NewWine =>
+           <>
+             <TextField
+               label="Wine name"
+               value=entryForm.wineName
+               onChange={value => onEntryFormChange(. "wineName", value)}
+               autoComplete="off"
+             />
+             <TextField
+               label="Producer"
+               value=entryForm.producer
+               onChange={value => onEntryFormChange(. "producer", value)}
+               autoComplete="organization"
+             />
+             <TextField
+               label="Style"
+               value=entryForm.style
+               onChange={value => onEntryFormChange(. "style", value)}
+               autoComplete="off"
+             />
+             <TextField
+               label="Grape"
+               value=entryForm.grape
+               onChange={value => onEntryFormChange(. "grape", value)}
+               autoComplete="off"
+             />
+             <TextField
+               label="Region"
+               value=entryForm.region
+               onChange={value => onEntryFormChange(. "region", value)}
+               autoComplete="off"
+             />
+             <TextField
+               label="Country"
+               value=entryForm.country
+               onChange={value => onEntryFormChange(. "country", value)}
+               autoComplete="country-name"
+             />
+             <TextField
+               label="Vintage"
+               type_="number"
+               value=entryForm.vintage
+               onChange={value => onEntryFormChange(. "vintage", value)}
+               autoComplete="off"
+             />
+           </>
+         | EntryState.ExistingWine(_) =>
+           switch mode {
+           | Edit =>
+             <>
+               <TextField
+                 label="Wine name"
+                 value=entryForm.wineName
+                 onChange={value => onEntryFormChange(. "wineName", value)}
+                 autoComplete="off"
+               />
+               <TextField
+                 label="Producer"
+                 value=entryForm.producer
+                 onChange={value => onEntryFormChange(. "producer", value)}
+                 autoComplete="organization"
+               />
+               <TextField
+                 label="Style"
+                 value=entryForm.style
+                 onChange={value => onEntryFormChange(. "style", value)}
+                 autoComplete="off"
+               />
+               <TextField
+                 label="Grape"
+                 value=entryForm.grape
+                 onChange={value => onEntryFormChange(. "grape", value)}
+                 autoComplete="off"
+               />
+               <TextField
+                 label="Region"
+                 value=entryForm.region
+                 onChange={value => onEntryFormChange(. "region", value)}
+                 autoComplete="off"
+               />
+               <TextField
+                 label="Country"
+                 value=entryForm.country
+                 onChange={value => onEntryFormChange(. "country", value)}
+                 autoComplete="country-name"
+               />
+               <TextField
+                 label="Vintage"
+                 type_="number"
+                 value=entryForm.vintage
+                 onChange={value => onEntryFormChange(. "vintage", value)}
+                 autoComplete="off"
+               />
+             </>
+           | Create => React.null
+           }
+         }}
         <TextField
           label="Consumed at"
           type_="datetime-local"

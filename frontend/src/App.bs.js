@@ -831,6 +831,19 @@ function App(props) {
           
         });
   };
+  var useSelectedWineForEntry = function () {
+    if (selectedWine !== undefined) {
+      return setEntryForm(function (current) {
+                  return EntryState.useExistingWine(current, selectedWine.wine);
+                });
+    }
+    
+  };
+  var useNewWineForEntry = function () {
+    setEntryForm(function (current) {
+          return EntryState.useNewWine(current);
+        });
+  };
   var openWineComposer = function () {
     setWineForm(function (param) {
           return WineCapture.initialForm;
@@ -907,6 +920,8 @@ function App(props) {
           onInviteFormChange: updateInviteForm,
           onInvite: handleInvite,
           onEntryFormChange: updateEntryForm,
+          onUseSelectedWineForEntry: useSelectedWineForEntry,
+          onUseNewWineForEntry: useNewWineForEntry,
           onWineFormChange: updateWineForm,
           onCreateWine: handleCreateWine,
           onCreateEntry: handleCreateEntry,

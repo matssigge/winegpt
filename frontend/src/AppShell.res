@@ -23,6 +23,8 @@ let make = (
   ~onInviteFormChange: string => unit,
   ~onInvite: unit => unit,
   ~onEntryFormChange: (. string, string) => unit,
+  ~onUseSelectedWineForEntry: unit => unit,
+  ~onUseNewWineForEntry: unit => unit,
   ~onWineFormChange: (. string, string) => unit,
   ~onCreateWine: unit => unit,
   ~onCreateEntry: unit => unit,
@@ -204,7 +206,10 @@ let make = (
          <EntryComposer
            mode
            entryForm
+           selectedWine
            onEntryFormChange
+           onUseSelectedWine=onUseSelectedWineForEntry
+           onUseNewWine=onUseNewWineForEntry
            onSubmit=onCreateEntry
            onClose=onCloseEntryComposer
          />

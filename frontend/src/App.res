@@ -497,6 +497,16 @@ let make = () => {
     setWineComposerMode(_ => None)
   }
 
+  let useSelectedWineForEntry = () =>
+    switch selectedWine {
+    | Some(summary) => setEntryForm(current => EntryState.useExistingWine(current, summary.wine))
+    | None => ()
+    }
+
+  let useNewWineForEntry = () => {
+    setEntryForm(current => EntryState.useNewWine(current))
+  }
+
   let openWineComposer = () => {
     setWineForm(_ => WineCapture.initialForm)
     setWineComposerMode(_ => Some(WineComposer.Create))
@@ -561,6 +571,8 @@ let make = () => {
              onInviteFormChange=updateInviteForm
              onInvite=handleInvite
              onEntryFormChange=updateEntryForm
+             onUseSelectedWineForEntry=useSelectedWineForEntry
+             onUseNewWineForEntry=useNewWineForEntry
              onWineFormChange=updateWineForm
              onCreateWine=handleCreateWine
              onCreateEntry=handleCreateEntry
