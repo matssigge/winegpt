@@ -23,199 +23,316 @@ function AppShell(props) {
   var inviteForm = props.inviteForm;
   var selectedCollection = props.selectedCollection;
   var collectionForm = props.collectionForm;
+  var hasSelectedCollection = selectedCollection !== undefined;
+  var primaryActionClasses = "rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400";
+  var secondaryActionClasses = "rounded-2xl border border-stone-300 px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950 disabled:cursor-not-allowed disabled:border-stone-200 disabled:text-stone-400";
   var match = React.useState(function () {
         return false;
       });
-  var setIsShareOpen = match[1];
-  var isShareOpen = match[0];
-  var message = collectionForm.error;
+  var setIsMenuOpen = match[1];
+  var isMenuOpen = match[0];
+  var match$1 = React.useState(function () {
+        return false;
+      });
+  var setIsShareOpen = match$1[1];
+  var isShareOpen = match$1[0];
+  var match$2 = React.useState(function () {
+        return false;
+      });
+  var setIsAddActionsOpen = match$2[1];
   var tmp;
-  if (selectedCollection !== undefined) {
+  if (isMenuOpen) {
+    var message = collectionForm.error;
     var tmp$1;
-    if (CollectionModel.isOwner(selectedCollection) && isShareOpen) {
-      var message$1 = inviteForm.error;
-      var message$2 = inviteForm.success;
-      tmp$1 = JsxRuntime.jsxs("div", {
+    if (selectedCollection !== undefined) {
+      var tmp$2;
+      if (CollectionModel.isOwner(selectedCollection) && isShareOpen) {
+        var message$1 = inviteForm.error;
+        var message$2 = inviteForm.success;
+        tmp$2 = JsxRuntime.jsxs("div", {
+              children: [
+                JsxRuntime.jsxs("div", {
+                      children: [
+                        JsxRuntime.jsx("div", {
+                              children: JsxRuntime.jsx(TextField.make, {
+                                    label: "Invite by email",
+                                    value: inviteForm.email,
+                                    onChange: props.onInviteFormChange,
+                                    autoComplete: "email",
+                                    type_: "email"
+                                  }),
+                              className: "flex-1"
+                            }),
+                        JsxRuntime.jsx("button", {
+                              children: inviteForm.isSubmitting ? "Inviting..." : "Invite",
+                              className: primaryActionClasses,
+                              disabled: inviteForm.isSubmitting,
+                              type: "button",
+                              onClick: (function (param) {
+                                  onInvite();
+                                })
+                            })
+                      ],
+                      className: "flex flex-col gap-4 md:flex-row md:items-end"
+                    }),
+                message$1 !== undefined ? JsxRuntime.jsx("div", {
+                        children: message$1,
+                        className: "mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+                      }) : null,
+                message$2 !== undefined ? JsxRuntime.jsx("div", {
+                        children: message$2,
+                        className: "mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+                      }) : null
+              ],
+              className: "mt-5 border-t border-stone-200 pt-5"
+            });
+      } else {
+        tmp$2 = null;
+      }
+      tmp$1 = JsxRuntime.jsxs("section", {
             children: [
               JsxRuntime.jsxs("div", {
                     children: [
-                      JsxRuntime.jsx("div", {
-                            children: JsxRuntime.jsx(TextField.make, {
-                                  label: "Invite by email",
-                                  value: inviteForm.email,
-                                  onChange: props.onInviteFormChange,
-                                  autoComplete: "email",
-                                  type_: "email"
-                                }),
-                            className: "flex-1"
+                      JsxRuntime.jsxs("div", {
+                            children: [
+                              JsxRuntime.jsx("h2", {
+                                    children: "Selected collection",
+                                    className: "text-sm font-semibold uppercase tracking-[0.2em] text-stone-600"
+                                  }),
+                              JsxRuntime.jsx("p", {
+                                    children: selectedCollection.name,
+                                    className: "mt-2 text-lg font-semibold text-stone-950"
+                                  }),
+                              JsxRuntime.jsx("p", {
+                                    children: selectedCollection.role,
+                                    className: "mt-1 text-xs uppercase tracking-[0.2em] text-stone-500"
+                                  })
+                            ]
                           }),
-                      JsxRuntime.jsx("button", {
-                            children: inviteForm.isSubmitting ? "Inviting..." : "Invite",
-                            className: "rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400",
-                            disabled: inviteForm.isSubmitting,
-                            type: "button",
-                            onClick: (function (param) {
-                                onInvite();
-                              })
-                          })
+                      CollectionModel.isOwner(selectedCollection) ? JsxRuntime.jsx("button", {
+                              children: isShareOpen ? "Close share" : "Share collection",
+                              className: secondaryActionClasses,
+                              type: "button",
+                              onClick: (function (param) {
+                                  setIsShareOpen(function (current) {
+                                        return !current;
+                                      });
+                                })
+                            }) : null
                     ],
-                    className: "flex flex-col gap-4 md:flex-row md:items-end"
+                    className: "flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
                   }),
-              message$1 !== undefined ? JsxRuntime.jsx("div", {
-                      children: message$1,
-                      className: "mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
-                    }) : null,
-              message$2 !== undefined ? JsxRuntime.jsx("div", {
-                      children: message$2,
-                      className: "mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
-                    }) : null
+              tmp$2
             ],
-            className: "mt-5 border-t border-stone-200 pt-5"
+            className: "rounded-2xl border border-stone-200 bg-white p-5"
           });
     } else {
       tmp$1 = null;
     }
-    tmp = JsxRuntime.jsxs("section", {
-          children: [
-            JsxRuntime.jsxs("div", {
-                  children: [
-                    JsxRuntime.jsxs("div", {
-                          children: [
-                            JsxRuntime.jsx("p", {
-                                  children: "Collection",
-                                  className: "text-xs font-medium uppercase tracking-[0.25em] text-stone-500"
-                                }),
-                            JsxRuntime.jsxs("div", {
-                                  children: [
-                                    JsxRuntime.jsx("h2", {
-                                          children: selectedCollection.name,
-                                          className: "text-xl font-semibold text-stone-950"
-                                        }),
-                                    JsxRuntime.jsx("span", {
-                                          children: selectedCollection.role,
-                                          className: "rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600"
-                                        })
-                                  ],
-                                  className: "mt-2 flex flex-wrap items-center gap-3"
-                                })
-                          ]
-                        }),
-                    JsxRuntime.jsxs("div", {
-                          children: [
-                            CollectionModel.isOwner(selectedCollection) ? JsxRuntime.jsx("button", {
-                                    children: isShareOpen ? "Close share" : "Share",
-                                    className: "rounded-2xl border border-stone-300 px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950",
-                                    type: "button",
-                                    onClick: (function (param) {
-                                        setIsShareOpen(function (current) {
-                                              return !current;
-                                            });
+    tmp = JsxRuntime.jsx("section", {
+          children: JsxRuntime.jsxs("div", {
+                children: [
+                  JsxRuntime.jsxs("div", {
+                        children: [
+                          JsxRuntime.jsx("p", {
+                                children: "Signed in",
+                                className: "text-xs font-medium uppercase tracking-[0.25em] text-stone-500"
+                              }),
+                          JsxRuntime.jsx("p", {
+                                children: props.user.email,
+                                className: "mt-2 text-sm font-medium text-stone-900"
+                              })
+                        ],
+                        className: "rounded-2xl border border-stone-200 bg-white p-5"
+                      }),
+                  JsxRuntime.jsx(CollectionList.make, {
+                        status: props.collectionStatus,
+                        selectedCollectionId: Js_null_undefined.fromOption(props.selectedCollectionId),
+                        onSelectCollection: props.onSelectCollection
+                      }),
+                  JsxRuntime.jsxs("section", {
+                        children: [
+                          JsxRuntime.jsx("h2", {
+                                children: "Create collection",
+                                className: "text-sm font-semibold uppercase tracking-[0.2em] text-stone-600"
+                              }),
+                          JsxRuntime.jsxs("div", {
+                                children: [
+                                  JsxRuntime.jsx("div", {
+                                        children: JsxRuntime.jsx(TextField.make, {
+                                              label: "New collection",
+                                              value: collectionForm.name,
+                                              onChange: props.onCollectionFormChange,
+                                              autoComplete: "off"
+                                            }),
+                                        className: "flex-1"
+                                      }),
+                                  JsxRuntime.jsx("button", {
+                                        children: collectionForm.isSubmitting ? "Creating..." : "Create collection",
+                                        className: primaryActionClasses,
+                                        disabled: collectionForm.isSubmitting,
+                                        type: "button",
+                                        onClick: (function (param) {
+                                            onCreateCollection();
+                                          })
                                       })
-                                  }) : null,
-                            JsxRuntime.jsx("button", {
-                                  children: "Add wine",
-                                  className: "rounded-2xl border border-stone-300 px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950",
-                                  type: "button",
-                                  onClick: (function (param) {
-                                      onOpenWineComposer();
-                                    })
-                                }),
-                            JsxRuntime.jsx("button", {
-                                  children: "Add entry",
-                                  className: "rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800",
-                                  type: "button",
-                                  onClick: (function (param) {
-                                      onOpenEntryComposer();
-                                    })
-                                })
-                          ],
-                          className: "flex flex-wrap gap-3"
-                        })
-                  ],
-                  className: "flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
-                }),
-            tmp$1
-          ],
-          className: "rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-5"
+                                ],
+                                className: "mt-4 flex flex-col gap-4 md:flex-row md:items-end"
+                              }),
+                          message !== undefined ? JsxRuntime.jsx("div", {
+                                  children: message,
+                                  className: "mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+                                }) : null
+                        ],
+                        className: "rounded-2xl border border-stone-200 bg-white p-5"
+                      }),
+                  tmp$1,
+                  JsxRuntime.jsx("button", {
+                        children: "Log out",
+                        className: secondaryActionClasses,
+                        type: "button",
+                        onClick: (function (param) {
+                            onLogout();
+                          })
+                      })
+                ],
+                className: "flex flex-col gap-6"
+              }),
+          className: "mb-6 rounded-[1.75rem] border border-stone-900/10 bg-stone-50/90 p-6"
         });
   } else {
     tmp = null;
   }
   return JsxRuntime.jsxs("section", {
               children: [
-                JsxRuntime.jsx("p", {
-                      children: "Wine",
-                      className: "mb-3 font-mono text-xs uppercase tracking-[0.35em] text-stone-600"
-                    }),
                 JsxRuntime.jsxs("div", {
                       children: [
                         JsxRuntime.jsxs("div", {
                               children: [
+                                JsxRuntime.jsx("p", {
+                                      children: "Wine",
+                                      className: "font-mono text-xs uppercase tracking-[0.35em] text-stone-600"
+                                    }),
                                 JsxRuntime.jsx("h1", {
                                       children: "Remember the bottles worth coming back to.",
-                                      className: "max-w-xl font-serif text-5xl leading-none tracking-[-0.04em] text-stone-950 md:text-6xl"
+                                      className: "mt-3 max-w-xl font-serif text-5xl leading-none tracking-[-0.04em] text-stone-950 md:text-6xl"
                                     }),
-                                JsxRuntime.jsxs("p", {
-                                      children: [
-                                        "Signed in as ",
-                                        JsxRuntime.jsx("span", {
-                                              children: props.user.email,
-                                              className: "font-semibold text-stone-900"
+                                JsxRuntime.jsx("div", {
+                                      children: selectedCollection !== undefined ? JsxRuntime.jsxs(JsxRuntime.Fragment, {
+                                              children: [
+                                                JsxRuntime.jsx("span", {
+                                                      children: "Collection: " + selectedCollection.name,
+                                                      className: "rounded-full border border-stone-300 bg-stone-50 px-3 py-1 font-medium text-stone-800"
+                                                    }),
+                                                JsxRuntime.jsx("span", {
+                                                      children: selectedCollection.role,
+                                                      className: "rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600"
+                                                    })
+                                              ]
+                                            }) : JsxRuntime.jsx("span", {
+                                              children: "No collection selected",
+                                              className: "rounded-full border border-dashed border-stone-300 px-3 py-1"
                                             }),
-                                        ". Browse the wines you know first, then open the occasions behind them when you need more context."
-                                      ],
-                                      className: "mt-6 max-w-xl text-base leading-7 text-stone-700 md:text-lg"
+                                      className: "mt-5 flex flex-wrap items-center gap-3 text-sm text-stone-600"
                                     })
                               ]
                             }),
                         JsxRuntime.jsx("button", {
-                              children: "Log out",
+                              children: isMenuOpen ? "Close" : "Menu",
+                              "aria-label": "Open menu",
                               className: "rounded-2xl border border-stone-300 px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950",
                               type: "button",
                               onClick: (function (param) {
-                                  onLogout();
+                                  setIsMenuOpen(function (current) {
+                                        return !current;
+                                      });
                                 })
                             })
                       ],
-                      className: "flex flex-col gap-6 md:flex-row md:items-start md:justify-between"
+                      className: "flex items-start justify-between gap-4"
+                    }),
+                JsxRuntime.jsx("p", {
+                      children: "Browse the wines you know first, then open the occasions behind them when you need more context.",
+                      className: "mt-6 max-w-xl text-base leading-7 text-stone-700 md:text-lg"
                     }),
                 JsxRuntime.jsxs("div", {
                       children: [
-                        JsxRuntime.jsxs("section", {
+                        tmp,
+                        JsxRuntime.jsxs("div", {
                               children: [
+                                JsxRuntime.jsx("div", {
+                                      children: hasSelectedCollection ? "Add to the selected collection." : "Open the menu to choose or create a collection first.",
+                                      className: "text-sm text-stone-600"
+                                    }),
                                 JsxRuntime.jsxs("div", {
                                       children: [
-                                        JsxRuntime.jsx("div", {
-                                              children: JsxRuntime.jsx(TextField.make, {
-                                                    label: "New collection",
-                                                    value: collectionForm.name,
-                                                    onChange: props.onCollectionFormChange,
-                                                    autoComplete: "off"
-                                                  }),
-                                              className: "flex-1"
-                                            }),
                                         JsxRuntime.jsx("button", {
-                                              children: collectionForm.isSubmitting ? "Creating..." : "Create collection",
-                                              className: "rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400",
-                                              disabled: collectionForm.isSubmitting,
+                                              children: "Add wine",
+                                              className: secondaryActionClasses,
+                                              disabled: !hasSelectedCollection,
                                               type: "button",
                                               onClick: (function (param) {
-                                                  onCreateCollection();
+                                                  onOpenWineComposer();
+                                                })
+                                            }),
+                                        JsxRuntime.jsx("button", {
+                                              children: "Add entry",
+                                              className: primaryActionClasses,
+                                              disabled: !hasSelectedCollection,
+                                              type: "button",
+                                              onClick: (function (param) {
+                                                  onOpenEntryComposer();
                                                 })
                                             })
                                       ],
-                                      className: "flex flex-col gap-4 md:flex-row md:items-end"
+                                      className: "hidden gap-3 md:flex"
                                     }),
-                                message !== undefined ? JsxRuntime.jsx("div", {
-                                        children: message,
-                                        className: "mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
-                                      }) : null
+                                JsxRuntime.jsxs("div", {
+                                      children: [
+                                        JsxRuntime.jsx("button", {
+                                              children: "+",
+                                              "aria-label": "Open add menu",
+                                              className: "flex h-14 w-14 items-center justify-center rounded-full bg-stone-950 text-2xl font-semibold text-white shadow-lg transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400",
+                                              disabled: !hasSelectedCollection,
+                                              type: "button",
+                                              onClick: (function (param) {
+                                                  setIsAddActionsOpen(function (current) {
+                                                        return !current;
+                                                      });
+                                                })
+                                            }),
+                                        match$2[0] && hasSelectedCollection ? JsxRuntime.jsxs("div", {
+                                                children: [
+                                                  JsxRuntime.jsx("button", {
+                                                        children: "Add wine",
+                                                        className: "block w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-stone-700 transition hover:bg-stone-50 hover:text-stone-950",
+                                                        type: "button",
+                                                        onClick: (function (param) {
+                                                            setIsAddActionsOpen(function (param) {
+                                                                  return false;
+                                                                });
+                                                            onOpenWineComposer();
+                                                          })
+                                                      }),
+                                                  JsxRuntime.jsx("button", {
+                                                        children: "Add entry",
+                                                        className: "block w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-stone-700 transition hover:bg-stone-50 hover:text-stone-950",
+                                                        type: "button",
+                                                        onClick: (function (param) {
+                                                            setIsAddActionsOpen(function (param) {
+                                                                  return false;
+                                                                });
+                                                            onOpenEntryComposer();
+                                                          })
+                                                      })
+                                                ],
+                                                className: "absolute right-0 top-16 z-10 w-44 rounded-2xl border border-stone-200 bg-white p-2 shadow-[0_24px_80px_rgba(81,46,23,0.2)]"
+                                              }) : null
+                                      ],
+                                      className: "relative md:hidden"
+                                    })
                               ],
-                              className: "mb-6 rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6"
-                            }),
-                        JsxRuntime.jsx("div", {
-                              children: tmp,
-                              className: "mb-6"
+                              className: "mb-6 flex items-center justify-between gap-3"
                             }),
                         JsxRuntime.jsx("div", {
                               children: JsxRuntime.jsx(WineList.make, {
@@ -240,11 +357,6 @@ function AppShell(props) {
                                     onEditEntry: props.onEditEntry
                                   }),
                               className: "mb-6"
-                            }),
-                        JsxRuntime.jsx(CollectionList.make, {
-                              status: props.collectionStatus,
-                              selectedCollectionId: Js_null_undefined.fromOption(props.selectedCollectionId),
-                              onSelectCollection: props.onSelectCollection
                             }),
                         entryComposerMode !== undefined ? JsxRuntime.jsx(EntryComposer.make, {
                                 mode: entryComposerMode,
