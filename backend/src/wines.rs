@@ -65,6 +65,27 @@ pub async fn create_or_find(database: &PgPool, input: WineInput) -> Result<Wine,
     wine_from_row(&row)
 }
 
+pub(crate) async fn ensure_in_collection(
+    transaction: &mut Transaction<'_, Postgres>,
+    collection_id: i64,
+    wine_id: i64,
+    created_by_user_id: i64,
+) -> Result<(), WineError> {
+    sqlx::query(
+        "INSERT INTO collection_wines (collection_id, wine_id, created_by_user_id)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (collection_id, wine_id) DO NOTHING",
+    )
+    .bind(collection_id)
+    .bind(wine_id)
+    .bind(created_by_user_id)
+    .execute(&mut **transaction)
+    .await
+    .map_err(|_| WineError::Database)?;
+
+    Ok(())
+}
+
 pub(crate) async fn create_or_find_in_transaction(
     transaction: &mut Transaction<'_, Postgres>,
     input: WineInput,
@@ -112,13 +133,19 @@ pub async fn list_for_collection(
             wines.region AS wine_region,
             wines.country AS wine_country,
             COUNT(wine_entries.id) AS entry_count,
-            to_char(
-              MAX(wine_entries.consumed_at) AT TIME ZONE 'UTC',
-              'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"'
+            COALESCE(
+              to_char(
+                MAX(wine_entries.consumed_at) AT TIME ZONE 'UTC',
+                'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"'
+              ),
+              ''
             ) AS last_consumed_at
-         FROM wine_entries
-         INNER JOIN wines ON wines.id = wine_entries.wine_id
-         WHERE wine_entries.collection_id = $1
+         FROM collection_wines
+         INNER JOIN wines ON wines.id = collection_wines.wine_id
+         LEFT JOIN wine_entries
+           ON wine_entries.collection_id = collection_wines.collection_id
+          AND wine_entries.wine_id = collection_wines.wine_id
+         WHERE collection_wines.collection_id = $1
          GROUP BY
             wines.id,
             wines.producer,
@@ -129,7 +156,7 @@ pub async fn list_for_collection(
             wines.region,
             wines.country
          ORDER BY
-            MAX(wine_entries.consumed_at) DESC,
+            MAX(wine_entries.consumed_at) DESC NULLS LAST,
             wines.name ASC,
             wines.id ASC",
     )
@@ -304,7 +331,8 @@ fn normalize_vintage(vintage: Option<i32>) -> Result<Option<i32>, WineError> {
 #[cfg(test)]
 mod tests {
     use super::{
-        create_or_find, list_for_collection, CollectionWineSummary, WineError, WineInput,
+        create_or_find, ensure_in_collection, list_for_collection, CollectionWineSummary,
+        WineError, WineInput,
     };
     use crate::{
         auth::{register, RegisterInput},
@@ -545,6 +573,42 @@ mod tests {
             .expect("collection wines should list");
 
         assert_eq!(wine_names(&wines), vec!["Bravo".to_string(), "Alpha".to_string()]);
+    }
+
+    #[tokio::test]
+    async fn lists_collection_wines_without_occasions() {
+        let database = test_database().await;
+        let user = register_user(&database).await;
+        let collection = collections::create(&database, user.id, "Home").await.unwrap();
+        let wine = create_or_find(
+            &database,
+            WineInput {
+                producer: Some("Envinate".to_string()),
+                name: "Taganan".to_string(),
+                vintage: Some(2022),
+                style: Some("Red".to_string()),
+                grape: Some("Listan Negro".to_string()),
+                region: Some("Tenerife".to_string()),
+                country: Some("Spain".to_string()),
+            },
+        )
+        .await
+        .expect("wine should be created");
+        let mut transaction = database.begin().await.expect("transaction should start");
+
+        ensure_in_collection(&mut transaction, collection.id, wine.id, user.id)
+            .await
+            .expect("collection wine should be created");
+        transaction.commit().await.expect("transaction should commit");
+
+        let wines = list_for_collection(&database, user.id, collection.id)
+            .await
+            .expect("collection wines should list");
+
+        assert_eq!(wines.len(), 1);
+        assert_eq!(wines[0].wine.name, "Taganan");
+        assert_eq!(wines[0].entry_count, 0);
+        assert_eq!(wines[0].last_consumed_at, "");
     }
 
     async fn register_user(database: &sqlx::PgPool) -> crate::auth::AuthUser {

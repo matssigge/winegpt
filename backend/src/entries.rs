@@ -61,6 +61,9 @@ pub async fn create(
     let wine = wines::create_or_find_in_transaction(&mut transaction, input.wine)
         .await
         .map_err(EntryError::Wine)?;
+    wines::ensure_in_collection(&mut transaction, collection_id, wine.id, user_id)
+        .await
+        .map_err(EntryError::Wine)?;
 
     let row = sqlx::query(
         "INSERT INTO wine_entries (
@@ -181,6 +184,9 @@ pub async fn update(
 
     let mut transaction = database.begin().await.map_err(|_| EntryError::Database)?;
     let wine = wines::create_or_find_in_transaction(&mut transaction, input.wine)
+        .await
+        .map_err(EntryError::Wine)?;
+    wines::ensure_in_collection(&mut transaction, collection_id, wine.id, user_id)
         .await
         .map_err(EntryError::Wine)?;
 
@@ -369,6 +375,18 @@ mod tests {
             .expect("entry should be stored");
         let wine_id: i64 = stored.try_get("wine_id").expect("wine id should exist");
         assert_eq!(wine_id, entry.wine.id);
+        let collection_wine = sqlx::query(
+            "SELECT wine_id FROM collection_wines WHERE collection_id = $1 AND wine_id = $2",
+        )
+        .bind(collection.id)
+        .bind(entry.wine.id)
+        .fetch_one(&database)
+        .await
+        .expect("collection wine should be stored");
+        let collection_wine_id: i64 = collection_wine
+            .try_get("wine_id")
+            .expect("collection wine id should exist");
+        assert_eq!(collection_wine_id, entry.wine.id);
     }
 
     #[tokio::test]
@@ -597,6 +615,18 @@ mod tests {
         assert_eq!(updated.consumed_at, "2025-01-18T18:15:00Z");
         assert_eq!(updated.venue_name.as_deref(), Some("Bar Central"));
         assert_eq!(updated.rating, Some(5));
+        let collection_wine = sqlx::query(
+            "SELECT wine_id FROM collection_wines WHERE collection_id = $1 AND wine_id = $2",
+        )
+        .bind(collection.id)
+        .bind(updated.wine.id)
+        .fetch_one(&database)
+        .await
+        .expect("updated wine should be attached to the collection");
+        let collection_wine_id: i64 = collection_wine
+            .try_get("wine_id")
+            .expect("collection wine id should exist");
+        assert_eq!(collection_wine_id, updated.wine.id);
     }
 
     #[tokio::test]
