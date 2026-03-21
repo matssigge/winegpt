@@ -26,39 +26,43 @@ let wineMeta = (entry: EntryModel.entry) => {
 @react.component
 let make = (
   ~status,
+  ~title: string="Entry history",
+  ~idleMessage: string="Select a collection to browse its entries.",
+  ~loadingMessage: string="Loading collection history...",
+  ~emptyMessage: string="No entries yet. Your latest bottles and notes will show up here.",
   ~selectedEntryId: option<int>,
   ~onSelectEntry: int => unit,
 ) =>
   switch status {
   | EntryState.Idle =>
     <section className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6">
-      <h3 className="text-lg font-semibold text-stone-950"> {React.string("Entry history")} </h3>
+      <h3 className="text-lg font-semibold text-stone-950"> {React.string(title)} </h3>
       <p className="mt-2 text-sm leading-6 text-stone-600">
-        {React.string("Select a collection to browse its entries.")}
+        {React.string(idleMessage)}
       </p>
     </section>
   | EntryState.Loading =>
     <section className="rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
-      <h3 className="text-lg font-semibold text-stone-950"> {React.string("Entry history")} </h3>
-      <p className="mt-2 text-sm text-stone-600"> {React.string("Loading collection history...")} </p>
+      <h3 className="text-lg font-semibold text-stone-950"> {React.string(title)} </h3>
+      <p className="mt-2 text-sm text-stone-600"> {React.string(loadingMessage)} </p>
     </section>
   | EntryState.Error(message) =>
     <section className="rounded-[1.75rem] border border-rose-200 bg-rose-50 p-6">
-      <h3 className="text-lg font-semibold text-rose-900"> {React.string("Entry history")} </h3>
+      <h3 className="text-lg font-semibold text-rose-900"> {React.string(title)} </h3>
       <p className="mt-2 text-sm text-rose-700"> {React.string(message)} </p>
     </section>
   | EntryState.Ready(entries) =>
     if Belt.Array.length(entries) == 0 {
       <section className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6">
-        <h3 className="text-lg font-semibold text-stone-950"> {React.string("Entry history")} </h3>
+        <h3 className="text-lg font-semibold text-stone-950"> {React.string(title)} </h3>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          {React.string("No entries yet. Your latest bottles and notes will show up here.")}
+          {React.string(emptyMessage)}
         </p>
       </section>
     } else {
       <section className="rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
         <div className="flex items-center justify-between gap-4">
-          <h3 className="text-lg font-semibold text-stone-950"> {React.string("Entry history")} </h3>
+          <h3 className="text-lg font-semibold text-stone-950"> {React.string(title)} </h3>
           <span className="rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600">
             {React.string(Belt.Array.length(entries)->Belt.Int.toString ++ " entries")}
           </span>

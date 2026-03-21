@@ -33,17 +33,25 @@ function wineMeta(entry) {
 function EntryHistory(props) {
   var onSelectEntry = props.onSelectEntry;
   var selectedEntryId = props.selectedEntryId;
+  var __emptyMessage = props.emptyMessage;
+  var __loadingMessage = props.loadingMessage;
+  var __idleMessage = props.idleMessage;
+  var __title = props.title;
   var status = props.status;
+  var title = __title !== undefined ? __title : "Entry history";
+  var idleMessage = __idleMessage !== undefined ? __idleMessage : "Select a collection to browse its entries.";
+  var loadingMessage = __loadingMessage !== undefined ? __loadingMessage : "Loading collection history...";
+  var emptyMessage = __emptyMessage !== undefined ? __emptyMessage : "No entries yet. Your latest bottles and notes will show up here.";
   if (typeof status !== "object") {
     if (status === "Idle") {
       return JsxRuntime.jsxs("section", {
                   children: [
                     JsxRuntime.jsx("h3", {
-                          children: "Entry history",
+                          children: title,
                           className: "text-lg font-semibold text-stone-950"
                         }),
                     JsxRuntime.jsx("p", {
-                          children: "Select a collection to browse its entries.",
+                          children: idleMessage,
                           className: "mt-2 text-sm leading-6 text-stone-600"
                         })
                   ],
@@ -53,11 +61,11 @@ function EntryHistory(props) {
       return JsxRuntime.jsxs("section", {
                   children: [
                     JsxRuntime.jsx("h3", {
-                          children: "Entry history",
+                          children: title,
                           className: "text-lg font-semibold text-stone-950"
                         }),
                     JsxRuntime.jsx("p", {
-                          children: "Loading collection history...",
+                          children: loadingMessage,
                           className: "mt-2 text-sm text-stone-600"
                         })
                   ],
@@ -69,7 +77,7 @@ function EntryHistory(props) {
     return JsxRuntime.jsxs("section", {
                 children: [
                   JsxRuntime.jsx("h3", {
-                        children: "Entry history",
+                        children: title,
                         className: "text-lg font-semibold text-rose-900"
                       }),
                   JsxRuntime.jsx("p", {
@@ -85,11 +93,11 @@ function EntryHistory(props) {
     return JsxRuntime.jsxs("section", {
                 children: [
                   JsxRuntime.jsx("h3", {
-                        children: "Entry history",
+                        children: title,
                         className: "text-lg font-semibold text-stone-950"
                       }),
                   JsxRuntime.jsx("p", {
-                        children: "No entries yet. Your latest bottles and notes will show up here.",
+                        children: emptyMessage,
                         className: "mt-2 text-sm leading-6 text-stone-600"
                       })
                 ],
@@ -101,7 +109,7 @@ function EntryHistory(props) {
                   JsxRuntime.jsxs("div", {
                         children: [
                           JsxRuntime.jsx("h3", {
-                                children: "Entry history",
+                                children: title,
                                 className: "text-lg font-semibold text-stone-950"
                               }),
                           JsxRuntime.jsx("span", {

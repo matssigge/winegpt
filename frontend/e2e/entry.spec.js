@@ -32,7 +32,7 @@ test("users can create an entry and see it in history", async ({ page }) => {
 
   await expect(page.getByRole("button", { name: "Add entry" })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Wines" })).toBeVisible()
-  await expect(page.getByRole("heading", { name: "Envinate Taganan" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Envinate Taganan", exact: true })).toBeVisible()
   await expect(page.getByText("2022 · Stockholm · Home")).toBeVisible()
   await expect(page.getByText("Envinate · Taganan · 2022")).toBeVisible()
   await expect(page.getByRole("definition").filter({ hasText: "Salty and bright" })).toBeVisible()
@@ -53,7 +53,7 @@ test("users can create an entry and see it in history", async ({ page }) => {
   await expect(page.getByText("Rating 5/5")).toBeVisible()
 
   await page.reload()
-  await expect(page.getByRole("heading", { name: "Envinate Taganan" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Envinate Taganan", exact: true })).toBeVisible()
   await expect(page.getByText("Envinate · Taganan · 2022")).toBeVisible()
   await expect(page.getByText("Rating 5/5")).toBeVisible()
 })
