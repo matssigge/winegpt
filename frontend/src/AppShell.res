@@ -178,14 +178,11 @@ let make = (
     | None => None
     }
 
-  <section className="w-full max-w-3xl rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur md:p-12">
+  <section className="w-full max-w-3xl rounded-[2rem] border border-stone-900/10 bg-white/80 p-6 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur md:p-10">
     <div className="flex items-start justify-between gap-4">
       <div>
         <p className="font-mono text-xs uppercase tracking-[0.35em] text-stone-600"> {React.string("Wine")} </p>
-        <h1 className="mt-3 max-w-xl font-serif text-5xl leading-none tracking-[-0.04em] text-stone-950 md:text-6xl">
-          {React.string("Remember the bottles worth coming back to.")}
-        </h1>
-        <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-stone-600">
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-stone-600">
           {switch selectedCollection {
           | Some(collection) =>
             <>
@@ -259,10 +256,7 @@ let make = (
          }}
       </div>
     </div>
-    <p className="mt-6 max-w-xl text-base leading-7 text-stone-700 md:text-lg">
-      {React.string("Browse the wines you know first, then open the occasions behind them when you need more context.")}
-    </p>
-    <div className="mt-8">
+    <div className="mt-6">
       <div className="mb-6 flex items-center justify-between gap-3">
         <div className="text-sm text-stone-600">
           {React.string(

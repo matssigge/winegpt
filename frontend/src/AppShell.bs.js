@@ -180,10 +180,6 @@ function AppShell(props) {
                                       children: "Wine",
                                       className: "font-mono text-xs uppercase tracking-[0.35em] text-stone-600"
                                     }),
-                                JsxRuntime.jsx("h1", {
-                                      children: "Remember the bottles worth coming back to.",
-                                      className: "mt-3 max-w-xl font-serif text-5xl leading-none tracking-[-0.04em] text-stone-950 md:text-6xl"
-                                    }),
                                 JsxRuntime.jsx("div", {
                                       children: selectedCollection !== undefined ? JsxRuntime.jsxs(JsxRuntime.Fragment, {
                                               children: [
@@ -200,7 +196,7 @@ function AppShell(props) {
                                               children: "No collection selected",
                                               className: "rounded-full border border-dashed border-stone-300 px-3 py-1"
                                             }),
-                                      className: "mt-5 flex flex-wrap items-center gap-3 text-sm text-stone-600"
+                                      className: "mt-3 flex flex-wrap items-center gap-3 text-sm text-stone-600"
                                     })
                               ]
                             }),
@@ -281,10 +277,6 @@ function AppShell(props) {
                             })
                       ],
                       className: "flex items-start justify-between gap-4"
-                    }),
-                JsxRuntime.jsx("p", {
-                      children: "Browse the wines you know first, then open the occasions behind them when you need more context.",
-                      className: "mt-6 max-w-xl text-base leading-7 text-stone-700 md:text-lg"
                     }),
                 JsxRuntime.jsxs("div", {
                       children: [
@@ -445,10 +437,10 @@ function AppShell(props) {
                                 className: "fixed inset-0 z-30 flex items-start justify-center bg-stone-950/35 px-4 py-8 md:py-16"
                               }) : null
                       ],
-                      className: "mt-8"
+                      className: "mt-6"
                     })
               ],
-              className: "w-full max-w-3xl rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur md:p-12"
+              className: "w-full max-w-3xl rounded-[2rem] border border-stone-900/10 bg-white/80 p-6 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur md:p-10"
             });
 }
 
