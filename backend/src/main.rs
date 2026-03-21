@@ -15,6 +15,7 @@ use wine_backend::{
         InvitedCollectionMember,
     },
     entries::{self, CreateEntryInput, EntryError, WineEntry},
+    wines::{self, CollectionWineSummary},
     allowed_frontend_origins, backend_bind_address, database_url, db, health_response,
     HealthResponse,
 };
@@ -27,6 +28,7 @@ async fn main() {
         .route("/api/auth/login", post(login))
         .route("/api/auth/register", post(register))
         .route("/api/collections", get(list_collections).post(create_collection))
+        .route("/api/collections/{id}/wines", get(list_collection_wines))
         .route(
             "/api/collections/{id}/entries",
             get(list_entries).post(create_entry),
@@ -125,6 +127,21 @@ async fn list_collections(
         .map_err(map_auth_error)?;
 
     collections::list_for_user(&state.database, user.id)
+        .await
+        .map(Json)
+        .map_err(map_collection_error)
+}
+
+async fn list_collection_wines(
+    State(state): State<AppState>,
+    Path(collection_id): Path<i64>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<CollectionWineSummary>>, (StatusCode, Json<ErrorResponse>)> {
+    let user = authenticate_user(&state.database, &headers)
+        .await
+        .map_err(map_auth_error)?;
+
+    wines::list_for_collection(&state.database, user.id, collection_id)
         .await
         .map(Json)
         .map_err(map_collection_error)

@@ -1,3 +1,4 @@
+use crate::collections::{self, CollectionError};
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Postgres, Row, Transaction};
 
@@ -22,6 +23,13 @@ pub struct Wine {
     pub grape: Option<String>,
     pub region: Option<String>,
     pub country: Option<String>,
+}
+
+#[derive(Debug, PartialEq, Eq, Serialize)]
+pub struct CollectionWineSummary {
+    pub wine: Wine,
+    pub entry_count: i64,
+    pub last_consumed_at: String,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -84,6 +92,53 @@ pub(crate) async fn create_or_find_in_transaction(
     .map_err(|_| WineError::Database)?;
 
     wine_from_row(&row)
+}
+
+pub async fn list_for_collection(
+    database: &PgPool,
+    user_id: i64,
+    collection_id: i64,
+) -> Result<Vec<CollectionWineSummary>, CollectionError> {
+    collections::require_membership(database, user_id, collection_id).await?;
+
+    let rows = sqlx::query(
+        "SELECT
+            wines.id AS wine_id,
+            wines.producer AS wine_producer,
+            wines.name AS wine_name,
+            wines.vintage AS wine_vintage,
+            wines.style AS wine_style,
+            wines.grape AS wine_grape,
+            wines.region AS wine_region,
+            wines.country AS wine_country,
+            COUNT(wine_entries.id) AS entry_count,
+            to_char(
+              MAX(wine_entries.consumed_at) AT TIME ZONE 'UTC',
+              'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"'
+            ) AS last_consumed_at
+         FROM wine_entries
+         INNER JOIN wines ON wines.id = wine_entries.wine_id
+         WHERE wine_entries.collection_id = $1
+         GROUP BY
+            wines.id,
+            wines.producer,
+            wines.name,
+            wines.vintage,
+            wines.style,
+            wines.grape,
+            wines.region,
+            wines.country
+         ORDER BY
+            MAX(wine_entries.consumed_at) DESC,
+            wines.name ASC,
+            wines.id ASC",
+    )
+    .bind(collection_id)
+    .fetch_all(database)
+    .await
+    .map_err(|_| CollectionError::Database)?;
+
+    rows.into_iter().map(summary_from_row).collect()
 }
 
 #[derive(Debug)]
@@ -189,6 +244,41 @@ fn wine_from_row(row: &sqlx::postgres::PgRow) -> Result<Wine, WineError> {
     })
 }
 
+fn summary_from_row(row: sqlx::postgres::PgRow) -> Result<CollectionWineSummary, CollectionError> {
+    Ok(CollectionWineSummary {
+        wine: Wine {
+            id: row.try_get("wine_id").map_err(|_| CollectionError::Database)?,
+            producer: row
+                .try_get("wine_producer")
+                .map_err(|_| CollectionError::Database)?,
+            name: row
+                .try_get("wine_name")
+                .map_err(|_| CollectionError::Database)?,
+            vintage: row
+                .try_get("wine_vintage")
+                .map_err(|_| CollectionError::Database)?,
+            style: row
+                .try_get("wine_style")
+                .map_err(|_| CollectionError::Database)?,
+            grape: row
+                .try_get("wine_grape")
+                .map_err(|_| CollectionError::Database)?,
+            region: row
+                .try_get("wine_region")
+                .map_err(|_| CollectionError::Database)?,
+            country: row
+                .try_get("wine_country")
+                .map_err(|_| CollectionError::Database)?,
+        },
+        entry_count: row
+            .try_get("entry_count")
+            .map_err(|_| CollectionError::Database)?,
+        last_consumed_at: row
+            .try_get("last_consumed_at")
+            .map_err(|_| CollectionError::Database)?,
+    })
+}
+
 fn normalize_required_text(value: &str) -> Option<String> {
     let trimmed = value.trim();
 
@@ -213,8 +303,16 @@ fn normalize_vintage(vintage: Option<i32>) -> Result<Option<i32>, WineError> {
 
 #[cfg(test)]
 mod tests {
-    use super::{create_or_find, WineError, WineInput};
-    use crate::test_support::test_database;
+    use super::{
+        create_or_find, list_for_collection, CollectionWineSummary, WineError, WineInput,
+    };
+    use crate::{
+        auth::{register, RegisterInput},
+        collections::{self, CollectionError},
+        entries,
+        test_support::test_database,
+    };
+    use uuid::Uuid;
 
     #[tokio::test]
     async fn creates_new_wine() {
@@ -351,5 +449,156 @@ mod tests {
         .await;
 
         assert_eq!(result, Err(WineError::InvalidVintage));
+    }
+
+    #[tokio::test]
+    async fn lists_collection_wines_as_summaries() {
+        let database = test_database().await;
+        let user = register_user(&database).await;
+        let collection = collections::create(&database, user.id, "Home").await.unwrap();
+
+        create_entry(
+            &database,
+            user.id,
+            collection.id,
+            "Taganan",
+            Some("Listan Negro"),
+            Some(2022),
+            "2025-01-15T19:30:00Z",
+        )
+        .await;
+        create_entry(
+            &database,
+            user.id,
+            collection.id,
+            "Taganan",
+            Some("Listan Negro"),
+            Some(2022),
+            "2025-01-18T19:30:00Z",
+        )
+        .await;
+        create_entry(
+            &database,
+            user.id,
+            collection.id,
+            "Punta de Flechas",
+            Some("Malbec"),
+            Some(2021),
+            "2025-01-17T19:30:00Z",
+        )
+        .await;
+
+        let wines = list_for_collection(&database, user.id, collection.id)
+            .await
+            .expect("collection wines should list");
+
+        assert_eq!(wines.len(), 2);
+        assert_eq!(wines[0].wine.name, "Taganan");
+        assert_eq!(wines[0].wine.grape.as_deref(), Some("Listan Negro"));
+        assert_eq!(wines[0].entry_count, 2);
+        assert_eq!(wines[0].last_consumed_at, "2025-01-18T19:30:00Z");
+        assert_eq!(wines[1].wine.name, "Punta de Flechas");
+        assert_eq!(wines[1].entry_count, 1);
+    }
+
+    #[tokio::test]
+    async fn rejects_non_member_collection_wine_listing() {
+        let database = test_database().await;
+        let owner = register_user(&database).await;
+        let stranger = register_user(&database).await;
+        let collection = collections::create(&database, owner.id, "Home").await.unwrap();
+
+        let result = list_for_collection(&database, stranger.id, collection.id).await;
+
+        assert_eq!(result, Err(CollectionError::Forbidden));
+    }
+
+    #[tokio::test]
+    async fn orders_collection_wines_by_most_recent_entry() {
+        let database = test_database().await;
+        let user = register_user(&database).await;
+        let collection = collections::create(&database, user.id, "Home").await.unwrap();
+
+        create_entry(
+            &database,
+            user.id,
+            collection.id,
+            "Alpha",
+            None,
+            Some(2022),
+            "2025-01-15T19:30:00Z",
+        )
+        .await;
+        create_entry(
+            &database,
+            user.id,
+            collection.id,
+            "Bravo",
+            None,
+            Some(2021),
+            "2025-01-18T19:30:00Z",
+        )
+        .await;
+
+        let wines = list_for_collection(&database, user.id, collection.id)
+            .await
+            .expect("collection wines should list");
+
+        assert_eq!(wine_names(&wines), vec!["Bravo".to_string(), "Alpha".to_string()]);
+    }
+
+    async fn register_user(database: &sqlx::PgPool) -> crate::auth::AuthUser {
+        let email = format!("{}@example.com", Uuid::new_v4().simple());
+        let response = register(
+            database,
+            RegisterInput {
+                email,
+                full_name: None,
+                password: "password123".to_string(),
+            },
+        )
+        .await
+        .expect("user registration should succeed");
+
+        response.user
+    }
+
+    async fn create_entry(
+        database: &sqlx::PgPool,
+        user_id: i64,
+        collection_id: i64,
+        name: &str,
+        grape: Option<&str>,
+        vintage: Option<i32>,
+        consumed_at: &str,
+    ) {
+        entries::create(
+            database,
+            user_id,
+            collection_id,
+            entries::CreateEntryInput {
+                wine: WineInput {
+                    producer: Some("Envinate".to_string()),
+                    name: name.to_string(),
+                    vintage,
+                    style: None,
+                    grape: grape.map(str::to_string),
+                    region: None,
+                    country: None,
+                },
+                consumed_at: consumed_at.to_string(),
+                venue_name: None,
+                location_text: None,
+                pairing_notes: None,
+                tasting_notes: None,
+                rating: Some(4),
+            },
+        )
+        .await
+        .expect("entry should be created");
+    }
+
+    fn wine_names(wines: &[CollectionWineSummary]) -> Vec<String> {
+        wines.iter().map(|summary| summary.wine.name.clone()).collect()
     }
 }
