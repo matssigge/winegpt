@@ -15,7 +15,6 @@ let describeError = (errors: Translations.errors, error) =>
 
 let describeEntryError = (errors: Translations.errors, error) =>
   switch error->message {
-  | "invalid_consumed_at" => errors.entryInvalidConsumedAt
   | "invalid_rating" => errors.entryInvalidRating
   | "invalid_wine_name" => errors.entryInvalidWineName
   | "invalid_wine_vintage" => errors.entryInvalidWineVintage

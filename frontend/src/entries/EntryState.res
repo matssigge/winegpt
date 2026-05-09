@@ -72,8 +72,6 @@ let todayDateString = () => {
   (now->getDate |> padTwo)
 }
 
-let consumedAtToDateValue = consumedAt => consumedAt
-
 let updateForm = (form, field, value) =>
   switch field {
   | "consumedAt" => {
@@ -114,19 +112,16 @@ let failForm = (form, message) => {...form, isSubmitting: false, error: Some(mes
 let succeedForm = () => {...initialForm, success: Some("Entry saved.")}
 
 let formFromEntry = (entry: entry) => {
-  let dateValue = consumedAtToDateValue(entry.consumedAt)
-  {
-    dateMode: Belt.Option.isSome(dateValue),
-    consumedAt: dateValue,
-    venueName: entry.venueName->Belt.Option.getWithDefault(""),
-    locationText: entry.locationText->Belt.Option.getWithDefault(""),
-    pairingNotes: entry.pairingNotes->Belt.Option.getWithDefault(""),
-    tastingNotes: entry.tastingNotes->Belt.Option.getWithDefault(""),
-    rating: entry.rating->Belt.Option.map(Belt.Int.toString)->Belt.Option.getWithDefault(""),
-    isSubmitting: false,
-    error: None,
-    success: None,
-  }
+  dateMode: Belt.Option.isSome(entry.consumedAt),
+  consumedAt: entry.consumedAt,
+  venueName: entry.venueName->Belt.Option.getWithDefault(""),
+  locationText: entry.locationText->Belt.Option.getWithDefault(""),
+  pairingNotes: entry.pairingNotes->Belt.Option.getWithDefault(""),
+  tastingNotes: entry.tastingNotes->Belt.Option.getWithDefault(""),
+  rating: entry.rating->Belt.Option.map(Belt.Int.toString)->Belt.Option.getWithDefault(""),
+  isSubmitting: false,
+  error: None,
+  success: None,
 }
 
 let entries = status =>

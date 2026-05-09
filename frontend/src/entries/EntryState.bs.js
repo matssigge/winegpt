@@ -52,10 +52,6 @@ function todayDateString() {
   return String(now.getFullYear()) + "-" + padTwo(now.getMonth() + 1 | 0) + "-" + padTwo(now.getDate());
 }
 
-function consumedAtToDateValue(consumedAt) {
-  return consumedAt;
-}
-
 function updateForm(form, field, value) {
   switch (field) {
     case "consumedAt" :
@@ -218,10 +214,9 @@ function succeedForm() {
 }
 
 function formFromEntry(entry) {
-  var dateValue = entry.consumedAt;
   return {
-          dateMode: Belt_Option.isSome(dateValue),
-          consumedAt: dateValue,
+          dateMode: Belt_Option.isSome(entry.consumedAt),
+          consumedAt: entry.consumedAt,
           venueName: Belt_Option.getWithDefault(entry.venueName, ""),
           locationText: Belt_Option.getWithDefault(entry.locationText, ""),
           pairingNotes: Belt_Option.getWithDefault(entry.pairingNotes, ""),
@@ -369,7 +364,6 @@ export {
   initialForm ,
   padTwo ,
   todayDateString ,
-  consumedAtToDateValue ,
   updateForm ,
   toggleDateMode ,
   startSubmitting ,

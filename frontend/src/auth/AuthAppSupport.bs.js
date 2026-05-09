@@ -22,8 +22,6 @@ function describeEntryError(errors, error) {
   switch (match) {
     case "forbidden" :
         return errors.entryForbidden;
-    case "invalid_consumed_at" :
-        return errors.entryInvalidConsumedAt;
     case "invalid_rating" :
         return errors.entryInvalidRating;
     case "invalid_wine_name" :

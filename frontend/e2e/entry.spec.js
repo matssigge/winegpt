@@ -78,4 +78,6 @@ test("a user can record an occasion without a date", async ({ page }) => {
 
   // The occasion appears, but no date line is visible.
   await expect(page.getByText("Pasta", { exact: false })).toBeVisible()
+  // Confirm no date line is rendered for the undated occasion.
+  await expect(page.getByText(/^\d{4}-\d{2}-\d{2}$/)).toHaveCount(0)
 })
