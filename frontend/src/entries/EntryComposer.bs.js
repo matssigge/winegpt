@@ -3,6 +3,7 @@
 import * as TextField from "../ui/TextField.bs.js";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
+import * as I18nContext from "../i18n/I18nContext.bs.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function wineLabel(wine) {
@@ -21,17 +22,14 @@ function EntryComposer(props) {
   var onEntryFormChange = props.onEntryFormChange;
   var entryForm = props.entryForm;
   var mode = props.mode;
+  var t = I18nContext.useT();
   var match;
   match = mode === "Create" ? [
-      "Add entry",
-      "Capture a wine",
-      "Save entry",
-      "Saving..."
+      t.entryComposerSaveCreate,
+      t.entryComposerSavingLabel
     ] : [
-      "Edit entry",
-      "Update this memory",
-      "Save changes",
-      "Saving..."
+      t.entryComposerSaveEdit,
+      t.entryComposerSavingLabel
     ];
   var tmp;
   if (mode === "Create" && props.selectedWine !== undefined) {
@@ -50,7 +48,7 @@ function EntryComposer(props) {
       tmp$3 = JsxRuntime.jsxs("div", {
             children: [
               JsxRuntime.jsx("p", {
-                    children: "Using",
+                    children: t.entryComposerUsing,
                     className: "text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
                   }),
               JsxRuntime.jsx("p", {
@@ -79,7 +77,7 @@ function EntryComposer(props) {
             JsxRuntime.jsxs("div", {
                   children: [
                     JsxRuntime.jsx("button", {
-                          children: "Selected wine",
+                          children: t.entryComposerSelectedWine,
                           className: tmp$1,
                           type: "button",
                           onClick: (function (param) {
@@ -87,7 +85,7 @@ function EntryComposer(props) {
                             })
                         }),
                     JsxRuntime.jsx("button", {
-                          children: "Different wine",
+                          children: t.entryComposerDifferentWine,
                           className: tmp$2,
                           type: "button",
                           onClick: (function (param) {
@@ -109,7 +107,7 @@ function EntryComposer(props) {
   tmp$4 = typeof match$3 !== "object" ? JsxRuntime.jsxs(JsxRuntime.Fragment, {
           children: [
             JsxRuntime.jsx(TextField.make, {
-                  label: "Wine name",
+                  label: t.wineComposerWineNameLabel,
                   value: entryForm.wineName,
                   onChange: (function (value) {
                       onEntryFormChange("wineName", value);
@@ -117,7 +115,7 @@ function EntryComposer(props) {
                   autoComplete: "off"
                 }),
             JsxRuntime.jsx(TextField.make, {
-                  label: "Producer",
+                  label: t.wineComposerProducerLabel,
                   value: entryForm.producer,
                   onChange: (function (value) {
                       onEntryFormChange("producer", value);
@@ -125,7 +123,7 @@ function EntryComposer(props) {
                   autoComplete: "organization"
                 }),
             JsxRuntime.jsx(TextField.make, {
-                  label: "Style",
+                  label: t.wineComposerStyleLabel,
                   value: entryForm.style,
                   onChange: (function (value) {
                       onEntryFormChange("style", value);
@@ -133,7 +131,7 @@ function EntryComposer(props) {
                   autoComplete: "off"
                 }),
             JsxRuntime.jsx(TextField.make, {
-                  label: "Grape",
+                  label: t.wineComposerGrapeLabel,
                   value: entryForm.grape,
                   onChange: (function (value) {
                       onEntryFormChange("grape", value);
@@ -141,7 +139,7 @@ function EntryComposer(props) {
                   autoComplete: "off"
                 }),
             JsxRuntime.jsx(TextField.make, {
-                  label: "Region",
+                  label: t.wineComposerRegionLabel,
                   value: entryForm.region,
                   onChange: (function (value) {
                       onEntryFormChange("region", value);
@@ -149,7 +147,7 @@ function EntryComposer(props) {
                   autoComplete: "off"
                 }),
             JsxRuntime.jsx(TextField.make, {
-                  label: "Country",
+                  label: t.wineComposerCountryLabel,
                   value: entryForm.country,
                   onChange: (function (value) {
                       onEntryFormChange("country", value);
@@ -157,7 +155,7 @@ function EntryComposer(props) {
                   autoComplete: "country-name"
                 }),
             JsxRuntime.jsx(TextField.make, {
-                  label: "Vintage",
+                  label: t.wineComposerVintageLabel,
                   value: entryForm.vintage,
                   onChange: (function (value) {
                       onEntryFormChange("vintage", value);
@@ -170,7 +168,7 @@ function EntryComposer(props) {
       mode === "Create" ? null : JsxRuntime.jsxs(JsxRuntime.Fragment, {
               children: [
                 JsxRuntime.jsx(TextField.make, {
-                      label: "Wine name",
+                      label: t.wineComposerWineNameLabel,
                       value: entryForm.wineName,
                       onChange: (function (value) {
                           onEntryFormChange("wineName", value);
@@ -178,7 +176,7 @@ function EntryComposer(props) {
                       autoComplete: "off"
                     }),
                 JsxRuntime.jsx(TextField.make, {
-                      label: "Producer",
+                      label: t.wineComposerProducerLabel,
                       value: entryForm.producer,
                       onChange: (function (value) {
                           onEntryFormChange("producer", value);
@@ -186,7 +184,7 @@ function EntryComposer(props) {
                       autoComplete: "organization"
                     }),
                 JsxRuntime.jsx(TextField.make, {
-                      label: "Style",
+                      label: t.wineComposerStyleLabel,
                       value: entryForm.style,
                       onChange: (function (value) {
                           onEntryFormChange("style", value);
@@ -194,7 +192,7 @@ function EntryComposer(props) {
                       autoComplete: "off"
                     }),
                 JsxRuntime.jsx(TextField.make, {
-                      label: "Grape",
+                      label: t.wineComposerGrapeLabel,
                       value: entryForm.grape,
                       onChange: (function (value) {
                           onEntryFormChange("grape", value);
@@ -202,7 +200,7 @@ function EntryComposer(props) {
                       autoComplete: "off"
                     }),
                 JsxRuntime.jsx(TextField.make, {
-                      label: "Region",
+                      label: t.wineComposerRegionLabel,
                       value: entryForm.region,
                       onChange: (function (value) {
                           onEntryFormChange("region", value);
@@ -210,7 +208,7 @@ function EntryComposer(props) {
                       autoComplete: "off"
                     }),
                 JsxRuntime.jsx(TextField.make, {
-                      label: "Country",
+                      label: t.wineComposerCountryLabel,
                       value: entryForm.country,
                       onChange: (function (value) {
                           onEntryFormChange("country", value);
@@ -218,7 +216,7 @@ function EntryComposer(props) {
                       autoComplete: "country-name"
                     }),
                 JsxRuntime.jsx(TextField.make, {
-                      label: "Vintage",
+                      label: t.wineComposerVintageLabel,
                       value: entryForm.vintage,
                       onChange: (function (value) {
                           onEntryFormChange("vintage", value);
@@ -238,7 +236,7 @@ function EntryComposer(props) {
                         tmp,
                         tmp$4,
                         JsxRuntime.jsx(TextField.make, {
-                              label: "Consumed at",
+                              label: t.entryComposerConsumedAtLabel,
                               value: entryForm.consumedAt,
                               onChange: (function (value) {
                                   onEntryFormChange("consumedAt", value);
@@ -247,7 +245,7 @@ function EntryComposer(props) {
                               type_: "datetime-local"
                             }),
                         JsxRuntime.jsx(TextField.make, {
-                              label: "Venue",
+                              label: t.entryComposerVenueLabel,
                               value: entryForm.venueName,
                               onChange: (function (value) {
                                   onEntryFormChange("venueName", value);
@@ -255,7 +253,7 @@ function EntryComposer(props) {
                               autoComplete: "off"
                             }),
                         JsxRuntime.jsx(TextField.make, {
-                              label: "Location",
+                              label: t.entryComposerLocationLabel,
                               value: entryForm.locationText,
                               onChange: (function (value) {
                                   onEntryFormChange("locationText", value);
@@ -270,7 +268,7 @@ function EntryComposer(props) {
                         JsxRuntime.jsxs("label", {
                               children: [
                                 JsxRuntime.jsx("span", {
-                                      children: "Pairing notes",
+                                      children: t.entryComposerPairingNotesLabel,
                                       className: "mb-2 block text-sm font-medium text-stone-700"
                                     }),
                                 JsxRuntime.jsx("textarea", {
@@ -287,7 +285,7 @@ function EntryComposer(props) {
                         JsxRuntime.jsxs("label", {
                               children: [
                                 JsxRuntime.jsx("span", {
-                                      children: "Tasting notes",
+                                      children: t.entryComposerTastingNotesLabel,
                                       className: "mb-2 block text-sm font-medium text-stone-700"
                                     }),
                                 JsxRuntime.jsx("textarea", {
@@ -308,7 +306,7 @@ function EntryComposer(props) {
                       children: [
                         JsxRuntime.jsx("div", {
                               children: JsxRuntime.jsx(TextField.make, {
-                                    label: "Rating",
+                                    label: t.entryComposerRatingLabel,
                                     value: entryForm.rating,
                                     onChange: (function (value) {
                                         onEntryFormChange("rating", value);
@@ -319,7 +317,7 @@ function EntryComposer(props) {
                               className: "md:w-40"
                             }),
                         JsxRuntime.jsx("button", {
-                              children: entryForm.isSubmitting ? match[3] : match[2],
+                              children: entryForm.isSubmitting ? match[1] : match[0],
                               className: "rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400",
                               disabled: entryForm.isSubmitting,
                               type: "button",

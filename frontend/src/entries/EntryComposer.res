@@ -24,10 +24,11 @@ let make = (
   ~onUseNewWine: unit => unit,
   ~onSubmit: unit => unit,
 ) => {
-  let (_eyebrow, _heading, buttonLabel, buttonBusyLabel) =
+  let t = I18nContext.useT()
+  let (buttonLabel, buttonBusyLabel) =
     switch mode {
-    | Create => ("Add entry", "Capture a wine", "Save entry", "Saving...")
-    | Edit => ("Edit entry", "Update this memory", "Save changes", "Saving...")
+    | Create => (t.entryComposerSaveCreate, t.entryComposerSavingLabel)
+    | Edit => (t.entryComposerSaveEdit, t.entryComposerSavingLabel)
     }
 
   <section className="rounded-3xl border border-stone-900/10 bg-white p-6 shadow-[0_24px_80px_rgba(81,46,23,0.12)] md:p-8">
@@ -47,7 +48,7 @@ let make = (
                    "rounded-2xl border border-stone-300 px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950"
                  }
                }>
-               {React.string("Selected wine")}
+               {React.string(t.entryComposerSelectedWine)}
              </button>
              <button
                type_="button"
@@ -60,14 +61,14 @@ let make = (
                    "rounded-2xl border border-stone-300 px-4 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950"
                  }
                }>
-               {React.string("Different wine")}
+               {React.string(t.entryComposerDifferentWine)}
              </button>
            </div>
            {switch entryForm.wineSource {
            | EntryState.ExistingWine(wine) =>
              <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4">
                <p className="text-xs font-medium uppercase tracking-[0.2em] text-stone-500">
-                 {React.string("Using")}
+                 {React.string(t.entryComposerUsing)}
                </p>
                <p className="mt-2 text-base font-semibold text-stone-950">
                  {React.string(wine->wineLabel)}
@@ -95,43 +96,43 @@ let make = (
        | EntryState.NewWine =>
          <>
            <TextField
-             label="Wine name"
+             label=t.wineComposerWineNameLabel
              value=entryForm.wineName
              onChange={value => onEntryFormChange(. "wineName", value)}
              autoComplete="off"
            />
            <TextField
-             label="Producer"
+             label=t.wineComposerProducerLabel
              value=entryForm.producer
              onChange={value => onEntryFormChange(. "producer", value)}
              autoComplete="organization"
            />
            <TextField
-             label="Style"
+             label=t.wineComposerStyleLabel
              value=entryForm.style
              onChange={value => onEntryFormChange(. "style", value)}
              autoComplete="off"
            />
            <TextField
-             label="Grape"
+             label=t.wineComposerGrapeLabel
              value=entryForm.grape
              onChange={value => onEntryFormChange(. "grape", value)}
              autoComplete="off"
            />
            <TextField
-             label="Region"
+             label=t.wineComposerRegionLabel
              value=entryForm.region
              onChange={value => onEntryFormChange(. "region", value)}
              autoComplete="off"
            />
            <TextField
-             label="Country"
+             label=t.wineComposerCountryLabel
              value=entryForm.country
              onChange={value => onEntryFormChange(. "country", value)}
              autoComplete="country-name"
            />
            <TextField
-             label="Vintage"
+             label=t.wineComposerVintageLabel
              type_="number"
              value=entryForm.vintage
              onChange={value => onEntryFormChange(. "vintage", value)}
@@ -143,43 +144,43 @@ let make = (
          | Edit =>
            <>
              <TextField
-               label="Wine name"
+               label=t.wineComposerWineNameLabel
                value=entryForm.wineName
                onChange={value => onEntryFormChange(. "wineName", value)}
                autoComplete="off"
              />
              <TextField
-               label="Producer"
+               label=t.wineComposerProducerLabel
                value=entryForm.producer
                onChange={value => onEntryFormChange(. "producer", value)}
                autoComplete="organization"
              />
              <TextField
-               label="Style"
+               label=t.wineComposerStyleLabel
                value=entryForm.style
                onChange={value => onEntryFormChange(. "style", value)}
                autoComplete="off"
              />
              <TextField
-               label="Grape"
+               label=t.wineComposerGrapeLabel
                value=entryForm.grape
                onChange={value => onEntryFormChange(. "grape", value)}
                autoComplete="off"
              />
              <TextField
-               label="Region"
+               label=t.wineComposerRegionLabel
                value=entryForm.region
                onChange={value => onEntryFormChange(. "region", value)}
                autoComplete="off"
              />
              <TextField
-               label="Country"
+               label=t.wineComposerCountryLabel
                value=entryForm.country
                onChange={value => onEntryFormChange(. "country", value)}
                autoComplete="country-name"
              />
              <TextField
-               label="Vintage"
+               label=t.wineComposerVintageLabel
                type_="number"
                value=entryForm.vintage
                onChange={value => onEntryFormChange(. "vintage", value)}
@@ -190,20 +191,20 @@ let make = (
          }
        }}
       <TextField
-        label="Consumed at"
+        label=t.entryComposerConsumedAtLabel
         type_="datetime-local"
         value=entryForm.consumedAt
         onChange={value => onEntryFormChange(. "consumedAt", value)}
         autoComplete="off"
       />
       <TextField
-        label="Venue"
+        label=t.entryComposerVenueLabel
         value=entryForm.venueName
         onChange={value => onEntryFormChange(. "venueName", value)}
         autoComplete="off"
       />
       <TextField
-        label="Location"
+        label=t.entryComposerLocationLabel
         value=entryForm.locationText
         onChange={value => onEntryFormChange(. "locationText", value)}
         autoComplete="street-address"
@@ -212,7 +213,7 @@ let make = (
     <div className="mt-4 grid gap-4">
       <label className="block">
         <span className="mb-2 block text-sm font-medium text-stone-700">
-          {React.string("Pairing notes")}
+          {React.string(t.entryComposerPairingNotesLabel)}
         </span>
         <textarea
           value=entryForm.pairingNotes
@@ -223,7 +224,7 @@ let make = (
       </label>
       <label className="block">
         <span className="mb-2 block text-sm font-medium text-stone-700">
-          {React.string("Tasting notes")}
+          {React.string(t.entryComposerTastingNotesLabel)}
         </span>
         <textarea
           value=entryForm.tastingNotes
@@ -236,7 +237,7 @@ let make = (
     <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div className="md:w-40">
         <TextField
-          label="Rating"
+          label=t.entryComposerRatingLabel
           type_="number"
           value=entryForm.rating
           onChange={value => onEntryFormChange(. "rating", value)}

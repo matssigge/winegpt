@@ -7,54 +7,54 @@ let make = (
   ~onWineFormChange: (. string, string) => unit,
   ~onSubmit: unit => unit,
 ) => {
-  let (buttonLabel, buttonBusyLabel) =
-    switch mode {
-    | Create => ("Save wine", "Saving...")
-    }
+  let t = I18nContext.useT()
+  let _ = mode // single variant; keep prop for forward-compat
+  let buttonLabel = t.wineComposerSaveLabel
+  let buttonBusyLabel = t.wineComposerSavingLabel
 
   <section className="rounded-3xl border border-stone-900/10 bg-white p-6 shadow-[0_24px_80px_rgba(81,46,23,0.12)] md:p-8">
     <p className="text-sm leading-6 text-stone-600">
-      {React.string("Add a bottle you want to remember now, then attach occasions later when they happen.")}
+      {React.string(t.wineComposerHelpText)}
     </p>
     <div className="mt-6 grid gap-4 md:grid-cols-2">
       <TextField
-        label="Wine name"
+        label=t.wineComposerWineNameLabel
         value=wineForm.wineName
         onChange={value => onWineFormChange(. "wineName", value)}
         autoComplete="off"
       />
       <TextField
-        label="Producer"
+        label=t.wineComposerProducerLabel
         value=wineForm.producer
         onChange={value => onWineFormChange(. "producer", value)}
         autoComplete="organization"
       />
       <TextField
-        label="Style"
+        label=t.wineComposerStyleLabel
         value=wineForm.style
         onChange={value => onWineFormChange(. "style", value)}
         autoComplete="off"
       />
       <TextField
-        label="Grape"
+        label=t.wineComposerGrapeLabel
         value=wineForm.grape
         onChange={value => onWineFormChange(. "grape", value)}
         autoComplete="off"
       />
       <TextField
-        label="Region"
+        label=t.wineComposerRegionLabel
         value=wineForm.region
         onChange={value => onWineFormChange(. "region", value)}
         autoComplete="off"
       />
       <TextField
-        label="Country"
+        label=t.wineComposerCountryLabel
         value=wineForm.country
         onChange={value => onWineFormChange(. "country", value)}
         autoComplete="country-name"
       />
       <TextField
-        label="Vintage"
+        label=t.wineComposerVintageLabel
         type_="number"
         value=wineForm.vintage
         onChange={value => onWineFormChange(. "vintage", value)}
