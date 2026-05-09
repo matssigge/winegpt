@@ -10,9 +10,7 @@ function WineListScreen(props) {
               occasionFilter: props.wineOccasionFilter,
               totalWineCount: props.totalWineCount,
               selectedWineId: props.selectedWineId,
-              onSelectWine: props.onSelectWine,
-              onSelectOccasionFilter: props.onSelectOccasionFilter,
-              onWineQueryChange: props.onWineQueryChange
+              onSelectWine: props.onSelectWine
             });
 }
 

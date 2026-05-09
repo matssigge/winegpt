@@ -11,6 +11,9 @@ function WineDetailScreen(props) {
   var onAddEntry = props.onAddEntry;
   var entryStatus = props.entryStatus;
   var wineId = props.wineId;
+  var onSelectEntry = function (param) {
+    
+  };
   var selectedWine = Belt_Array.getBy(WineState.wines(props.wineStatus), (function (summary) {
           return summary.wine.id === wineId;
         }));
@@ -67,9 +70,9 @@ function WineDetailScreen(props) {
                 JsxRuntime.jsx(WineDetail.make, {
                       selectedWine: selectedWine,
                       entryStatus: scopedEntryStatus,
-                      selectedEntry: props.selectedEntry,
-                      selectedEntryId: props.selectedEntryId,
-                      onSelectEntry: props.onSelectEntry,
+                      selectedEntry: undefined,
+                      selectedEntryId: undefined,
+                      onSelectEntry: onSelectEntry,
                       onEditEntry: props.onEditEntry
                     })
               ],

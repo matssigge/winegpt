@@ -6,8 +6,6 @@ let make = (
   ~totalWineCount: int,
   ~selectedWineId: option<int>,
   ~onSelectWine: int => unit,
-  ~onSelectOccasionFilter: WineState.occasionFilter => unit,
-  ~onWineQueryChange: string => unit,
 ) =>
   <WineList
     status=wineStatus
@@ -16,6 +14,4 @@ let make = (
     totalWineCount
     selectedWineId
     onSelectWine
-    onSelectOccasionFilter
-    onWineQueryChange
   />

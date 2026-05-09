@@ -3,13 +3,14 @@ let make = (
   ~wineStatus: WineState.status,
   ~wineId: int,
   ~entryStatus: EntryState.status,
-  ~selectedEntry: option<EntryModel.entry>,
-  ~selectedEntryId: option<int>,
   ~onEditEntry: unit => unit,
-  ~onSelectEntry: int => unit,
   ~onAddEntry: unit => unit,
   ~onBack: unit => unit,
 ) => {
+  // Slice 1 has no entry-selection UI; deferred to a later slice.
+  let selectedEntry: option<EntryModel.entry> = None
+  let selectedEntryId: option<int> = None
+  let onSelectEntry = (_: int) => ()
   let selectedWine =
     WineState.wines(wineStatus)->Belt.Array.getBy(summary => summary.wine.id == wineId)
   let filteredEntries =

@@ -1,12 +1,9 @@
 @send
 external preventDefault: ReactEvent.Form.t => unit = "preventDefault"
 
-type entryComposerMode =
-  | CreateEntry
-  | EditEntry(int)
-
 @react.component
 let make = () => {
+  let route = Router.useRoute()
   let (mode, setMode) = React.useState(() => AuthForm.loginMode)
   let (form, setForm) = React.useState(() => AuthForm.initialForm)
   let (currentUser, setCurrentUser) = React.useState(() => None)
@@ -14,20 +11,15 @@ let make = () => {
   let (isInitializing, setIsInitializing) = React.useState(() => true)
   let (isSubmitting, setIsSubmitting) = React.useState(() => false)
   let (error, setError) = React.useState(() => None)
-  let (collectionStatus, setCollectionStatus) = React.useState(() => CollectionState.initialCollectionStatus())
-  let (selectedCollectionId, setSelectedCollectionId) = React.useState(() => None)
-  let (collectionForm, setCollectionForm) = React.useState(() => CollectionState.initialCollectionForm)
-  let (inviteForm, setInviteForm) = React.useState(() => CollectionInvite.initialForm)
   let (wineStatus, setWineStatus) = React.useState(() => WineState.initialStatus())
   let (wineForm, setWineForm) = React.useState(() => WineCapture.initialForm)
   let (wineOccasionFilter, setWineOccasionFilter) = React.useState(() => WineState.initialOccasionFilter)
   let (wineQuery, setWineQuery) = React.useState(() => "")
-  let (selectedWineId, setSelectedWineId) = React.useState(() => None)
   let (entryStatus, setEntryStatus) = React.useState(() => EntryState.initialStatus())
   let (entryForm, setEntryForm) = React.useState(() => EntryState.initialForm)
-  let (selectedEntryId, setSelectedEntryId) = React.useState(() => None)
-  let (wineComposerMode, setWineComposerMode) = React.useState(() => None)
-  let (entryComposerMode, setEntryComposerMode) = React.useState(() => None)
+
+  let defaultCollectionId =
+    currentUser->Belt.Option.map((user: AuthSession.user) => user.defaultCollectionId)
 
   React.useEffect0(() => {
     switch SessionBootstrap.loadSessionToken() {
@@ -43,100 +35,48 @@ let make = () => {
         SessionStorage.clearSessionToken()
         setSessionToken(_ => None)
         setCurrentUser(_ => None)
-        setCollectionStatus(_ => CollectionState.emptyCollectionStatus())
-        setSelectedCollectionId(_ => None)
-        setWineStatus(_ => WineState.initialStatus())
-        setWineForm(_ => WineCapture.initialForm)
-        setWineOccasionFilter(_ => WineState.initialOccasionFilter)
-        setWineQuery(_ => "")
-        setSelectedWineId(_ => None)
-        setEntryStatus(_ => EntryState.initialStatus())
-        setEntryForm(_ => EntryState.initialForm)
-        setSelectedEntryId(_ => None)
-        setWineComposerMode(_ => None)
-        setEntryComposerMode(_ => None)
         setIsInitializing(_ => false)
         Js.Promise2.resolve()
       })
       ->ignore
     | None =>
-      setSessionToken(_ => None)
-      setCollectionStatus(_ => CollectionState.emptyCollectionStatus())
-      setSelectedCollectionId(_ => None)
-      setWineStatus(_ => WineState.initialStatus())
-      setWineForm(_ => WineCapture.initialForm)
-      setWineOccasionFilter(_ => WineState.initialOccasionFilter)
-      setWineQuery(_ => "")
-      setSelectedWineId(_ => None)
-      setEntryStatus(_ => EntryState.initialStatus())
-      setEntryForm(_ => EntryState.initialForm)
-      setSelectedEntryId(_ => None)
-      setWineComposerMode(_ => None)
-      setEntryComposerMode(_ => None)
       setIsInitializing(_ => false)
     }
-
     None
   })
 
   React.useEffect2(() => {
-    switch (currentUser, sessionToken) {
-    | (Some(_), Some(token)) =>
-      setCollectionStatus(_ => CollectionState.loadingCollectionStatus())
-
-      CollectionState.listCollections(token)
-      ->Js.Promise2.then(collections => {
-        setCollectionStatus(_ => CollectionState.readyCollectionStatus(collections))
+    switch (sessionToken, defaultCollectionId) {
+    | (Some(token), Some(collectionId)) =>
+      setWineStatus(_ => WineState.loadingStatus())
+      WineState.listWines(token, collectionId)
+      ->Js.Promise2.then(wines => {
+        setWineStatus(_ => WineState.readyStatus(wines))
         Js.Promise2.resolve()
       })
       ->Js.Promise2.catch(_ => {
-        setCollectionStatus(_ => CollectionState.errorCollectionStatus(AuthAppSupport.describeCollectionError()))
+        setWineStatus(_ => WineState.errorStatus(AuthAppSupport.describeEntryHistoryError()))
+        Js.Promise2.resolve()
+      })
+      ->ignore
+
+      setEntryStatus(_ => EntryState.loadingStatus())
+      EntryState.listEntries(token, collectionId)
+      ->Js.Promise2.then(entries => {
+        setEntryStatus(_ => EntryState.readyStatus(entries))
+        Js.Promise2.resolve()
+      })
+      ->Js.Promise2.catch(_ => {
+        setEntryStatus(_ => EntryState.errorStatus(AuthAppSupport.describeEntryHistoryError()))
         Js.Promise2.resolve()
       })
       ->ignore
     | _ =>
-      setCollectionStatus(_ => CollectionState.emptyCollectionStatus())
-      setSelectedCollectionId(_ => None)
       setWineStatus(_ => WineState.initialStatus())
-      setWineForm(_ => WineCapture.initialForm)
-      setWineOccasionFilter(_ => WineState.initialOccasionFilter)
-      setSelectedWineId(_ => None)
       setEntryStatus(_ => EntryState.initialStatus())
-      setSelectedEntryId(_ => None)
-      setWineComposerMode(_ => None)
-      setEntryComposerMode(_ => None)
     }
-
     None
-  }, (currentUser, sessionToken))
-
-  React.useEffect2(() => {
-    if CollectionState.isReady(collectionStatus) {
-      let collections = CollectionState.collections(collectionStatus)
-
-      if Belt.Array.length(collections) == 0 {
-        setSelectedCollectionId(_ => None)
-        CollectionSelectionStorage.clearSelectedCollectionId()
-      } else {
-        let nextSelectedCollectionId =
-          CollectionState.resolveSelectedCollectionId(
-            collections,
-            selectedCollectionId,
-            CollectionSelectionStorage.loadSelectedCollectionId(),
-          )
-
-        if nextSelectedCollectionId != selectedCollectionId {
-          setSelectedCollectionId(_ => nextSelectedCollectionId)
-          switch nextSelectedCollectionId {
-          | Some(collectionId) => CollectionSelectionStorage.saveSelectedCollectionId(collectionId)
-          | None => CollectionSelectionStorage.clearSelectedCollectionId()
-          }
-        }
-      }
-    }
-
-    None
-  }, (collectionStatus, selectedCollectionId))
+  }, (sessionToken, defaultCollectionId))
 
   let updateForm = (field, value) => {
     setForm(current => AuthForm.updateForm(current, field, value))
@@ -148,36 +88,21 @@ let make = () => {
     setError(_ => None)
   }
 
-  let updateCollectionForm = value => {
-    setCollectionForm(current => CollectionState.updateCollectionForm(current, value))
-  }
-
-  let updateInviteForm = value => {
-    setInviteForm(current => CollectionInvite.updateForm(current, value))
-  }
-
-  let updateEntryForm = (field, value) => {
+  let updateEntryForm = (field, value) =>
     setEntryForm(current => EntryState.updateForm(current, field, value))
-  }
 
-  let updateWineForm = (field, value) => {
+  let updateWineForm = (field, value) =>
     setWineForm(current => WineCapture.updateForm(current, field, value))
-  }
 
   let handleSubmit = event => {
     event->preventDefault
     setIsSubmitting(_ => true)
     setError(_ => None)
-
     AuthForm.submit(mode, form)
     ->Js.Promise2.then(payload => {
-      let nextSessionToken = payload.token
-      SessionStorage.saveSessionToken(nextSessionToken)
-      setSessionToken(_ => Some(nextSessionToken))
+      SessionStorage.saveSessionToken(payload.token)
+      setSessionToken(_ => Some(payload.token))
       setCurrentUser(_ => Some(payload.user))
-      setCollectionForm(_ => CollectionState.finishCollectionForm())
-      setInviteForm(_ => CollectionInvite.initialForm)
-      setEntryForm(_ => EntryState.initialForm)
       setForm(_ => AuthForm.initialForm)
       setIsSubmitting(_ => false)
       Js.Promise2.resolve()
@@ -194,283 +119,42 @@ let make = () => {
     SessionStorage.clearSessionToken()
     setSessionToken(_ => None)
     setCurrentUser(_ => None)
-    setCollectionStatus(_ => CollectionState.emptyCollectionStatus())
-    setSelectedCollectionId(_ => None)
-    CollectionSelectionStorage.clearSelectedCollectionId()
-    setCollectionForm(_ => CollectionState.finishCollectionForm())
-    setInviteForm(_ => CollectionInvite.initialForm)
     setWineStatus(_ => WineState.initialStatus())
     setWineForm(_ => WineCapture.initialForm)
-    setWineOccasionFilter(_ => WineState.initialOccasionFilter)
-    setWineQuery(_ => "")
-    setSelectedWineId(_ => None)
     setEntryStatus(_ => EntryState.initialStatus())
     setEntryForm(_ => EntryState.initialForm)
-    setSelectedEntryId(_ => None)
-    setWineComposerMode(_ => None)
-    setEntryComposerMode(_ => None)
     setError(_ => None)
     setMode(_ => AuthForm.loginMode)
+    Router.navigate(Home)
   }
 
-  let handleCreateCollection = () =>
-    switch sessionToken {
-    | Some(token) if !collectionForm.isSubmitting =>
-      setCollectionForm(current => CollectionState.startSubmittingCollectionForm(current))
-
-      CollectionState.createCollection(token, collectionForm.name)
-      ->Js.Promise2.then((collection: CollectionModel.collection) => {
-        let nextSelectedCollectionId = Some(collection.id)
-        setSelectedCollectionId(_ => nextSelectedCollectionId)
-        CollectionSelectionStorage.saveSelectedCollectionId(collection.id)
-        setInviteForm(_ => CollectionInvite.initialForm)
-        setWineStatus(_ => WineState.readyStatus([]))
-        setWineForm(_ => WineCapture.initialForm)
-        setWineOccasionFilter(_ => WineState.initialOccasionFilter)
-        setWineQuery(_ => "")
-        setSelectedWineId(_ => None)
-        setEntryForm(_ => EntryState.initialForm)
-        setSelectedEntryId(_ => None)
-        setWineComposerMode(_ => None)
-        setEntryComposerMode(_ => None)
-        setCollectionStatus(current => {
-          let collections =
-            if CollectionState.isReady(current) {
-              CollectionState.collections(current)
-            } else {
-              []
-            }
-
-          CollectionState.readyCollectionStatus(CollectionState.appendCollection(collections, collection))
-        })
-        setCollectionForm(_ => CollectionState.finishCollectionForm())
-        Js.Promise2.resolve()
-      })
-      ->Js.Promise2.catch(reason => {
-        setCollectionForm(current =>
-          CollectionState.failCollectionForm(current, AuthAppSupport.describeCreateCollectionError(reason))
-        )
-        Js.Promise2.resolve()
-      })
-      ->ignore
+  let useSelectedWineForEntry = () =>
+    switch route {
+    | Router.NewEntry(wineId) | Router.EditEntry(wineId, _) =>
+      switch WineState.wines(wineStatus)->Belt.Array.getBy(summary => summary.wine.id == wineId) {
+      | Some(summary) => setEntryForm(current => EntryState.useExistingWine(current, summary.wine))
+      | None => ()
+      }
     | _ => ()
     }
 
-  let handleSelectCollection = collectionId => {
-    let nextSelectedCollectionId = Some(collectionId)
-    setSelectedCollectionId(_ => nextSelectedCollectionId)
-    CollectionSelectionStorage.saveSelectedCollectionId(collectionId)
-    setInviteForm(_ => CollectionInvite.initialForm)
-    setWineOccasionFilter(_ => WineState.initialOccasionFilter)
-    setWineQuery(_ => "")
-    setSelectedWineId(_ => None)
-    setWineForm(_ => WineCapture.initialForm)
-    setEntryForm(_ => EntryState.initialForm)
-    setSelectedEntryId(_ => None)
-    setWineComposerMode(_ => None)
-    setEntryComposerMode(_ => None)
-  }
-
-  let selectedCollection =
-    CollectionState.selectedCollection(CollectionState.collections(collectionStatus), selectedCollectionId)
-  let visibleWineStatus = WineState.filterStatus(wineStatus, wineQuery, wineOccasionFilter)
-  let visibleWines = WineState.wines(visibleWineStatus)
-  let selectedWine =
-    selectedWineId->Belt.Option.flatMap(wineId =>
-      visibleWines->Belt.Array.getBy(summary => summary.wine.id == wineId)
-    )
-  let filteredEntries =
-    switch selectedWine {
-    | Some(summary) => EntryState.entries(entryStatus)->Belt.Array.keep(entry => entry.wine.id == summary.wine.id)
-    | None => []
-    }
-  let visibleEntryStatus =
-    switch entryStatus {
-    | EntryState.Idle => EntryState.Idle
-    | EntryState.Loading => EntryState.Loading
-    | EntryState.Error(message) => EntryState.Error(message)
-    | EntryState.Ready(_) => EntryState.Ready(filteredEntries)
-    }
-  let selectedEntry = EntryState.selectedEntry(filteredEntries, selectedEntryId)
-
-  React.useEffect3(() => {
-    switch (sessionToken, selectedCollection) {
-    | (Some(token), Some(collection)) =>
-      setWineStatus(_ => WineState.loadingStatus())
-
-      WineState.listWines(token, collection.id)
-      ->Js.Promise2.then(wines => {
-        setWineStatus(_ => WineState.readyStatus(wines))
-        setSelectedWineId(current =>
-          switch current {
-          | Some(wineId) if wines->Belt.Array.some(summary => summary.wine.id == wineId) => current
-          | _ => wines->Belt.Array.get(0)->Belt.Option.map(summary => summary.wine.id)
-          }
-        )
-        Js.Promise2.resolve()
-      })
-      ->Js.Promise2.catch(_ => {
-        setWineStatus(_ => WineState.errorStatus(AuthAppSupport.describeEntryHistoryError()))
-        setSelectedWineId(_ => None)
-        Js.Promise2.resolve()
-      })
-      ->ignore
-    | _ =>
-      setWineStatus(_ => WineState.initialStatus())
-      setSelectedWineId(_ => None)
-    }
-
-    None
-  }, (sessionToken, collectionStatus, selectedCollectionId))
-
-  React.useEffect2(() => {
-    if WineState.isReady(visibleWineStatus) {
-      setSelectedWineId(current =>
-        switch current {
-        | Some(wineId) if visibleWines->Belt.Array.some(summary => summary.wine.id == wineId) => current
-        | _ => visibleWines->Belt.Array.get(0)->Belt.Option.map(summary => summary.wine.id)
-        }
-      )
-    }
-
-    None
-  }, (visibleWineStatus, selectedCollectionId))
-
-  React.useEffect3(() => {
-    switch (sessionToken, selectedCollection) {
-    | (Some(token), Some(collection)) =>
-      setEntryStatus(_ => EntryState.loadingStatus())
-
-      EntryState.listEntries(token, collection.id)
-      ->Js.Promise2.then(entries => {
-        setEntryStatus(_ => EntryState.readyStatus(entries))
-        setSelectedEntryId(current => EntryState.resolveSelectedEntryId(entries, current))
-        Js.Promise2.resolve()
-      })
-      ->Js.Promise2.catch(_ => {
-        setEntryStatus(_ => EntryState.errorStatus(AuthAppSupport.describeEntryHistoryError()))
-        setSelectedEntryId(_ => None)
-        Js.Promise2.resolve()
-      })
-      ->ignore
-    | _ =>
-      setEntryStatus(_ => EntryState.initialStatus())
-      setEntryForm(_ => EntryState.initialForm)
-      setSelectedEntryId(_ => None)
-      setEntryComposerMode(_ => None)
-    }
-
-    None
-  }, (sessionToken, collectionStatus, selectedCollectionId))
-
-  React.useEffect2(() => {
-    setSelectedEntryId(current => EntryState.resolveSelectedEntryId(filteredEntries, current))
-    None
-  }, (entryStatus, selectedWineId))
-
-  let handleInvite = () =>
-    switch (sessionToken, selectedCollection) {
-    | (Some(token), Some(collection)) if collection->CollectionModel.isOwner && !inviteForm.isSubmitting =>
-      setInviteForm(current => CollectionInvite.startSubmitting(current))
-
-      CollectionInvite.invite(token, collection.id, inviteForm.email)
-      ->Js.Promise2.then(invitedMember => {
-        setInviteForm(_ => CollectionInvite.succeedForm(invitedMember))
-        Js.Promise2.resolve()
-      })
-      ->Js.Promise2.catch(reason => {
-        setInviteForm(current => CollectionInvite.failForm(current, AuthAppSupport.describeInviteError(reason)))
-        Js.Promise2.resolve()
-      })
-      ->ignore
-    | _ => ()
-    }
-
-  let handleCreateEntry = () =>
-    switch (sessionToken, selectedCollection, entryComposerMode) {
-    | (Some(token), Some(collection), Some(EditEntry(entryId))) if !entryForm.isSubmitting =>
-      setEntryForm(current => EntryState.startSubmitting(current))
-
-      EntryState.updateEntry(token, collection.id, entryId, entryForm)
-      ->Js.Promise2.then(entry => {
-        WineState.listWines(token, collection.id)
-        ->Js.Promise2.then(wines => {
-          setWineStatus(_ => WineState.readyStatus(wines))
-          setSelectedWineId(_ => Some(entry.wine.id))
-          Js.Promise2.resolve()
-        })
-        ->ignore
-        setEntryStatus(current => {
-          let entries =
-            if EntryState.isReady(current) {
-              EntryState.entries(current)
-            } else {
-              []
-            }
-
-          EntryState.readyStatus(EntryState.replaceEntry(entries, entry))
-        })
-        setSelectedEntryId(_ => Some(entry.id))
-        setEntryForm(_ => EntryState.succeedForm())
-        setEntryComposerMode(_ => None)
-        Js.Promise2.resolve()
-      })
-      ->Js.Promise2.catch(reason => {
-        setEntryForm(current => EntryState.failForm(current, AuthAppSupport.describeEntryError(reason)))
-        Js.Promise2.resolve()
-      })
-      ->ignore
-    | (Some(token), Some(collection), _) if !entryForm.isSubmitting =>
-      setEntryForm(current => EntryState.startSubmitting(current))
-
-      EntryState.createEntry(token, collection.id, entryForm)
-      ->Js.Promise2.then(entry => {
-        WineState.listWines(token, collection.id)
-        ->Js.Promise2.then(wines => {
-          setWineStatus(_ => WineState.readyStatus(wines))
-          setSelectedWineId(_ => Some(entry.wine.id))
-          Js.Promise2.resolve()
-        })
-        ->ignore
-        setEntryStatus(current => {
-          let entries =
-            if EntryState.isReady(current) {
-              EntryState.entries(current)
-            } else {
-              []
-            }
-
-          EntryState.readyStatus(EntryState.appendEntry(entries, entry))
-        })
-        setSelectedEntryId(_ => Some(entry.id))
-        setEntryForm(_ => EntryState.succeedForm())
-        setEntryComposerMode(_ => None)
-        Js.Promise2.resolve()
-      })
-      ->Js.Promise2.catch(reason => {
-        setEntryForm(current => EntryState.failForm(current, AuthAppSupport.describeEntryError(reason)))
-        Js.Promise2.resolve()
-      })
-      ->ignore
-    | _ => ()
-    }
+  let useNewWineForEntry = () =>
+    setEntryForm(current => EntryState.useNewWine(current))
 
   let handleCreateWine = () =>
-    switch (sessionToken, selectedCollection, wineComposerMode) {
-    | (Some(token), Some(collection), Some(_)) if !wineForm.isSubmitting =>
+    switch (sessionToken, defaultCollectionId) {
+    | (Some(token), Some(collectionId)) if !wineForm.isSubmitting =>
       setWineForm(current => WineCapture.startSubmitting(current))
-
-      WineCapture.createWine(token, collection.id, wineForm)
-      ->Js.Promise2.then(summary => {
-        WineState.listWines(token, collection.id)
+      WineCapture.createWine(token, collectionId, wineForm)
+      ->Js.Promise2.then((summary: WineModel.summary) => {
+        WineState.listWines(token, collectionId)
         ->Js.Promise2.then(wines => {
           setWineStatus(_ => WineState.readyStatus(wines))
-          setSelectedWineId(_ => Some(summary.wine.id))
           Js.Promise2.resolve()
         })
         ->ignore
         setWineForm(_ => WineCapture.initialForm)
-        setWineComposerMode(_ => None)
+        Router.navigate(Wine(summary.wine.id))
         Js.Promise2.resolve()
       })
       ->Js.Promise2.catch(reason => {
@@ -481,72 +165,74 @@ let make = () => {
     | _ => ()
     }
 
-  let handleSelectEntry = entryId => {
-    setSelectedEntryId(_ => Some(entryId))
-  }
-
-  let handleSelectWine = wineId => {
-    setSelectedWineId(_ => Some(wineId))
-  }
-
-  let handleWineQueryChange = query => {
-    setWineQuery(_ => query)
-  }
-
-  let handleWineOccasionFilterChange = nextFilter => {
-    setWineOccasionFilter(_ => nextFilter)
-  }
-
-  let openEntryComposer = () => {
-    setEntryForm(_ =>
-      switch selectedWine {
-      | Some(summary) => EntryState.formFromWineSummary(summary)
-      | None => EntryState.initialForm
-      }
-    )
-    setEntryComposerMode(_ => Some(CreateEntry))
-    setWineComposerMode(_ => None)
-  }
-
-  let useSelectedWineForEntry = () =>
-    switch selectedWine {
-    | Some(summary) => setEntryForm(current => EntryState.useExistingWine(current, summary.wine))
-    | None => ()
+  let handleCreateEntry = () =>
+    switch (sessionToken, defaultCollectionId, route) {
+    | (Some(token), Some(collectionId), Router.EditEntry(wineId, entryId)) if !entryForm.isSubmitting =>
+      setEntryForm(current => EntryState.startSubmitting(current))
+      EntryState.updateEntry(token, collectionId, entryId, entryForm)
+      ->Js.Promise2.then(entry => {
+        WineState.listWines(token, collectionId)
+        ->Js.Promise2.then(wines => {
+          setWineStatus(_ => WineState.readyStatus(wines))
+          Js.Promise2.resolve()
+        })
+        ->ignore
+        setEntryStatus(current =>
+          if EntryState.isReady(current) {
+            EntryState.readyStatus(EntryState.replaceEntry(EntryState.entries(current), entry))
+          } else {
+            current
+          }
+        )
+        setEntryForm(_ => EntryState.succeedForm())
+        Router.navigate(Wine(wineId))
+        Js.Promise2.resolve()
+      })
+      ->Js.Promise2.catch(reason => {
+        setEntryForm(current => EntryState.failForm(current, AuthAppSupport.describeEntryError(reason)))
+        Js.Promise2.resolve()
+      })
+      ->ignore
+    | (Some(token), Some(collectionId), Router.NewEntry(wineId)) if !entryForm.isSubmitting =>
+      setEntryForm(current => EntryState.startSubmitting(current))
+      EntryState.createEntry(token, collectionId, entryForm)
+      ->Js.Promise2.then(entry => {
+        WineState.listWines(token, collectionId)
+        ->Js.Promise2.then(wines => {
+          setWineStatus(_ => WineState.readyStatus(wines))
+          Js.Promise2.resolve()
+        })
+        ->ignore
+        setEntryStatus(current =>
+          if EntryState.isReady(current) {
+            EntryState.readyStatus(EntryState.appendEntry(EntryState.entries(current), entry))
+          } else {
+            current
+          }
+        )
+        setEntryForm(_ => EntryState.succeedForm())
+        Router.navigate(Wine(wineId))
+        Js.Promise2.resolve()
+      })
+      ->Js.Promise2.catch(reason => {
+        setEntryForm(current => EntryState.failForm(current, AuthAppSupport.describeEntryError(reason)))
+        Js.Promise2.resolve()
+      })
+      ->ignore
+    | _ => ()
     }
 
-  let useNewWineForEntry = () => {
-    setEntryForm(current => EntryState.useNewWine(current))
-  }
+  // Slice 1 has no UI affordance to edit a specific occasion (deferred to a later slice).
+  // The EditEntry route is reachable only by typing the URL; a no-op handler keeps the
+  // prop wiring honest without speculating on UX.
+  let openEntryEditor = () => ()
 
-  let openWineComposer = () => {
-    setWineForm(_ => WineCapture.initialForm)
-    setWineComposerMode(_ => Some(WineComposer.Create))
-    setEntryComposerMode(_ => None)
-  }
-
-  let openEntryEditor = () => {
-    switch selectedEntry {
-    | Some(entry) =>
-      setEntryForm(_ => EntryState.formFromEntry(entry))
-      setEntryComposerMode(_ => Some(EditEntry(entry.id)))
-    | None => ()
-    }
-  }
-
-  let closeEntryComposer = () => {
-    setEntryForm(_ => EntryState.initialForm)
-    setEntryComposerMode(_ => None)
-  }
-
-  let closeWineComposer = () => {
-    setWineForm(_ => WineCapture.initialForm)
-    setWineComposerMode(_ => None)
-  }
+  let visibleWineStatus = WineState.filterStatus(wineStatus, wineQuery, wineOccasionFilter)
 
   <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950">
     <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center">
       {if isInitializing {
-         <section className="w-full max-w-md rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 text-sm text-stone-600 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur">
+         <section className="w-full max-w-md rounded-3xl border border-stone-900/10 bg-white/80 p-8 text-sm text-stone-600 shadow-xl backdrop-blur">
            {React.string("Checking your session...")}
          </section>
        } else {
@@ -554,50 +240,23 @@ let make = () => {
          | Some(user) =>
            <AppShell
              user
-             collectionStatus
-             collectionForm
-             selectedCollection
-             selectedCollectionId
-             inviteForm
+             route
              wineStatus=visibleWineStatus
              wineForm
              wineOccasionFilter
              wineQuery
-             selectedWine
              totalWineCount={WineState.wines(wineStatus)->Belt.Array.length}
-             selectedWineId
-             entryStatus=visibleEntryStatus
+             entryStatus
              entryForm
-             wineComposerMode
-             entryComposerMode={
-               switch entryComposerMode {
-               | Some(CreateEntry) => Some(EntryComposer.Create)
-               | Some(EditEntry(_)) => Some(EntryComposer.Edit)
-               | None => None
-               }
-             }
-             selectedEntry
-             selectedEntryId
-             onCollectionFormChange=updateCollectionForm
-             onCreateCollection=handleCreateCollection
-             onInviteFormChange=updateInviteForm
-             onInvite=handleInvite
              onEntryFormChange=updateEntryForm
              onUseSelectedWineForEntry=useSelectedWineForEntry
              onUseNewWineForEntry=useNewWineForEntry
              onWineFormChange=updateWineForm
              onCreateWine=handleCreateWine
              onCreateEntry=handleCreateEntry
-             onOpenWineComposer=openWineComposer
              onEditEntry=openEntryEditor
-             onOpenEntryComposer=openEntryComposer
-             onCloseWineComposer=closeWineComposer
-             onCloseEntryComposer=closeEntryComposer
-             onSelectWine=handleSelectWine
-             onSelectOccasionFilter=handleWineOccasionFilterChange
-             onWineQueryChange=handleWineQueryChange
-             onSelectEntry=handleSelectEntry
-             onSelectCollection=handleSelectCollection
+             onWineQueryChange={query => setWineQuery(_ => query)}
+             onSelectOccasionFilter={filter => setWineOccasionFilter(_ => filter)}
              onLogout=handleLogout
            />
          | None =>

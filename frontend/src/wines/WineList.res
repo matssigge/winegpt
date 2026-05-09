@@ -30,8 +30,6 @@ let make = (
   ~totalWineCount: int,
   ~selectedWineId: option<int>,
   ~onSelectWine: int => unit,
-  ~onSelectOccasionFilter: WineState.occasionFilter => unit,
-  ~onWineQueryChange: string => unit,
 ) =>
   switch status {
   | WineState.Idle =>
@@ -67,52 +65,6 @@ let make = (
                )}
             </p>
           </div>
-          <div className="w-full md:w-72">
-            <TextField
-              label="Search wines"
-              value=wineQuery
-              onChange=onWineQueryChange
-              autoComplete="off"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type_="button"
-              onClick={_ => onSelectOccasionFilter(WineState.All)}
-              className={
-                if occasionFilter == WineState.All {
-                  "rounded-full bg-stone-950 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white"
-                } else {
-                  "rounded-full border border-stone-300 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition hover:border-stone-500 hover:text-stone-950"
-                }
-              }>
-              {React.string("All")}
-            </button>
-            <button
-              type_="button"
-              onClick={_ => onSelectOccasionFilter(WineState.WithOccasions)}
-              className={
-                if occasionFilter == WineState.WithOccasions {
-                  "rounded-full bg-stone-950 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white"
-                } else {
-                  "rounded-full border border-stone-300 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition hover:border-stone-500 hover:text-stone-950"
-                }
-              }>
-              {React.string("With occasions")}
-            </button>
-            <button
-              type_="button"
-              onClick={_ => onSelectOccasionFilter(WineState.WithoutOccasions)}
-              className={
-                if occasionFilter == WineState.WithoutOccasions {
-                  "rounded-full bg-stone-950 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white"
-                } else {
-                  "rounded-full border border-stone-300 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition hover:border-stone-500 hover:text-stone-950"
-                }
-              }>
-              {React.string("No occasions yet")}
-            </button>
-          </div>
         </div>
       </section>
     } else {
@@ -132,52 +84,6 @@ let make = (
                  },
                )}
             </span>
-          </div>
-          <div className="w-full md:w-72">
-            <TextField
-              label="Search wines"
-              value=wineQuery
-              onChange=onWineQueryChange
-              autoComplete="off"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type_="button"
-              onClick={_ => onSelectOccasionFilter(WineState.All)}
-              className={
-                if occasionFilter == WineState.All {
-                  "rounded-full bg-stone-950 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white"
-                } else {
-                  "rounded-full border border-stone-300 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition hover:border-stone-500 hover:text-stone-950"
-                }
-              }>
-              {React.string("All")}
-            </button>
-            <button
-              type_="button"
-              onClick={_ => onSelectOccasionFilter(WineState.WithOccasions)}
-              className={
-                if occasionFilter == WineState.WithOccasions {
-                  "rounded-full bg-stone-950 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white"
-                } else {
-                  "rounded-full border border-stone-300 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition hover:border-stone-500 hover:text-stone-950"
-                }
-              }>
-              {React.string("With occasions")}
-            </button>
-            <button
-              type_="button"
-              onClick={_ => onSelectOccasionFilter(WineState.WithoutOccasions)}
-              className={
-                if occasionFilter == WineState.WithoutOccasions {
-                  "rounded-full bg-stone-950 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white"
-                } else {
-                  "rounded-full border border-stone-300 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition hover:border-stone-500 hover:text-stone-950"
-                }
-              }>
-              {React.string("No occasions yet")}
-            </button>
           </div>
         </div>
         <ul className="mt-4 space-y-3">
