@@ -69,6 +69,7 @@ type t = {
   wineDetailMostRecent: string,
   wineDetailNameLabel: string,
   wineDetailEmptyOccasions: string,
+  wineDetailOccasionsLabel: string,
 
   // Wine composer
   wineComposerScreenTitle: string,
@@ -170,6 +171,7 @@ let en: t = {
   wineDetailMostRecent: "Most recent",
   wineDetailNameLabel: "Name",
   wineDetailEmptyOccasions: "No occasions recorded yet.",
+  wineDetailOccasionsLabel: "Occasions",
 
   wineComposerScreenTitle: "New wine",
   wineComposerCancelAriaLabel: "Cancel",
@@ -293,6 +295,7 @@ let sv: t = {
   wineDetailMostRecent: "Senaste",
   wineDetailNameLabel: "Namn",
   wineDetailEmptyOccasions: "Inga tillfällen registrerade än.",
+  wineDetailOccasionsLabel: "Tillfällen",
 
   wineComposerScreenTitle: "Nytt vin",
   wineComposerCancelAriaLabel: "Avbryt",

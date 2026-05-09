@@ -58,7 +58,7 @@ function WineDetail(props) {
                           JsxRuntime.jsxs("div", {
                                 children: [
                                   JsxRuntime.jsx("p", {
-                                        children: "Occasions",
+                                        children: t.wineDetailOccasionsLabel,
                                         className: "text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
                                       }),
                                   JsxRuntime.jsx("p", {
@@ -93,12 +93,12 @@ function WineDetail(props) {
                                                       })
                                                 ]
                                               }),
-                                          optionalDetailLine("Producer", selectedWine.wine.producer),
-                                          optionalDetailLine("Style", selectedWine.wine.style),
-                                          optionalDetailLine("Grape", selectedWine.wine.grape),
-                                          optionalDetailLine("Region", selectedWine.wine.region),
-                                          optionalDetailLine("Country", selectedWine.wine.country),
-                                          optionalDetailLine("Vintage", Belt_Option.map(selectedWine.wine.vintage, (function (prim) {
+                                          optionalDetailLine(t.wineComposerProducerLabel, selectedWine.wine.producer),
+                                          optionalDetailLine(t.wineComposerStyleLabel, selectedWine.wine.style),
+                                          optionalDetailLine(t.wineComposerGrapeLabel, selectedWine.wine.grape),
+                                          optionalDetailLine(t.wineComposerRegionLabel, selectedWine.wine.region),
+                                          optionalDetailLine(t.wineComposerCountryLabel, selectedWine.wine.country),
+                                          optionalDetailLine(t.wineComposerVintageLabel, Belt_Option.map(selectedWine.wine.vintage, (function (prim) {
                                                       return String(prim);
                                                     })))
                                         ],

@@ -53,7 +53,7 @@ let make = (
         </div>
         <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-right">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-stone-500">
-            {React.string("Occasions")}
+            {React.string(t.wineDetailOccasionsLabel)}
           </p>
           <p className="mt-1 text-lg font-semibold text-stone-950">
             {React.string(t.entryCount(summary.entryCount))}
@@ -74,13 +74,13 @@ let make = (
                 {React.string(summary.wine.name)}
               </dd>
             </div>
-            {optionalDetailLine(~label="Producer", ~value=summary.wine.producer)}
-            {optionalDetailLine(~label="Style", ~value=summary.wine.style)}
-            {optionalDetailLine(~label="Grape", ~value=summary.wine.grape)}
-            {optionalDetailLine(~label="Region", ~value=summary.wine.region)}
-            {optionalDetailLine(~label="Country", ~value=summary.wine.country)}
+            {optionalDetailLine(~label=t.wineComposerProducerLabel, ~value=summary.wine.producer)}
+            {optionalDetailLine(~label=t.wineComposerStyleLabel, ~value=summary.wine.style)}
+            {optionalDetailLine(~label=t.wineComposerGrapeLabel, ~value=summary.wine.grape)}
+            {optionalDetailLine(~label=t.wineComposerRegionLabel, ~value=summary.wine.region)}
+            {optionalDetailLine(~label=t.wineComposerCountryLabel, ~value=summary.wine.country)}
             {optionalDetailLine(
-               ~label="Vintage",
+               ~label=t.wineComposerVintageLabel,
                ~value=summary.wine.vintage->Belt.Option.map(Belt.Int.toString),
              )}
           </dl>
