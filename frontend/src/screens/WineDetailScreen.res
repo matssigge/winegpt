@@ -7,6 +7,7 @@ let make = (
   ~onAddEntry: unit => unit,
   ~onBack: unit => unit,
 ) => {
+  let t = I18nContext.useT()
   // Slice 1 has no entry-selection UI; deferred to a later slice.
   let selectedEntry: option<EntryModel.entry> = None
   let selectedEntryId: option<int> = None
@@ -32,7 +33,7 @@ let make = (
       <button
         type_="button"
         onClick={_ => onBack()}
-        ariaLabel="Back to wines"
+        ariaLabel=t.wineDetailBackAriaLabel
         className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700">
         {React.string("‹")}
       </button>
@@ -44,7 +45,7 @@ let make = (
              | Some(producer) => producer ++ " " ++ summary.wine.name
              | None => summary.wine.name
              }
-           | None => "Wine"
+           | None => t.wineDetailDefaultTitle
            },
          )}
       </h2>
@@ -52,7 +53,7 @@ let make = (
         type_="button"
         onClick={_ => onAddEntry()}
         className="rounded-full border border-stone-300 px-3 py-1 text-xs font-medium text-stone-700">
-        {React.string("+ Add occasion")}
+        {React.string(t.wineDetailAddOccasion)}
       </button>
     </header>
     <WineDetail

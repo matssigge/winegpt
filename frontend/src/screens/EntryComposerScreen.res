@@ -25,10 +25,11 @@ let make = (
     | New(_) => EntryComposer.Create
     | Edit(_, _) => EntryComposer.Edit
     }
+  let t = I18nContext.useT()
   let title =
     switch mode {
-    | New(_) => "New occasion"
-    | Edit(_, _) => "Edit occasion"
+    | New(_) => t.entryComposerNewTitle
+    | Edit(_, _) => t.entryComposerEditTitle
     }
 
   <section className="w-full max-w-xl">
@@ -36,7 +37,7 @@ let make = (
       <button
         type_="button"
         onClick={_ => onClose()}
-        ariaLabel="Cancel"
+        ariaLabel=t.entryComposerCancelAriaLabel
         className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700">
         {React.string("‹")}
       </button>

@@ -4,6 +4,7 @@ import * as WineState from "../wines/WineState.bs.js";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as EntryState from "../entries/EntryState.bs.js";
 import * as WineDetail from "../wines/WineDetail.bs.js";
+import * as I18nContext from "../i18n/I18nContext.bs.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function WineDetailScreen(props) {
@@ -11,6 +12,7 @@ function WineDetailScreen(props) {
   var onAddEntry = props.onAddEntry;
   var entryStatus = props.entryStatus;
   var wineId = props.wineId;
+  var t = I18nContext.useT();
   var onSelectEntry = function (param) {
     
   };
@@ -37,7 +39,7 @@ function WineDetailScreen(props) {
     var producer = selectedWine.wine.producer;
     tmp = producer !== undefined ? producer + " " + selectedWine.wine.name : selectedWine.wine.name;
   } else {
-    tmp = "Wine";
+    tmp = t.wineDetailDefaultTitle;
   }
   return JsxRuntime.jsxs("section", {
               children: [
@@ -45,7 +47,7 @@ function WineDetailScreen(props) {
                       children: [
                         JsxRuntime.jsx("button", {
                               children: "‹",
-                              "aria-label": "Back to wines",
+                              "aria-label": t.wineDetailBackAriaLabel,
                               className: "flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700",
                               type: "button",
                               onClick: (function (param) {
@@ -57,7 +59,7 @@ function WineDetailScreen(props) {
                               className: "flex-1 truncate font-serif text-xl tracking-tight text-stone-950"
                             }),
                         JsxRuntime.jsx("button", {
-                              children: "+ Add occasion",
+                              children: t.wineDetailAddOccasion,
                               className: "rounded-full border border-stone-300 px-3 py-1 text-xs font-medium text-stone-700",
                               type: "button",
                               onClick: (function (param) {

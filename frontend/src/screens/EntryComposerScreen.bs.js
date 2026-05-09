@@ -2,6 +2,7 @@
 
 import * as WineState from "../wines/WineState.bs.js";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
+import * as I18nContext from "../i18n/I18nContext.bs.js";
 import * as EntryComposer from "../entries/EntryComposer.bs.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
@@ -14,15 +15,16 @@ function EntryComposerScreen(props) {
         }));
   var composerMode;
   composerMode = mode.TAG === "New" ? "Create" : "Edit";
+  var t = I18nContext.useT();
   var title;
-  title = mode.TAG === "New" ? "New occasion" : "Edit occasion";
+  title = mode.TAG === "New" ? t.entryComposerNewTitle : t.entryComposerEditTitle;
   return JsxRuntime.jsxs("section", {
               children: [
                 JsxRuntime.jsxs("header", {
                       children: [
                         JsxRuntime.jsx("button", {
                               children: "‹",
-                              "aria-label": "Cancel",
+                              "aria-label": t.entryComposerCancelAriaLabel,
                               className: "flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700",
                               type: "button",
                               onClick: (function (param) {
