@@ -8,7 +8,7 @@ use sqlx::{PgPool, Row};
 #[derive(Debug, Deserialize)]
 pub struct CreateEntryInput {
     pub wine: WineInput,
-    pub consumed_at: String,
+    pub consumed_at: Option<String>,
     pub venue_name: Option<String>,
     pub location_text: Option<String>,
     pub pairing_notes: Option<String>,
@@ -22,7 +22,7 @@ pub struct WineEntry {
     pub collection_id: i64,
     pub wine: Wine,
     pub created_by_user_id: i64,
-    pub consumed_at: String,
+    pub consumed_at: Option<String>,
     pub venue_name: Option<String>,
     pub location_text: Option<String>,
     pub pairing_notes: Option<String>,
@@ -32,7 +32,6 @@ pub struct WineEntry {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum EntryError {
-    InvalidConsumedAt,
     InvalidRating,
     Forbidden,
     NotFound,
@@ -50,7 +49,7 @@ pub async fn create(
         .await
         .map_err(map_collection_error)?;
 
-    let consumed_at = normalize_consumed_at(&input.consumed_at)?;
+    let consumed_at = normalize_consumed_at(input.consumed_at.as_deref());
     let rating = normalize_rating(input.rating)?;
     let venue_name = normalize_optional_text(input.venue_name);
     let location_text = normalize_optional_text(input.location_text);
@@ -107,7 +106,7 @@ pub async fn create(
             .try_get("created_by_user_id")
             .map_err(|_| EntryError::Database)?,
         consumed_at: row
-            .try_get("consumed_at")
+            .try_get::<Option<String>, _>("consumed_at")
             .map_err(|_| EntryError::Database)?,
         venue_name: row.try_get("venue_name").map_err(|_| EntryError::Database)?,
         location_text: row
@@ -154,7 +153,7 @@ pub async fn list_for_collection(
          FROM wine_entries
          INNER JOIN wines ON wines.id = wine_entries.wine_id
          WHERE wine_entries.collection_id = $1
-         ORDER BY wine_entries.consumed_at DESC, wine_entries.id DESC",
+         ORDER BY COALESCE(wine_entries.consumed_at, wine_entries.created_at) DESC, wine_entries.id DESC",
     )
     .bind(collection_id)
     .fetch_all(database)
@@ -175,7 +174,7 @@ pub async fn update(
         .await
         .map_err(map_collection_error)?;
 
-    let consumed_at = normalize_consumed_at(&input.consumed_at)?;
+    let consumed_at = normalize_consumed_at(input.consumed_at.as_deref());
     let rating = normalize_rating(input.rating)?;
     let venue_name = normalize_optional_text(input.venue_name);
     let location_text = normalize_optional_text(input.location_text);
@@ -230,7 +229,7 @@ pub async fn update(
             .try_get("created_by_user_id")
             .map_err(|_| EntryError::Database)?,
         consumed_at: row
-            .try_get("consumed_at")
+            .try_get::<Option<String>, _>("consumed_at")
             .map_err(|_| EntryError::Database)?,
         venue_name: row.try_get("venue_name").map_err(|_| EntryError::Database)?,
         location_text: row
@@ -246,14 +245,15 @@ pub async fn update(
     })
 }
 
-fn normalize_consumed_at(consumed_at: &str) -> Result<String, EntryError> {
-    let trimmed = consumed_at.trim();
-
-    if trimmed.is_empty() {
-        Err(EntryError::InvalidConsumedAt)
-    } else {
-        Ok(trimmed.to_string())
-    }
+fn normalize_consumed_at(consumed_at: Option<&str>) -> Option<String> {
+    consumed_at.and_then(|value| {
+        let trimmed = value.trim();
+        if trimmed.is_empty() {
+            None
+        } else {
+            Some(trimmed.to_string())
+        }
+    })
 }
 
 fn normalize_optional_text(value: Option<String>) -> Option<String> {
@@ -313,7 +313,7 @@ fn entry_from_row(row: sqlx::postgres::PgRow) -> Result<WineEntry, EntryError> {
             .try_get("created_by_user_id")
             .map_err(|_| EntryError::Database)?,
         consumed_at: row
-            .try_get("consumed_at")
+            .try_get::<Option<String>, _>("consumed_at")
             .map_err(|_| EntryError::Database)?,
         venue_name: row.try_get("venue_name").map_err(|_| EntryError::Database)?,
         location_text: row
@@ -353,7 +353,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: "2025-01-15T19:30:00Z".to_string(),
+                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
                 venue_name: Some("Home".to_string()),
                 location_text: Some("Stockholm".to_string()),
                 pairing_notes: Some("Roast chicken".to_string()),
@@ -401,7 +401,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: "2025-01-15T19:30:00Z".to_string(),
+                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -418,7 +418,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: "2025-01-18T19:30:00Z".to_string(),
+                consumed_at: Some("2025-01-18T19:30:00Z".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -446,7 +446,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: "2025-01-15T19:30:00Z".to_string(),
+                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -471,7 +471,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: "2025-01-15T19:30:00Z".to_string(),
+                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -485,18 +485,18 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn rejects_blank_consumed_at() {
+    async fn treats_blank_consumed_at_as_none() {
         let database = test_database().await;
         let user = register_user(&database).await;
         let collection = collections::create(&database, user.id, "Home").await.unwrap();
 
-        let result = create(
+        let entry = create(
             &database,
             user.id,
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: "   ".to_string(),
+                consumed_at: Some("   ".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -504,9 +504,87 @@ mod tests {
                 rating: Some(4),
             },
         )
-        .await;
+        .await
+        .expect("blank consumed_at should be accepted as None");
 
-        assert_eq!(result, Err(EntryError::InvalidConsumedAt));
+        assert_eq!(entry.consumed_at, None);
+    }
+
+    #[tokio::test]
+    async fn creates_entry_without_consumed_at() {
+        let database = test_database().await;
+        let user = register_user(&database).await;
+        let collection = collections::create(&database, user.id, "Home").await.unwrap();
+
+        let entry = create(
+            &database,
+            user.id,
+            collection.id,
+            CreateEntryInput {
+                wine: sample_wine_input("Taganan", Some(2022)),
+                consumed_at: None,
+                venue_name: None,
+                location_text: None,
+                pairing_notes: None,
+                tasting_notes: None,
+                rating: Some(4),
+            },
+        )
+        .await
+        .expect("entry should be created without a consumed_at");
+
+        assert_eq!(entry.consumed_at, None);
+    }
+
+    #[tokio::test]
+    async fn lists_entries_orders_null_dates_by_created_at() {
+        let database = test_database().await;
+        let user = register_user(&database).await;
+        let collection = collections::create(&database, user.id, "Home").await.unwrap();
+
+        let dated = create(
+            &database,
+            user.id,
+            collection.id,
+            CreateEntryInput {
+                wine: sample_wine_input("Taganan", Some(2022)),
+                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
+                venue_name: None,
+                location_text: None,
+                pairing_notes: None,
+                tasting_notes: None,
+                rating: Some(4),
+            },
+        )
+        .await
+        .unwrap();
+
+        let undated = create(
+            &database,
+            user.id,
+            collection.id,
+            CreateEntryInput {
+                wine: sample_wine_input("Benje", Some(2023)),
+                consumed_at: None,
+                venue_name: None,
+                location_text: None,
+                pairing_notes: None,
+                tasting_notes: None,
+                rating: Some(5),
+            },
+        )
+        .await
+        .unwrap();
+
+        let entries = list_for_collection(&database, user.id, collection.id)
+            .await
+            .expect("entries should list");
+
+        assert_eq!(entries.len(), 2);
+        // The undated entry was created last, so its created_at is more recent
+        // than the dated entry's consumed_at — COALESCE puts it first.
+        assert_eq!(entries[0].id, undated.id);
+        assert_eq!(entries[1].id, dated.id);
     }
 
     #[tokio::test]
@@ -521,7 +599,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: "2025-01-15T19:30:00Z".to_string(),
+                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
                 venue_name: Some("Home".to_string()),
                 location_text: None,
                 pairing_notes: None,
@@ -538,7 +616,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Benje", Some(2023)),
-                consumed_at: "2025-01-20T19:30:00Z".to_string(),
+                consumed_at: Some("2025-01-20T19:30:00Z".to_string()),
                 venue_name: Some("Restaurant".to_string()),
                 location_text: None,
                 pairing_notes: None,
@@ -581,7 +659,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: "2025-01-15T19:30:00Z".to_string(),
+                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
                 venue_name: Some("Home".to_string()),
                 location_text: Some("Stockholm".to_string()),
                 pairing_notes: Some("Roast chicken".to_string()),
@@ -599,7 +677,7 @@ mod tests {
             entry.id,
             CreateEntryInput {
                 wine: sample_wine_input("Benje", Some(2023)),
-                consumed_at: "2025-01-18T18:15:00Z".to_string(),
+                consumed_at: Some("2025-01-18T18:15:00Z".to_string()),
                 venue_name: Some("Bar Central".to_string()),
                 location_text: Some("Madrid".to_string()),
                 pairing_notes: Some("Anchovies".to_string()),
@@ -612,7 +690,7 @@ mod tests {
 
         assert_eq!(updated.id, entry.id);
         assert_eq!(updated.wine.name, "Benje");
-        assert_eq!(updated.consumed_at, "2025-01-18T18:15:00Z");
+        assert_eq!(updated.consumed_at.as_deref(), Some("2025-01-18T18:15:00Z"));
         assert_eq!(updated.venue_name.as_deref(), Some("Bar Central"));
         assert_eq!(updated.rating, Some(5));
         let collection_wine = sqlx::query(
@@ -641,7 +719,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: "2025-01-15T19:30:00Z".to_string(),
+                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -659,7 +737,7 @@ mod tests {
             entry.id,
             CreateEntryInput {
                 wine: sample_wine_input("Benje", Some(2023)),
-                consumed_at: "2025-01-18T18:15:00Z".to_string(),
+                consumed_at: Some("2025-01-18T18:15:00Z".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -685,7 +763,7 @@ mod tests {
             999_999,
             CreateEntryInput {
                 wine: sample_wine_input("Benje", Some(2023)),
-                consumed_at: "2025-01-18T18:15:00Z".to_string(),
+                consumed_at: Some("2025-01-18T18:15:00Z".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,

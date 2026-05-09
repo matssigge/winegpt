@@ -814,7 +814,7 @@ mod tests {
                     region: None,
                     country: None,
                 },
-                consumed_at: consumed_at.to_string(),
+                consumed_at: Some(consumed_at.to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,

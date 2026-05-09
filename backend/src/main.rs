@@ -304,7 +304,6 @@ fn map_collection_error(error: CollectionError) -> (StatusCode, Json<ErrorRespon
 
 fn map_entry_error(error: EntryError) -> (StatusCode, Json<ErrorResponse>) {
     let (status, code) = match error {
-        EntryError::InvalidConsumedAt => (StatusCode::BAD_REQUEST, "invalid_consumed_at"),
         EntryError::InvalidRating => (StatusCode::BAD_REQUEST, "invalid_rating"),
         EntryError::Forbidden => (StatusCode::FORBIDDEN, "forbidden"),
         EntryError::NotFound => (StatusCode::NOT_FOUND, "entry_not_found"),
