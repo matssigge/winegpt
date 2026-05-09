@@ -3,49 +3,32 @@ type error = Js.Promise2.error
 @get
 external message: error => string = "message"
 
-let describeError = error =>
+let describeError = (errors: Translations.errors, error) =>
   switch error->message {
-  | "email_taken" => "That email address is already registered."
-  | "invalid_email" => "Enter a valid email address."
-  | "password_too_short" => "Use a password with at least 8 characters."
-  | "invalid_credentials" => "The email or password was not accepted."
-  | "invalid_response" => "Something went wrong. Try again."
-  | _ => "Something went wrong. Try again."
+  | "email_taken" => errors.authEmailTaken
+  | "invalid_email" => errors.authInvalidEmail
+  | "password_too_short" => errors.authPasswordTooShort
+  | "invalid_credentials" => errors.authInvalidCredentials
+  | "invalid_response" => errors.authGeneric
+  | _ => errors.authGeneric
   }
 
-let describeCollectionError = () => "Could not load your collections. Try refreshing."
-
-let describeCreateCollectionError = error =>
+let describeEntryError = (errors: Translations.errors, error) =>
   switch error->message {
-  | "invalid_collection_name" => "Enter a name for the collection."
-  | _ => "Could not create the collection. Try again."
+  | "invalid_consumed_at" => errors.entryInvalidConsumedAt
+  | "invalid_rating" => errors.entryInvalidRating
+  | "invalid_wine_name" => errors.entryInvalidWineName
+  | "invalid_wine_vintage" => errors.entryInvalidWineVintage
+  | "forbidden" => errors.entryForbidden
+  | _ => errors.entryGeneric
   }
 
-let describeInviteError = error =>
-  switch error->message {
-  | "invalid_email" => "Enter a valid email address."
-  | "already_member" => "That person already belongs to this collection."
-  | "user_not_found" => "That email does not match an existing account yet."
-  | "forbidden" => "Only collection owners can invite people."
-  | _ => "Could not send the invite. Try again."
-  }
+let describeEntryHistoryError = (errors: Translations.errors) => errors.entryHistoryGeneric
 
-let describeEntryError = error =>
+let describeWineError = (errors: Translations.errors, error) =>
   switch error->message {
-  | "invalid_consumed_at" => "Enter when you drank the wine."
-  | "invalid_rating" => "Rating must be a whole number from 1 to 5."
-  | "invalid_wine_name" => "Enter a wine name."
-  | "invalid_wine_vintage" => "Vintage must be a year between 1900 and 2100."
-  | "forbidden" => "You no longer have access to this collection."
-  | _ => "Could not save the entry. Try again."
-  }
-
-let describeEntryHistoryError = () => "Could not load collection history. Try refreshing."
-
-let describeWineError = error =>
-  switch error->message {
-  | "invalid_wine_name" => "Enter a wine name."
-  | "invalid_wine_vintage" => "Vintage must be a year between 1900 and 2100."
-  | "forbidden" => "You no longer have access to this collection."
-  | _ => "Could not save the wine. Try again."
+  | "invalid_wine_name" => errors.wineInvalidName
+  | "invalid_wine_vintage" => errors.wineInvalidVintage
+  | "forbidden" => errors.wineForbidden
+  | _ => errors.wineGeneric
   }

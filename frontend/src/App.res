@@ -29,7 +29,6 @@ let make = () => {
   )
 
   let t = Translations.pick(locale)
-  let _ = t
 
   let handleSetOverride = next => {
     setOverride(_ => next)
@@ -82,7 +81,7 @@ let make = () => {
         Js.Promise2.resolve()
       })
       ->Js.Promise2.catch(_ => {
-        setWineStatus(_ => WineState.errorStatus(AuthAppSupport.describeEntryHistoryError()))
+        setWineStatus(_ => WineState.errorStatus(AuthAppSupport.describeEntryHistoryError(t.errors)))
         Js.Promise2.resolve()
       })
       ->ignore
@@ -94,7 +93,7 @@ let make = () => {
         Js.Promise2.resolve()
       })
       ->Js.Promise2.catch(_ => {
-        setEntryStatus(_ => EntryState.errorStatus(AuthAppSupport.describeEntryHistoryError()))
+        setEntryStatus(_ => EntryState.errorStatus(AuthAppSupport.describeEntryHistoryError(t.errors)))
         Js.Promise2.resolve()
       })
       ->ignore
@@ -135,7 +134,7 @@ let make = () => {
       Js.Promise2.resolve()
     })
     ->Js.Promise2.catch(reason => {
-      setError(_ => Some(AuthAppSupport.describeError(reason)))
+      setError(_ => Some(AuthAppSupport.describeError(t.errors, reason)))
       setIsSubmitting(_ => false)
       Js.Promise2.resolve()
     })
@@ -185,7 +184,7 @@ let make = () => {
         Js.Promise2.resolve()
       })
       ->Js.Promise2.catch(reason => {
-        setWineForm(current => WineCapture.failForm(current, AuthAppSupport.describeWineError(reason)))
+        setWineForm(current => WineCapture.failForm(current, AuthAppSupport.describeWineError(t.errors, reason)))
         Js.Promise2.resolve()
       })
       ->ignore
@@ -216,7 +215,7 @@ let make = () => {
         Js.Promise2.resolve()
       })
       ->Js.Promise2.catch(reason => {
-        setEntryForm(current => EntryState.failForm(current, AuthAppSupport.describeEntryError(reason)))
+        setEntryForm(current => EntryState.failForm(current, AuthAppSupport.describeEntryError(t.errors, reason)))
         Js.Promise2.resolve()
       })
       ->ignore
@@ -242,7 +241,7 @@ let make = () => {
         Js.Promise2.resolve()
       })
       ->Js.Promise2.catch(reason => {
-        setEntryForm(current => EntryState.failForm(current, AuthAppSupport.describeEntryError(reason)))
+        setEntryForm(current => EntryState.failForm(current, AuthAppSupport.describeEntryError(t.errors, reason)))
         Js.Promise2.resolve()
       })
       ->ignore

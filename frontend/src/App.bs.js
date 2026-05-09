@@ -92,7 +92,7 @@ function App(props) {
   var setOverride = match$13[1];
   var override = match$13[0];
   var locale = LocaleResolver.resolve(Caml_option.nullable_to_opt(globalThis.window.navigator.language), Belt_Option.map(override, AppLocale.toCode));
-  Translations.pick(locale);
+  var t = Translations.pick(locale);
   var handleSetOverride = function (next) {
     setOverride(function (param) {
           return next;
@@ -157,7 +157,7 @@ function App(props) {
                         return Promise.resolve();
                       })), (function (param) {
                     setWineStatus(function (param) {
-                          return WineState.errorStatus(AuthAppSupport.describeEntryHistoryError());
+                          return WineState.errorStatus(AuthAppSupport.describeEntryHistoryError(t.errors));
                         });
                     return Promise.resolve();
                   }));
@@ -171,7 +171,7 @@ function App(props) {
                         return Promise.resolve();
                       })), (function (param) {
                     setEntryStatus(function (param) {
-                          return EntryState.errorStatus(AuthAppSupport.describeEntryHistoryError());
+                          return EntryState.errorStatus(AuthAppSupport.describeEntryHistoryError(t.errors));
                         });
                     return Promise.resolve();
                   }));
@@ -242,7 +242,7 @@ function App(props) {
                 return Promise.resolve();
               })), (function (reason) {
             setError(function (param) {
-                  return AuthAppSupport.describeError(reason);
+                  return AuthAppSupport.describeError(t.errors, reason);
                 });
             setIsSubmitting(function (param) {
                   return false;
@@ -327,7 +327,7 @@ function App(props) {
                   return Promise.resolve();
                 })), (function (reason) {
               setWineForm(function (current) {
-                    return WineCapture.failForm(current, AuthAppSupport.describeWineError(reason));
+                    return WineCapture.failForm(current, AuthAppSupport.describeWineError(t.errors, reason));
                   });
               return Promise.resolve();
             }));
@@ -378,7 +378,7 @@ function App(props) {
                       return Promise.resolve();
                     })), (function (reason) {
                   setEntryForm(function (current) {
-                        return EntryState.failForm(current, AuthAppSupport.describeEntryError(reason));
+                        return EntryState.failForm(current, AuthAppSupport.describeEntryError(t.errors, reason));
                       });
                   return Promise.resolve();
                 }));
@@ -415,7 +415,7 @@ function App(props) {
                       return Promise.resolve();
                     })), (function (reason) {
                   setEntryForm(function (current) {
-                        return EntryState.failForm(current, AuthAppSupport.describeEntryError(reason));
+                        return EntryState.failForm(current, AuthAppSupport.describeEntryError(t.errors, reason));
                       });
                   return Promise.resolve();
                 }));
