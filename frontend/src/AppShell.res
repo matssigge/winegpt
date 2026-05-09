@@ -31,6 +31,8 @@ let make = (
     None
   }, [route])
 
+  let t = I18nContext.useT()
+
   let goHome = () => Router.navigate(Home)
   let goNewWine = () => Router.navigate(NewWine)
   let goWine = wineId => Router.navigate(Wine(wineId))
@@ -40,12 +42,12 @@ let make = (
   | Home =>
     <header className="mb-4 flex items-center justify-between gap-2">
       <h1 className="font-serif text-2xl tracking-tight text-stone-950">
-        {React.string("Wines")}
+        {React.string(t.appWines)}
       </h1>
       <div className="flex items-center gap-1">
         <button
           type_="button"
-          ariaLabel={isSearchOpen ? "Close search" : "Search wines"}
+          ariaLabel={isSearchOpen ? t.appSearchAriaClose : t.appSearchAriaOpen}
           onClick={_ => {
             setIsSearchOpen(open_ => !open_)
             setIsFilterOpen(_ => false)
@@ -55,7 +57,7 @@ let make = (
         </button>
         <button
           type_="button"
-          ariaLabel={isFilterOpen ? "Close filter" : "Filter wines"}
+          ariaLabel={isFilterOpen ? t.appFilterAriaClose : t.appFilterAriaOpen}
           onClick={_ => {
             setIsFilterOpen(open_ => !open_)
             setIsSearchOpen(_ => false)
@@ -65,7 +67,7 @@ let make = (
         </button>
         <button
           type_="button"
-          ariaLabel="Open menu"
+          ariaLabel=t.appMenuAriaOpen
           onClick={_ => setIsMenuOpen(open_ => !open_)}
           className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700">
           {React.string("≡")}
@@ -79,7 +81,7 @@ let make = (
     if isSearchOpen && route == Home {
       <div className="mb-4">
         <TextField
-          label="Search wines"
+          label=t.appSearchAriaOpen
           value=wineQuery
           onChange=onWineQueryChange
           autoComplete="off"
@@ -101,7 +103,7 @@ let make = (
             | _ => "rounded-full border border-stone-300 px-3 py-1 text-xs text-stone-700"
             }
           }>
-          {React.string("All wines")}
+          {React.string(t.filterAllWines)}
         </button>
         <button
           type_="button"
@@ -112,7 +114,7 @@ let make = (
             | _ => "rounded-full border border-stone-300 px-3 py-1 text-xs text-stone-700"
             }
           }>
-          {React.string("With occasions")}
+          {React.string(t.filterWithOccasions)}
         </button>
         <button
           type_="button"
@@ -123,7 +125,7 @@ let make = (
             | _ => "rounded-full border border-stone-300 px-3 py-1 text-xs text-stone-700"
             }
           }>
-          {React.string("No occasions yet")}
+          {React.string(t.filterWithoutOccasions)}
         </button>
       </div>
     } else {
@@ -136,7 +138,7 @@ let make = (
         className="absolute right-6 top-20 z-20 w-64 rounded-2xl border border-stone-200 bg-white p-2 shadow-xl">
         <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
           <p className="text-xs font-medium uppercase tracking-widest text-stone-500">
-            {React.string("Signed in")}
+            {React.string(t.appSignedIn)}
           </p>
           <p className="mt-1 text-sm font-medium text-stone-900">
             {React.string(user.email)}
@@ -149,7 +151,7 @@ let make = (
             onLogout()
           }}
           className="mt-2 w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-stone-700 hover:bg-stone-50">
-          {React.string("Log out")}
+          {React.string(t.appLogOut)}
         </button>
       </div>
     } else {
@@ -171,7 +173,7 @@ let make = (
       />
       <button
         type_="button"
-        ariaLabel="Add wine"
+        ariaLabel=t.appAddWineAriaLabel
         onClick={_ => goNewWine()}
         className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-stone-950 text-2xl font-semibold text-white shadow-lg">
         {React.string("+")}

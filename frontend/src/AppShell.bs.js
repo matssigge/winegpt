@@ -3,6 +3,7 @@
 import * as React from "react";
 import * as Router from "./router/Router.bs.js";
 import * as TextField from "./ui/TextField.bs.js";
+import * as I18nContext from "./i18n/I18nContext.bs.js";
 import * as WineListScreen from "./screens/WineListScreen.bs.js";
 import * as WineDetailScreen from "./screens/WineDetailScreen.bs.js";
 import * as JsxRuntime from "react/jsx-runtime";
@@ -46,6 +47,7 @@ function AppShell(props) {
                 return false;
               });
         }), [route]);
+  var t = I18nContext.useT();
   var goWine = function (wineId) {
     Router.navigate({
           TAG: "Wine",
@@ -56,14 +58,14 @@ function AppShell(props) {
   header = typeof route !== "object" && route === "Home" ? JsxRuntime.jsxs("header", {
           children: [
             JsxRuntime.jsx("h1", {
-                  children: "Wines",
+                  children: t.appWines,
                   className: "font-serif text-2xl tracking-tight text-stone-950"
                 }),
             JsxRuntime.jsxs("div", {
                   children: [
                     JsxRuntime.jsx("button", {
                           children: isSearchOpen ? "×" : "⌕",
-                          "aria-label": isSearchOpen ? "Close search" : "Search wines",
+                          "aria-label": isSearchOpen ? t.appSearchAriaClose : t.appSearchAriaOpen,
                           className: "flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700",
                           type: "button",
                           onClick: (function (param) {
@@ -77,7 +79,7 @@ function AppShell(props) {
                         }),
                     JsxRuntime.jsx("button", {
                           children: isFilterOpen ? "×" : "⚙",
-                          "aria-label": isFilterOpen ? "Close filter" : "Filter wines",
+                          "aria-label": isFilterOpen ? t.appFilterAriaClose : t.appFilterAriaOpen,
                           className: "flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700",
                           type: "button",
                           onClick: (function (param) {
@@ -91,7 +93,7 @@ function AppShell(props) {
                         }),
                     JsxRuntime.jsx("button", {
                           children: "≡",
-                          "aria-label": "Open menu",
+                          "aria-label": t.appMenuAriaOpen,
                           className: "flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700",
                           type: "button",
                           onClick: (function (param) {
@@ -108,7 +110,7 @@ function AppShell(props) {
         }) : null;
   var searchPanel = isSearchOpen && route === "Home" ? JsxRuntime.jsx("div", {
           children: JsxRuntime.jsx(TextField.make, {
-                label: "Search wines",
+                label: t.appSearchAriaOpen,
                 value: wineQuery,
                 onChange: props.onWineQueryChange,
                 autoComplete: "off"
@@ -153,7 +155,7 @@ function AppShell(props) {
     filterPanel = JsxRuntime.jsxs("div", {
           children: [
             JsxRuntime.jsx("button", {
-                  children: "All wines",
+                  children: t.filterAllWines,
                   className: tmp,
                   type: "button",
                   onClick: (function (param) {
@@ -161,7 +163,7 @@ function AppShell(props) {
                     })
                 }),
             JsxRuntime.jsx("button", {
-                  children: "With occasions",
+                  children: t.filterWithOccasions,
                   className: tmp$1,
                   type: "button",
                   onClick: (function (param) {
@@ -169,7 +171,7 @@ function AppShell(props) {
                     })
                 }),
             JsxRuntime.jsx("button", {
-                  children: "No occasions yet",
+                  children: t.filterWithoutOccasions,
                   className: tmp$2,
                   type: "button",
                   onClick: (function (param) {
@@ -187,7 +189,7 @@ function AppShell(props) {
             JsxRuntime.jsxs("div", {
                   children: [
                     JsxRuntime.jsx("p", {
-                          children: "Signed in",
+                          children: t.appSignedIn,
                           className: "text-xs font-medium uppercase tracking-widest text-stone-500"
                         }),
                     JsxRuntime.jsx("p", {
@@ -198,7 +200,7 @@ function AppShell(props) {
                   className: "rounded-xl border border-stone-200 bg-stone-50 px-4 py-3"
                 }),
             JsxRuntime.jsx("button", {
-                  children: "Log out",
+                  children: t.appLogOut,
                   className: "mt-2 w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-stone-700 hover:bg-stone-50",
                   type: "button",
                   onClick: (function (param) {
@@ -227,7 +229,7 @@ function AppShell(props) {
                   }),
               JsxRuntime.jsx("button", {
                     children: "+",
-                    "aria-label": "Add wine",
+                    "aria-label": t.appAddWineAriaLabel,
                     className: "fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-stone-950 text-2xl font-semibold text-white shadow-lg",
                     type: "button",
                     onClick: (function (param) {
