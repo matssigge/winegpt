@@ -31,6 +31,7 @@ function wineMeta(entry) {
 }
 
 function EntryHistory(props) {
+  var wineId = props.wineId;
   var onSelectEntry = props.onSelectEntry;
   var selectedEntryId = props.selectedEntryId;
   var __emptyMessage = props.emptyMessage;
@@ -89,7 +90,10 @@ function EntryHistory(props) {
               });
   }
   var entries = status._0;
-  if (entries.length === 0) {
+  var visibleEntries = wineId !== undefined ? Belt_Array.keep(entries, (function (entry) {
+            return entry.wine.id === wineId;
+          })) : entries;
+  if (visibleEntries.length === 0) {
     return JsxRuntime.jsxs("section", {
                 children: [
                   JsxRuntime.jsx("h3", {
@@ -113,14 +117,14 @@ function EntryHistory(props) {
                                 className: "text-lg font-semibold text-stone-950"
                               }),
                           JsxRuntime.jsx("span", {
-                                children: String(entries.length) + " entries",
+                                children: String(visibleEntries.length) + " entries",
                                 className: "rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600"
                               })
                         ],
                         className: "flex items-center justify-between gap-4"
                       }),
                   JsxRuntime.jsx("ul", {
-                        children: Belt_Array.map(entries, (function (entry) {
+                        children: Belt_Array.map(visibleEntries, (function (entry) {
                                 var isSelected = selectedEntryId !== undefined ? entry.id === selectedEntryId : false;
                                 var meta = wineMeta(entry);
                                 var rating = entry.rating;

@@ -32,6 +32,7 @@ let make = (
   ~emptyMessage: string="No entries yet. Your latest bottles and notes will show up here.",
   ~selectedEntryId: option<int>,
   ~onSelectEntry: int => unit,
+  ~wineId: option<int>=?,
 ) =>
   switch status {
   | EntryState.Idle =>
@@ -52,7 +53,12 @@ let make = (
       <p className="mt-2 text-sm text-rose-700"> {React.string(message)} </p>
     </section>
   | EntryState.Ready(entries) =>
-    if Belt.Array.length(entries) == 0 {
+    let visibleEntries =
+      switch wineId {
+      | Some(id) => entries->Belt.Array.keep(entry => entry.wine.id == id)
+      | None => entries
+      }
+    if Belt.Array.length(visibleEntries) == 0 {
       <section className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6">
         <h3 className="text-lg font-semibold text-stone-950"> {React.string(title)} </h3>
         <p className="mt-2 text-sm leading-6 text-stone-600">
@@ -64,11 +70,11 @@ let make = (
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-lg font-semibold text-stone-950"> {React.string(title)} </h3>
           <span className="rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600">
-            {React.string(Belt.Array.length(entries)->Belt.Int.toString ++ " entries")}
+            {React.string(Belt.Array.length(visibleEntries)->Belt.Int.toString ++ " entries")}
           </span>
         </div>
         <ul className="mt-4 space-y-3">
-          {entries
+          {visibleEntries
            ->Belt.Array.map(entry => {
              let isSelected =
                switch selectedEntryId {
