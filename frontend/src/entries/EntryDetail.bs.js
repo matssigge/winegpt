@@ -107,15 +107,15 @@ function EntryDetail(props) {
                                     }),
                                 JsxRuntime.jsxs("dl", {
                                       children: [
-                                        detailLine("Name", entry.wine.name),
-                                        Belt_Option.getWithDefault(optionalDetailLine("Producer", entry.wine.producer), null),
-                                        Belt_Option.getWithDefault(optionalDetailLine("Vintage", Belt_Option.map(entry.wine.vintage, (function (prim) {
+                                        detailLine(t.wineDetailNameLabel, entry.wine.name),
+                                        Belt_Option.getWithDefault(optionalDetailLine(t.wineComposerProducerLabel, entry.wine.producer), null),
+                                        Belt_Option.getWithDefault(optionalDetailLine(t.wineComposerVintageLabel, Belt_Option.map(entry.wine.vintage, (function (prim) {
                                                         return String(prim);
                                                       }))), null),
-                                        Belt_Option.getWithDefault(optionalDetailLine("Style", entry.wine.style), null),
-                                        Belt_Option.getWithDefault(optionalDetailLine("Grape", entry.wine.grape), null),
-                                        Belt_Option.getWithDefault(optionalDetailLine("Region", entry.wine.region), null),
-                                        Belt_Option.getWithDefault(optionalDetailLine("Country", entry.wine.country), null)
+                                        Belt_Option.getWithDefault(optionalDetailLine(t.wineComposerStyleLabel, entry.wine.style), null),
+                                        Belt_Option.getWithDefault(optionalDetailLine(t.wineComposerGrapeLabel, entry.wine.grape), null),
+                                        Belt_Option.getWithDefault(optionalDetailLine(t.wineComposerRegionLabel, entry.wine.region), null),
+                                        Belt_Option.getWithDefault(optionalDetailLine(t.wineComposerCountryLabel, entry.wine.country), null)
                                       ],
                                       className: "mt-4 grid gap-4"
                                     })
@@ -130,11 +130,11 @@ function EntryDetail(props) {
                                     }),
                                 JsxRuntime.jsxs("dl", {
                                       children: [
-                                        detailLine("Consumed at", entry.consumedAt),
-                                        Belt_Option.getWithDefault(optionalDetailLine("Venue", entry.venueName), null),
-                                        Belt_Option.getWithDefault(optionalDetailLine("Location", entry.locationText), null),
-                                        Belt_Option.getWithDefault(optionalDetailLine("Pairing notes", entry.pairingNotes), null),
-                                        Belt_Option.getWithDefault(optionalDetailLine("Tasting notes", entry.tastingNotes), null)
+                                        detailLine(t.entryComposerConsumedAtLabel, entry.consumedAt),
+                                        Belt_Option.getWithDefault(optionalDetailLine(t.entryComposerVenueLabel, entry.venueName), null),
+                                        Belt_Option.getWithDefault(optionalDetailLine(t.entryComposerLocationLabel, entry.locationText), null),
+                                        Belt_Option.getWithDefault(optionalDetailLine(t.entryComposerPairingNotesLabel, entry.pairingNotes), null),
+                                        Belt_Option.getWithDefault(optionalDetailLine(t.entryComposerTastingNotesLabel, entry.tastingNotes), null)
                                       ],
                                       className: "mt-4 grid gap-4"
                                     })

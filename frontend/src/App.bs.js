@@ -433,7 +433,7 @@ function App(props) {
                     value: i18nValue,
                     children: JsxRuntime.jsx("div", {
                           children: match$4[0] ? JsxRuntime.jsx("section", {
-                                  children: "Checking your session...",
+                                  children: t.appCheckingSession,
                                   className: "w-full max-w-md rounded-3xl border border-stone-900/10 bg-white/80 p-8 text-sm text-stone-600 shadow-xl backdrop-blur"
                                 }) : (
                               currentUser !== undefined ? JsxRuntime.jsx(AppShell.make, {

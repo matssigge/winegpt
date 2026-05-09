@@ -260,7 +260,7 @@ let make = () => {
       <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center">
         {if isInitializing {
            <section className="w-full max-w-md rounded-3xl border border-stone-900/10 bg-white/80 p-8 text-sm text-stone-600 shadow-xl backdrop-blur">
-             {React.string("Checking your session...")}
+             {React.string(t.appCheckingSession)}
            </section>
          } else {
            switch currentUser {

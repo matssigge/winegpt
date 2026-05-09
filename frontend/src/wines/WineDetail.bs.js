@@ -137,10 +137,10 @@ function WineDetail(props) {
                   JsxRuntime.jsx("div", {
                         children: JsxRuntime.jsx(EntryHistory.make, {
                               status: props.entryStatus,
-                              title: "Occasions for " + selectedWineLabel,
+                              title: t.occasionsForWine(selectedWineLabel),
                               idleMessage: "Select a wine to browse its recorded occasions.",
-                              loadingMessage: "Loading occasions for " + selectedWineLabel + "...",
-                              emptyMessage: "No occasions recorded yet for " + selectedWineLabel + ".",
+                              loadingMessage: t.loadingOccasionsFor(selectedWineLabel),
+                              emptyMessage: t.noOccasionsFor(selectedWineLabel),
                               selectedEntryId: props.selectedEntryId,
                               onSelectEntry: props.onSelectEntry
                             }),

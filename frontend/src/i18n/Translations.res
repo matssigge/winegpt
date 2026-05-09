@@ -110,6 +110,9 @@ type t = {
   entryDetailEditEntry: string,
   entryHistoryEmptyMessage: string,
   entryHistoryPairingPrefix: string,
+  occasionsForWine: string => string,
+  loadingOccasionsFor: string => string,
+  noOccasionsFor: string => string,
 
   // Interpolations
   occasionCount: int => string,
@@ -209,6 +212,9 @@ let en: t = {
   entryDetailEditEntry: "Edit entry",
   entryHistoryEmptyMessage: "No occasions recorded yet.",
   entryHistoryPairingPrefix: "Pairing: ",
+  occasionsForWine: wineLabel => "Occasions for " ++ wineLabel,
+  loadingOccasionsFor: wineLabel => "Loading occasions for " ++ wineLabel ++ "...",
+  noOccasionsFor: wineLabel => "No occasions recorded yet for " ++ wineLabel ++ ".",
 
   occasionCount: n =>
     switch n {
@@ -333,6 +339,9 @@ let sv: t = {
   entryDetailEditEntry: "Redigera tillfälle",
   entryHistoryEmptyMessage: "Inga tillfällen registrerade än.",
   entryHistoryPairingPrefix: "Mat: ",
+  occasionsForWine: wineLabel => "Tillfällen för " ++ wineLabel,
+  loadingOccasionsFor: wineLabel => "Hämtar tillfällen för " ++ wineLabel ++ "...",
+  noOccasionsFor: wineLabel => "Inga tillfällen registrerade än för " ++ wineLabel ++ ".",
 
   occasionCount: n =>
     switch n {

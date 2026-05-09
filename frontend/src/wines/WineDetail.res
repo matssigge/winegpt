@@ -104,10 +104,10 @@ let make = (
       <div className="mt-6">
         <EntryHistory
           status=entryStatus
-          title={"Occasions for " ++ selectedWineLabel}
+          title={t.occasionsForWine(selectedWineLabel)}
           idleMessage="Select a wine to browse its recorded occasions."
-          loadingMessage={"Loading occasions for " ++ selectedWineLabel ++ "..."}
-          emptyMessage={"No occasions recorded yet for " ++ selectedWineLabel ++ "."}
+          loadingMessage={t.loadingOccasionsFor(selectedWineLabel)}
+          emptyMessage={t.noOccasionsFor(selectedWineLabel)}
           selectedEntryId
           onSelectEntry
         />

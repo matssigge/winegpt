@@ -69,16 +69,16 @@ let make = (~entry: option<EntryModel.entry>, ~onEdit: unit => unit) => {
             {React.string(t.entryDetailWineLabel)}
           </h4>
           <dl className="mt-4 grid gap-4">
-            {detailLine(~label="Name", ~value=entry.wine.name)}
-            {optionalDetailLine(~label="Producer", ~value=entry.wine.producer)->Belt.Option.getWithDefault(React.null)}
+            {detailLine(~label=t.wineDetailNameLabel, ~value=entry.wine.name)}
+            {optionalDetailLine(~label=t.wineComposerProducerLabel, ~value=entry.wine.producer)->Belt.Option.getWithDefault(React.null)}
             {optionalDetailLine(
-               ~label="Vintage",
+               ~label=t.wineComposerVintageLabel,
                ~value=entry.wine.vintage->Belt.Option.map(Belt.Int.toString),
              )->Belt.Option.getWithDefault(React.null)}
-            {optionalDetailLine(~label="Style", ~value=entry.wine.style)->Belt.Option.getWithDefault(React.null)}
-            {optionalDetailLine(~label="Grape", ~value=entry.wine.grape)->Belt.Option.getWithDefault(React.null)}
-            {optionalDetailLine(~label="Region", ~value=entry.wine.region)->Belt.Option.getWithDefault(React.null)}
-            {optionalDetailLine(~label="Country", ~value=entry.wine.country)->Belt.Option.getWithDefault(React.null)}
+            {optionalDetailLine(~label=t.wineComposerStyleLabel, ~value=entry.wine.style)->Belt.Option.getWithDefault(React.null)}
+            {optionalDetailLine(~label=t.wineComposerGrapeLabel, ~value=entry.wine.grape)->Belt.Option.getWithDefault(React.null)}
+            {optionalDetailLine(~label=t.wineComposerRegionLabel, ~value=entry.wine.region)->Belt.Option.getWithDefault(React.null)}
+            {optionalDetailLine(~label=t.wineComposerCountryLabel, ~value=entry.wine.country)->Belt.Option.getWithDefault(React.null)}
           </dl>
         </section>
         <section className="rounded-2xl border border-stone-200 bg-white p-5">
@@ -86,11 +86,11 @@ let make = (~entry: option<EntryModel.entry>, ~onEdit: unit => unit) => {
             {React.string(t.entryDetailOccasionLabel)}
           </h4>
           <dl className="mt-4 grid gap-4">
-            {detailLine(~label="Consumed at", ~value=entry.consumedAt)}
-            {optionalDetailLine(~label="Venue", ~value=entry.venueName)->Belt.Option.getWithDefault(React.null)}
-            {optionalDetailLine(~label="Location", ~value=entry.locationText)->Belt.Option.getWithDefault(React.null)}
-            {optionalDetailLine(~label="Pairing notes", ~value=entry.pairingNotes)->Belt.Option.getWithDefault(React.null)}
-            {optionalDetailLine(~label="Tasting notes", ~value=entry.tastingNotes)->Belt.Option.getWithDefault(React.null)}
+            {detailLine(~label=t.entryComposerConsumedAtLabel, ~value=entry.consumedAt)}
+            {optionalDetailLine(~label=t.entryComposerVenueLabel, ~value=entry.venueName)->Belt.Option.getWithDefault(React.null)}
+            {optionalDetailLine(~label=t.entryComposerLocationLabel, ~value=entry.locationText)->Belt.Option.getWithDefault(React.null)}
+            {optionalDetailLine(~label=t.entryComposerPairingNotesLabel, ~value=entry.pairingNotes)->Belt.Option.getWithDefault(React.null)}
+            {optionalDetailLine(~label=t.entryComposerTastingNotesLabel, ~value=entry.tastingNotes)->Belt.Option.getWithDefault(React.null)}
           </dl>
         </section>
       </div>

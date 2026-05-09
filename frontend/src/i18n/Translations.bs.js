@@ -9,6 +9,18 @@ function en_appLanguageDetectedLabel(locale) {
   }
 }
 
+function en_occasionsForWine(wineLabel) {
+  return "Occasions for " + wineLabel;
+}
+
+function en_loadingOccasionsFor(wineLabel) {
+  return "Loading occasions for " + wineLabel + "...";
+}
+
+function en_noOccasionsFor(wineLabel) {
+  return "No occasions recorded yet for " + wineLabel + ".";
+}
+
 function en_occasionCount(n) {
   if (n !== 1) {
     return String(n) + " occasions";
@@ -130,6 +142,9 @@ var en = {
   entryDetailEditEntry: "Edit entry",
   entryHistoryEmptyMessage: "No occasions recorded yet.",
   entryHistoryPairingPrefix: "Pairing: ",
+  occasionsForWine: en_occasionsForWine,
+  loadingOccasionsFor: en_loadingOccasionsFor,
+  noOccasionsFor: en_noOccasionsFor,
   occasionCount: en_occasionCount,
   entryCount: en_entryCount,
   rating: en_rating,
@@ -143,6 +158,18 @@ function sv_appLanguageDetectedLabel(locale) {
   } else {
     return "Upptäckt: Svenska";
   }
+}
+
+function sv_occasionsForWine(wineLabel) {
+  return "Tillfällen för " + wineLabel;
+}
+
+function sv_loadingOccasionsFor(wineLabel) {
+  return "Hämtar tillfällen för " + wineLabel + "...";
+}
+
+function sv_noOccasionsFor(wineLabel) {
+  return "Inga tillfällen registrerade än för " + wineLabel + ".";
 }
 
 function sv_occasionCount(n) {
@@ -266,6 +293,9 @@ var sv = {
   entryDetailEditEntry: "Redigera tillfälle",
   entryHistoryEmptyMessage: "Inga tillfällen registrerade än.",
   entryHistoryPairingPrefix: "Mat: ",
+  occasionsForWine: sv_occasionsForWine,
+  loadingOccasionsFor: sv_loadingOccasionsFor,
+  noOccasionsFor: sv_noOccasionsFor,
   occasionCount: sv_occasionCount,
   entryCount: sv_entryCount,
   rating: sv_rating,
