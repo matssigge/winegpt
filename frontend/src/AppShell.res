@@ -32,6 +32,9 @@ let make = (
   }, [route])
 
   let t = I18nContext.useT()
+  let locale = I18nContext.useLocale()
+  let override = I18nContext.useOverride()
+  let setOverride = I18nContext.useSetOverride()
 
   let goHome = () => Router.navigate(Home)
   let goNewWine = () => Router.navigate(NewWine)
@@ -143,6 +146,47 @@ let make = (
           <p className="mt-1 text-sm font-medium text-stone-900">
             {React.string(user.email)}
           </p>
+        </div>
+        <div className="mt-2 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
+          <p className="text-xs font-medium uppercase tracking-widest text-stone-500">
+            {React.string(t.appLanguage)}
+          </p>
+          <div className="mt-2 flex flex-col gap-1">
+            <label className="flex items-center gap-2 text-sm text-stone-800">
+              <input
+                type_="radio"
+                name="language"
+                checked={override == Some(AppLocale.Sv)}
+                onChange={_ => setOverride(Some(AppLocale.Sv))}
+              />
+              {React.string(t.appLanguageSwedishLabel)}
+            </label>
+            <label className="flex items-center gap-2 text-sm text-stone-800">
+              <input
+                type_="radio"
+                name="language"
+                checked={override == Some(AppLocale.En)}
+                onChange={_ => setOverride(Some(AppLocale.En))}
+              />
+              {React.string(t.appLanguageEnglishLabel)}
+            </label>
+            <label className="flex items-center gap-2 text-sm text-stone-800">
+              <input
+                type_="radio"
+                name="language"
+                checked={override == None}
+                onChange={_ => setOverride(None)}
+              />
+              {React.string(t.appLanguageBrowserDefault)}
+            </label>
+            {switch override {
+            | None =>
+              <p className="mt-1 text-xs text-stone-500">
+                {React.string(t.appLanguageDetectedLabel(locale))}
+              </p>
+            | Some(_) => React.null
+            }}
+          </div>
         </div>
         <button
           type_="button"

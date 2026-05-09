@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import * as Router from "./router/Router.bs.js";
+import * as Caml_obj from "rescript/lib/es6/caml_obj.js";
 import * as TextField from "./ui/TextField.bs.js";
 import * as I18nContext from "./i18n/I18nContext.bs.js";
 import * as WineListScreen from "./screens/WineListScreen.bs.js";
@@ -48,6 +49,9 @@ function AppShell(props) {
               });
         }), [route]);
   var t = I18nContext.useT();
+  var locale = I18nContext.useLocale();
+  var override = I18nContext.useOverride();
+  var setOverride = I18nContext.useSetOverride();
   var goWine = function (wineId) {
     Router.navigate({
           TAG: "Wine",
@@ -198,6 +202,66 @@ function AppShell(props) {
                         })
                   ],
                   className: "rounded-xl border border-stone-200 bg-stone-50 px-4 py-3"
+                }),
+            JsxRuntime.jsxs("div", {
+                  children: [
+                    JsxRuntime.jsx("p", {
+                          children: t.appLanguage,
+                          className: "text-xs font-medium uppercase tracking-widest text-stone-500"
+                        }),
+                    JsxRuntime.jsxs("div", {
+                          children: [
+                            JsxRuntime.jsxs("label", {
+                                  children: [
+                                    JsxRuntime.jsx("input", {
+                                          checked: Caml_obj.equal(override, "Sv"),
+                                          name: "language",
+                                          type: "radio",
+                                          onChange: (function (param) {
+                                              setOverride("Sv");
+                                            })
+                                        }),
+                                    t.appLanguageSwedishLabel
+                                  ],
+                                  className: "flex items-center gap-2 text-sm text-stone-800"
+                                }),
+                            JsxRuntime.jsxs("label", {
+                                  children: [
+                                    JsxRuntime.jsx("input", {
+                                          checked: Caml_obj.equal(override, "En"),
+                                          name: "language",
+                                          type: "radio",
+                                          onChange: (function (param) {
+                                              setOverride("En");
+                                            })
+                                        }),
+                                    t.appLanguageEnglishLabel
+                                  ],
+                                  className: "flex items-center gap-2 text-sm text-stone-800"
+                                }),
+                            JsxRuntime.jsxs("label", {
+                                  children: [
+                                    JsxRuntime.jsx("input", {
+                                          checked: override === undefined,
+                                          name: "language",
+                                          type: "radio",
+                                          onChange: (function (param) {
+                                              setOverride(undefined);
+                                            })
+                                        }),
+                                    t.appLanguageBrowserDefault
+                                  ],
+                                  className: "flex items-center gap-2 text-sm text-stone-800"
+                                }),
+                            override !== undefined ? null : JsxRuntime.jsx("p", {
+                                    children: t.appLanguageDetectedLabel(locale),
+                                    className: "mt-1 text-xs text-stone-500"
+                                  })
+                          ],
+                          className: "mt-2 flex flex-col gap-1"
+                        })
+                  ],
+                  className: "mt-2 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3"
                 }),
             JsxRuntime.jsx("button", {
                   children: t.appLogOut,
