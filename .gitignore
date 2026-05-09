@@ -1,5 +1,7 @@
 /.mise/
+/.superpowers/
 /backend/target/
 /frontend/node_modules/
 /frontend/lib/
 /frontend/dist/
+**/.claude/settings.local.json
