@@ -15,7 +15,6 @@ function wineLabel(wine) {
 }
 
 function EntryComposer(props) {
-  var onClose = props.onClose;
   var onSubmit = props.onSubmit;
   var onUseNewWine = props.onUseNewWine;
   var onUseSelectedWine = props.onUseSelectedWine;
@@ -232,143 +231,115 @@ function EntryComposer(props) {
     );
   var message = entryForm.error;
   var message$1 = entryForm.success;
-  return JsxRuntime.jsx("div", {
-              children: JsxRuntime.jsxs("section", {
-                    children: [
-                      JsxRuntime.jsxs("div", {
-                            children: [
-                              JsxRuntime.jsxs("div", {
-                                    children: [
-                                      JsxRuntime.jsx("p", {
-                                            children: match[0],
-                                            className: "text-xs font-medium uppercase tracking-[0.25em] text-stone-500"
-                                          }),
-                                      JsxRuntime.jsx("h3", {
-                                            children: match[1],
-                                            className: "mt-2 text-2xl font-semibold text-stone-950"
-                                          })
-                                    ]
-                                  }),
-                              JsxRuntime.jsx("button", {
-                                    children: "Close",
-                                    className: "rounded-2xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950",
-                                    type: "button",
-                                    onClick: (function (param) {
-                                        onClose();
-                                      })
-                                  })
-                            ],
-                            className: "flex items-start justify-between gap-4"
-                          }),
-                      JsxRuntime.jsxs("div", {
-                            children: [
-                              tmp,
-                              tmp$4,
-                              JsxRuntime.jsx(TextField.make, {
-                                    label: "Consumed at",
-                                    value: entryForm.consumedAt,
+  return JsxRuntime.jsxs("section", {
+              children: [
+                JsxRuntime.jsxs("div", {
+                      children: [
+                        tmp,
+                        tmp$4,
+                        JsxRuntime.jsx(TextField.make, {
+                              label: "Consumed at",
+                              value: entryForm.consumedAt,
+                              onChange: (function (value) {
+                                  onEntryFormChange("consumedAt", value);
+                                }),
+                              autoComplete: "off",
+                              type_: "datetime-local"
+                            }),
+                        JsxRuntime.jsx(TextField.make, {
+                              label: "Venue",
+                              value: entryForm.venueName,
+                              onChange: (function (value) {
+                                  onEntryFormChange("venueName", value);
+                                }),
+                              autoComplete: "off"
+                            }),
+                        JsxRuntime.jsx(TextField.make, {
+                              label: "Location",
+                              value: entryForm.locationText,
+                              onChange: (function (value) {
+                                  onEntryFormChange("locationText", value);
+                                }),
+                              autoComplete: "street-address"
+                            })
+                      ],
+                      className: "grid gap-4 md:grid-cols-2"
+                    }),
+                JsxRuntime.jsxs("div", {
+                      children: [
+                        JsxRuntime.jsxs("label", {
+                              children: [
+                                JsxRuntime.jsx("span", {
+                                      children: "Pairing notes",
+                                      className: "mb-2 block text-sm font-medium text-stone-700"
+                                    }),
+                                JsxRuntime.jsx("textarea", {
+                                      className: "w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-950 outline-none transition focus:border-stone-500",
+                                      rows: 3,
+                                      value: entryForm.pairingNotes,
+                                      onChange: (function ($$event) {
+                                          onEntryFormChange("pairingNotes", $$event.target.value);
+                                        })
+                                    })
+                              ],
+                              className: "block"
+                            }),
+                        JsxRuntime.jsxs("label", {
+                              children: [
+                                JsxRuntime.jsx("span", {
+                                      children: "Tasting notes",
+                                      className: "mb-2 block text-sm font-medium text-stone-700"
+                                    }),
+                                JsxRuntime.jsx("textarea", {
+                                      className: "w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-950 outline-none transition focus:border-stone-500",
+                                      rows: 4,
+                                      value: entryForm.tastingNotes,
+                                      onChange: (function ($$event) {
+                                          onEntryFormChange("tastingNotes", $$event.target.value);
+                                        })
+                                    })
+                              ],
+                              className: "block"
+                            })
+                      ],
+                      className: "mt-4 grid gap-4"
+                    }),
+                JsxRuntime.jsxs("div", {
+                      children: [
+                        JsxRuntime.jsx("div", {
+                              children: JsxRuntime.jsx(TextField.make, {
+                                    label: "Rating",
+                                    value: entryForm.rating,
                                     onChange: (function (value) {
-                                        onEntryFormChange("consumedAt", value);
+                                        onEntryFormChange("rating", value);
                                       }),
                                     autoComplete: "off",
-                                    type_: "datetime-local"
+                                    type_: "number"
                                   }),
-                              JsxRuntime.jsx(TextField.make, {
-                                    label: "Venue",
-                                    value: entryForm.venueName,
-                                    onChange: (function (value) {
-                                        onEntryFormChange("venueName", value);
-                                      }),
-                                    autoComplete: "off"
-                                  }),
-                              JsxRuntime.jsx(TextField.make, {
-                                    label: "Location",
-                                    value: entryForm.locationText,
-                                    onChange: (function (value) {
-                                        onEntryFormChange("locationText", value);
-                                      }),
-                                    autoComplete: "street-address"
-                                  })
-                            ],
-                            className: "mt-6 grid gap-4 md:grid-cols-2"
-                          }),
-                      JsxRuntime.jsxs("div", {
-                            children: [
-                              JsxRuntime.jsxs("label", {
-                                    children: [
-                                      JsxRuntime.jsx("span", {
-                                            children: "Pairing notes",
-                                            className: "mb-2 block text-sm font-medium text-stone-700"
-                                          }),
-                                      JsxRuntime.jsx("textarea", {
-                                            className: "w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-950 outline-none transition focus:border-stone-500",
-                                            rows: 3,
-                                            value: entryForm.pairingNotes,
-                                            onChange: (function ($$event) {
-                                                onEntryFormChange("pairingNotes", $$event.target.value);
-                                              })
-                                          })
-                                    ],
-                                    className: "block"
-                                  }),
-                              JsxRuntime.jsxs("label", {
-                                    children: [
-                                      JsxRuntime.jsx("span", {
-                                            children: "Tasting notes",
-                                            className: "mb-2 block text-sm font-medium text-stone-700"
-                                          }),
-                                      JsxRuntime.jsx("textarea", {
-                                            className: "w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-base text-stone-950 outline-none transition focus:border-stone-500",
-                                            rows: 4,
-                                            value: entryForm.tastingNotes,
-                                            onChange: (function ($$event) {
-                                                onEntryFormChange("tastingNotes", $$event.target.value);
-                                              })
-                                          })
-                                    ],
-                                    className: "block"
-                                  })
-                            ],
-                            className: "mt-4 grid gap-4"
-                          }),
-                      JsxRuntime.jsxs("div", {
-                            children: [
-                              JsxRuntime.jsx("div", {
-                                    children: JsxRuntime.jsx(TextField.make, {
-                                          label: "Rating",
-                                          value: entryForm.rating,
-                                          onChange: (function (value) {
-                                              onEntryFormChange("rating", value);
-                                            }),
-                                          autoComplete: "off",
-                                          type_: "number"
-                                        }),
-                                    className: "md:w-40"
-                                  }),
-                              JsxRuntime.jsx("button", {
-                                    children: entryForm.isSubmitting ? match[3] : match[2],
-                                    className: "rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400",
-                                    disabled: entryForm.isSubmitting,
-                                    type: "button",
-                                    onClick: (function (param) {
-                                        onSubmit();
-                                      })
-                                  })
-                            ],
-                            className: "mt-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
-                          }),
-                      message !== undefined ? JsxRuntime.jsx("div", {
-                              children: message,
-                              className: "mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
-                            }) : null,
-                      message$1 !== undefined ? JsxRuntime.jsx("div", {
-                              children: message$1,
-                              className: "mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
-                            }) : null
-                    ],
-                    className: "mx-auto w-full max-w-2xl rounded-[2rem] border border-stone-900/10 bg-white p-6 shadow-[0_24px_80px_rgba(81,46,23,0.2)] md:p-8"
-                  }),
-              className: "fixed inset-0 z-50 overflow-y-auto bg-stone-950/40 px-4 py-4 md:px-6 md:py-10"
+                              className: "md:w-40"
+                            }),
+                        JsxRuntime.jsx("button", {
+                              children: entryForm.isSubmitting ? match[3] : match[2],
+                              className: "rounded-2xl bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400",
+                              disabled: entryForm.isSubmitting,
+                              type: "button",
+                              onClick: (function (param) {
+                                  onSubmit();
+                                })
+                            })
+                      ],
+                      className: "mt-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+                    }),
+                message !== undefined ? JsxRuntime.jsx("div", {
+                        children: message,
+                        className: "mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+                      }) : null,
+                message$1 !== undefined ? JsxRuntime.jsx("div", {
+                        children: message$1,
+                        className: "mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+                      }) : null
+              ],
+              className: "rounded-3xl border border-stone-900/10 bg-white p-6 shadow-[0_24px_80px_rgba(81,46,23,0.12)] md:p-8"
             });
 }
 

@@ -43,8 +43,7 @@ function EntryComposerScreen(props) {
                       onEntryFormChange: props.onEntryFormChange,
                       onUseSelectedWine: props.onUseSelectedWineForEntry,
                       onUseNewWine: props.onUseNewWineForEntry,
-                      onSubmit: props.onSubmit,
-                      onClose: onClose
+                      onSubmit: props.onSubmit
                     })
               ],
               className: "w-full max-w-xl"

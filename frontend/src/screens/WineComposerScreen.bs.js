@@ -29,8 +29,7 @@ function WineComposerScreen(props) {
                       mode: "Create",
                       wineForm: props.wineForm,
                       onWineFormChange: props.onWineFormChange,
-                      onSubmit: props.onSubmit,
-                      onClose: onClose
+                      onSubmit: props.onSubmit
                     })
               ],
               className: "w-full max-w-xl"

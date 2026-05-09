@@ -23,6 +23,5 @@ let make = (
       wineForm
       onWineFormChange
       onSubmit
-      onClose
     />
   </section>

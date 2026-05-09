@@ -52,7 +52,6 @@ let make = (
       onUseSelectedWine=onUseSelectedWineForEntry
       onUseNewWine=onUseNewWineForEntry
       onSubmit
-      onClose
     />
   </section>
 }
