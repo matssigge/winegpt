@@ -26,13 +26,14 @@ let wineSummary = (entry: EntryModel.entry) => {
 }
 
 @react.component
-let make = (~entry: option<EntryModel.entry>, ~onEdit: unit => unit) =>
+let make = (~entry: option<EntryModel.entry>, ~onEdit: unit => unit) => {
+  let t = I18nContext.useT()
   switch entry {
   | None =>
     <section className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6">
-      <h3 className="text-lg font-semibold text-stone-950"> {React.string("Entry detail")} </h3>
+      <h3 className="text-lg font-semibold text-stone-950"> {React.string(t.entryDetailHeading)} </h3>
       <p className="mt-2 text-sm leading-6 text-stone-600">
-        {React.string("Select an entry from history to inspect the wine and occasion details.")}
+        {React.string(t.entryDetailEmptyBody)}
       </p>
     </section>
   | Some(entry) =>
@@ -40,7 +41,7 @@ let make = (~entry: option<EntryModel.entry>, ~onEdit: unit => unit) =>
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-stone-500">
-            {React.string("Entry detail")}
+            {React.string(t.entryDetailHeading)}
           </p>
           <h3 className="mt-2 text-2xl font-semibold text-stone-950">
             {React.string(entry->wineSummary)}
@@ -50,7 +51,7 @@ let make = (~entry: option<EntryModel.entry>, ~onEdit: unit => unit) =>
           {switch entry.rating {
           | Some(rating) =>
             <span className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800">
-              {React.string("Rating " ++ rating->Belt.Int.toString ++ "/5")}
+              {React.string(t.rating(rating))}
             </span>
           | None => React.null
           }}
@@ -58,14 +59,14 @@ let make = (~entry: option<EntryModel.entry>, ~onEdit: unit => unit) =>
             type_="button"
             onClick={_ => onEdit()}
             className="rounded-2xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950">
-            {React.string("Edit entry")}
+            {React.string(t.entryDetailEditEntry)}
           </button>
         </div>
       </div>
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <section className="rounded-2xl border border-stone-200 bg-white p-5">
           <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-600">
-            {React.string("Wine")}
+            {React.string(t.entryDetailWineLabel)}
           </h4>
           <dl className="mt-4 grid gap-4">
             {detailLine(~label="Name", ~value=entry.wine.name)}
@@ -82,7 +83,7 @@ let make = (~entry: option<EntryModel.entry>, ~onEdit: unit => unit) =>
         </section>
         <section className="rounded-2xl border border-stone-200 bg-white p-5">
           <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-600">
-            {React.string("Occasion")}
+            {React.string(t.entryDetailOccasionLabel)}
           </h4>
           <dl className="mt-4 grid gap-4">
             {detailLine(~label="Consumed at", ~value=entry.consumedAt)}
@@ -95,3 +96,4 @@ let make = (~entry: option<EntryModel.entry>, ~onEdit: unit => unit) =>
       </div>
     </section>
   }
+}

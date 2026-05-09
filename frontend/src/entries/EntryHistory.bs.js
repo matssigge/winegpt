@@ -2,6 +2,7 @@
 
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
+import * as I18nContext from "../i18n/I18nContext.bs.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function wineLabel(entry) {
@@ -43,6 +44,7 @@ function EntryHistory(props) {
   var idleMessage = __idleMessage !== undefined ? __idleMessage : "Select a collection to browse its entries.";
   var loadingMessage = __loadingMessage !== undefined ? __loadingMessage : "Loading collection history...";
   var emptyMessage = __emptyMessage !== undefined ? __emptyMessage : "No entries yet. Your latest bottles and notes will show up here.";
+  var t = I18nContext.useT();
   if (typeof status !== "object") {
     if (status === "Idle") {
       return JsxRuntime.jsxs("section", {
@@ -117,7 +119,7 @@ function EntryHistory(props) {
                                 className: "text-lg font-semibold text-stone-950"
                               }),
                           JsxRuntime.jsx("span", {
-                                children: String(visibleEntries.length) + " entries",
+                                children: t.entryCount(visibleEntries.length),
                                 className: "rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600"
                               })
                         ],
@@ -148,7 +150,7 @@ function EntryHistory(props) {
                                                                   ]
                                                                 }),
                                                             rating !== undefined ? JsxRuntime.jsx("span", {
-                                                                    children: String(rating) + "/5",
+                                                                    children: t.rating(rating),
                                                                     className: isSelected ? "rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white" : "rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800"
                                                                   }) : null
                                                           ],
@@ -165,7 +167,7 @@ function EntryHistory(props) {
                                                     notes$1 !== undefined ? JsxRuntime.jsxs("p", {
                                                             children: [
                                                               JsxRuntime.jsx("span", {
-                                                                    children: "Pairing: ",
+                                                                    children: t.entryHistoryPairingPrefix,
                                                                     className: isSelected ? "font-medium text-white" : "font-medium text-stone-800"
                                                                   }),
                                                               notes$1
@@ -197,4 +199,4 @@ export {
   wineMeta ,
   make ,
 }
-/* react/jsx-runtime Not a pure module */
+/* I18nContext Not a pure module */

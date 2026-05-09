@@ -33,7 +33,8 @@ let make = (
   ~selectedEntryId: option<int>,
   ~onSelectEntry: int => unit,
   ~wineId: option<int>=?,
-) =>
+) => {
+  let t = I18nContext.useT()
   switch status {
   | EntryState.Idle =>
     <section className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6">
@@ -70,7 +71,7 @@ let make = (
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-lg font-semibold text-stone-950"> {React.string(title)} </h3>
           <span className="rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600">
-            {React.string(Belt.Array.length(visibleEntries)->Belt.Int.toString ++ " entries")}
+            {React.string(t.entryCount(Belt.Array.length(visibleEntries)))}
           </span>
         </div>
         <ul className="mt-4 space-y-3">
@@ -115,7 +116,7 @@ let make = (
                          "rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800"
                        }
                      }>
-                     {React.string(rating->Belt.Int.toString ++ "/5")}
+                     {React.string(t.rating(rating))}
                    </span>
                  | None => React.null
                  }}
@@ -134,7 +135,7 @@ let make = (
                | Some(notes) =>
                  <p className={if isSelected { "mt-2 text-sm leading-6 text-stone-200" } else { "mt-2 text-sm leading-6 text-stone-600" }}>
                    <span className={if isSelected { "font-medium text-white" } else { "font-medium text-stone-800" }}>
-                     {React.string("Pairing: ")}
+                     {React.string(t.entryHistoryPairingPrefix)}
                    </span>
                    {React.string(notes)}
                  </p>
@@ -148,3 +149,4 @@ let make = (
       </section>
     }
   }
+}

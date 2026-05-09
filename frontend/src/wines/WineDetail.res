@@ -25,6 +25,7 @@ let make = (
   ~onSelectEntry: int => unit,
   ~onEditEntry: unit => unit,
 ) => {
+  let t = I18nContext.useT()
   let selectedWineLabel =
     switch selectedWine {
     | Some(summary) => summary->wineLabel
@@ -34,7 +35,7 @@ let make = (
   switch selectedWine {
   | None =>
     <section className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6">
-      <h3 className="text-lg font-semibold text-stone-950"> {React.string("Wine detail")} </h3>
+      <h3 className="text-lg font-semibold text-stone-950"> {React.string(t.wineDetailDefaultTitle)} </h3>
       <p className="mt-2 text-sm leading-6 text-stone-600">
         {React.string("Select a wine to browse its identity, remembered occasions, and entry details.")}
       </p>
@@ -44,7 +45,7 @@ let make = (
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-stone-500">
-            {React.string("Wine detail")}
+            {React.string(t.wineDetailDefaultTitle)}
           </p>
           <h3 className="mt-2 text-2xl font-semibold text-stone-950">
             {React.string(summary->wineLabel)}
@@ -55,19 +56,19 @@ let make = (
             {React.string("Occasions")}
           </p>
           <p className="mt-1 text-lg font-semibold text-stone-950">
-            {React.string(summary.entryCount->Belt.Int.toString)}
+            {React.string(t.entryCount(summary.entryCount))}
           </p>
         </div>
       </div>
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <section className="rounded-2xl border border-stone-200 bg-white p-5">
           <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-600">
-            {React.string("Identity")}
+            {React.string(t.wineDetailIdentity)}
           </h4>
           <dl className="mt-4 grid gap-4">
             <div>
               <dt className="text-xs font-medium uppercase tracking-[0.2em] text-stone-500">
-                {React.string("Name")}
+                {React.string(t.wineDetailNameLabel)}
               </dt>
               <dd className="mt-1 text-sm leading-6 text-stone-700">
                 {React.string(summary.wine.name)}
@@ -86,12 +87,12 @@ let make = (
         </section>
         <section className="rounded-2xl border border-stone-200 bg-white p-5">
           <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-600">
-            {React.string("Memory")}
+            {React.string(t.wineDetailMemory)}
           </h4>
           <dl className="mt-4 grid gap-4">
             <div>
               <dt className="text-xs font-medium uppercase tracking-[0.2em] text-stone-500">
-                {React.string("Most recent")}
+                {React.string(t.wineDetailMostRecent)}
               </dt>
               <dd className="mt-1 text-sm leading-6 text-stone-700">
                 {React.string(summary.lastConsumedAt)}

@@ -2,6 +2,7 @@
 
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
 import * as EntryDetail from "../entries/EntryDetail.bs.js";
+import * as I18nContext from "../i18n/I18nContext.bs.js";
 import * as EntryHistory from "../entries/EntryHistory.bs.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
@@ -35,6 +36,7 @@ function wineLabel(summary) {
 
 function WineDetail(props) {
   var selectedWine = props.selectedWine;
+  var t = I18nContext.useT();
   var selectedWineLabel = selectedWine !== undefined ? wineLabel(selectedWine) : "this wine";
   if (selectedWine !== undefined) {
     return JsxRuntime.jsxs("section", {
@@ -44,7 +46,7 @@ function WineDetail(props) {
                           JsxRuntime.jsxs("div", {
                                 children: [
                                   JsxRuntime.jsx("p", {
-                                        children: "Wine detail",
+                                        children: t.wineDetailDefaultTitle,
                                         className: "text-xs font-medium uppercase tracking-[0.25em] text-stone-500"
                                       }),
                                   JsxRuntime.jsx("h3", {
@@ -60,7 +62,7 @@ function WineDetail(props) {
                                         className: "text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
                                       }),
                                   JsxRuntime.jsx("p", {
-                                        children: String(selectedWine.entryCount),
+                                        children: t.entryCount(selectedWine.entryCount),
                                         className: "mt-1 text-lg font-semibold text-stone-950"
                                       })
                                 ],
@@ -74,7 +76,7 @@ function WineDetail(props) {
                           JsxRuntime.jsxs("section", {
                                 children: [
                                   JsxRuntime.jsx("h4", {
-                                        children: "Identity",
+                                        children: t.wineDetailIdentity,
                                         className: "text-sm font-semibold uppercase tracking-[0.2em] text-stone-600"
                                       }),
                                   JsxRuntime.jsxs("dl", {
@@ -82,7 +84,7 @@ function WineDetail(props) {
                                           JsxRuntime.jsxs("div", {
                                                 children: [
                                                   JsxRuntime.jsx("dt", {
-                                                        children: "Name",
+                                                        children: t.wineDetailNameLabel,
                                                         className: "text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
                                                       }),
                                                   JsxRuntime.jsx("dd", {
@@ -108,14 +110,14 @@ function WineDetail(props) {
                           JsxRuntime.jsxs("section", {
                                 children: [
                                   JsxRuntime.jsx("h4", {
-                                        children: "Memory",
+                                        children: t.wineDetailMemory,
                                         className: "text-sm font-semibold uppercase tracking-[0.2em] text-stone-600"
                                       }),
                                   JsxRuntime.jsx("dl", {
                                         children: JsxRuntime.jsxs("div", {
                                               children: [
                                                 JsxRuntime.jsx("dt", {
-                                                      children: "Most recent",
+                                                      children: t.wineDetailMostRecent,
                                                       className: "text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
                                                     }),
                                                 JsxRuntime.jsx("dd", {
@@ -158,7 +160,7 @@ function WineDetail(props) {
     return JsxRuntime.jsxs("section", {
                 children: [
                   JsxRuntime.jsx("h3", {
-                        children: "Wine detail",
+                        children: t.wineDetailDefaultTitle,
                         className: "text-lg font-semibold text-stone-950"
                       }),
                   JsxRuntime.jsx("p", {

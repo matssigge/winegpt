@@ -3,6 +3,7 @@
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
 import * as Caml_option from "rescript/lib/es6/caml_option.js";
+import * as I18nContext from "../i18n/I18nContext.bs.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function detailLine(label, value) {
@@ -41,23 +42,24 @@ function wineSummary(entry) {
 }
 
 function EntryDetail(props) {
+  var onEdit = props.onEdit;
   var entry = props.entry;
+  var t = I18nContext.useT();
   if (entry === undefined) {
     return JsxRuntime.jsxs("section", {
                 children: [
                   JsxRuntime.jsx("h3", {
-                        children: "Entry detail",
+                        children: t.entryDetailHeading,
                         className: "text-lg font-semibold text-stone-950"
                       }),
                   JsxRuntime.jsx("p", {
-                        children: "Select an entry from history to inspect the wine and occasion details.",
+                        children: t.entryDetailEmptyBody,
                         className: "mt-2 text-sm leading-6 text-stone-600"
                       })
                 ],
                 className: "rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6"
               });
   }
-  var onEdit = props.onEdit;
   var rating = entry.rating;
   return JsxRuntime.jsxs("section", {
               children: [
@@ -66,7 +68,7 @@ function EntryDetail(props) {
                         JsxRuntime.jsxs("div", {
                               children: [
                                 JsxRuntime.jsx("p", {
-                                      children: "Entry detail",
+                                      children: t.entryDetailHeading,
                                       className: "text-xs font-medium uppercase tracking-[0.25em] text-stone-500"
                                     }),
                                 JsxRuntime.jsx("h3", {
@@ -78,11 +80,11 @@ function EntryDetail(props) {
                         JsxRuntime.jsxs("div", {
                               children: [
                                 rating !== undefined ? JsxRuntime.jsx("span", {
-                                        children: "Rating " + String(rating) + "/5",
+                                        children: t.rating(rating),
                                         className: "rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-amber-800"
                                       }) : null,
                                 JsxRuntime.jsx("button", {
-                                      children: "Edit entry",
+                                      children: t.entryDetailEditEntry,
                                       className: "rounded-2xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-950",
                                       type: "button",
                                       onClick: (function (param) {
@@ -100,7 +102,7 @@ function EntryDetail(props) {
                         JsxRuntime.jsxs("section", {
                               children: [
                                 JsxRuntime.jsx("h4", {
-                                      children: "Wine",
+                                      children: t.entryDetailWineLabel,
                                       className: "text-sm font-semibold uppercase tracking-[0.2em] text-stone-600"
                                     }),
                                 JsxRuntime.jsxs("dl", {
@@ -123,7 +125,7 @@ function EntryDetail(props) {
                         JsxRuntime.jsxs("section", {
                               children: [
                                 JsxRuntime.jsx("h4", {
-                                      children: "Occasion",
+                                      children: t.entryDetailOccasionLabel,
                                       className: "text-sm font-semibold uppercase tracking-[0.2em] text-stone-600"
                                     }),
                                 JsxRuntime.jsxs("dl", {
@@ -155,4 +157,4 @@ export {
   wineSummary ,
   make ,
 }
-/* react/jsx-runtime Not a pure module */
+/* I18nContext Not a pure module */
