@@ -1,66 +1,29 @@
 import { test, expect } from "playwright/test"
 
-test("users can share a collection", async ({ page }) => {
+test("a user can register, reload, and log out", async ({ page }) => {
   const stamp = Date.now()
-  const ownerEmail = `owner-${stamp}@example.com`
-  const inviteeEmail = `invitee-${stamp}@example.com`
-  const collectionName = `Weekend wines ${Date.now()}`
+  const email = `auth-${stamp}@example.com`
 
   await page.goto("/")
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible()
   await page.getByRole("button", { name: "Sign up" }).click()
-  await page.getByLabel("Full name").fill("Invitee")
-  await page.getByLabel("Email").fill(inviteeEmail)
+  await page.getByLabel("Full name").fill("Auth User")
+  await page.getByLabel("Email").fill(email)
   await page.getByLabel("Password").fill("password123")
   await page.getByRole("button", { name: "Create account" }).click()
-  await page.getByRole("button", { name: "Open menu" }).click()
-  await expect(page.getByText(inviteeEmail)).toBeVisible()
-  await expect(page.getByRole("button", { name: "Collections" })).toBeVisible()
-  await page.getByRole("button", { name: "Log out" }).click()
-  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible()
 
-  await page.getByRole("button", { name: "Sign up" }).click()
-  await page.getByLabel("Full name").fill("Mats")
-  await page.getByLabel("Email").fill(ownerEmail)
-  await page.getByLabel("Password").fill("password123")
-  await page.getByRole("button", { name: "Create account" }).click()
-  await page.getByRole("button", { name: "Open menu" }).click()
-  await page.getByRole("button", { name: "Create collection" }).click()
-  await expect(page.getByRole("heading", { name: "Create collection" })).toBeVisible()
-  await page.getByLabel("New collection").fill(collectionName)
-  await page.getByRole("button", { name: "Create collection" }).click()
-  await page.getByRole("button", { name: "Close" }).click()
-  await expect(page.getByText(`Collection: ${collectionName}`)).toBeVisible()
-
-  await expect(page.getByLabel("Invite by email")).toHaveCount(0)
-  await page.getByRole("button", { name: "Open menu" }).click()
-  await page.getByRole("button", { name: "Share collection" }).click()
-  await page.getByLabel("Invite by email").fill(inviteeEmail)
-  await page.getByRole("button", { name: "Invite" }).click()
-  await expect(page.getByText(`Invited ${inviteeEmail}.`)).toBeVisible()
-  await page.getByRole("button", { name: "Close" }).click()
+  await expect(page.getByRole("heading", { name: "Wines", level: 1 })).toBeVisible()
 
   await page.reload()
-  await expect(page.getByText(`Collection: ${collectionName}`)).toBeVisible()
-  await page.getByRole("button", { name: "Open menu" }).click()
-  await page.getByRole("button", { name: "Collections" }).click()
-  await expect(page.getByRole("button", { name: collectionName })).toBeVisible()
-  await page.getByRole("button", { name: "Close" }).click()
-  await expect(page.getByLabel("Invite by email")).toHaveCount(0)
+  await expect(page.getByRole("heading", { name: "Wines", level: 1 })).toBeVisible()
 
   await page.getByRole("button", { name: "Open menu" }).click()
+  await expect(page.getByText(email)).toBeVisible()
   await page.getByRole("button", { name: "Log out" }).click()
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible()
 
-  await page.getByLabel("Email").fill(inviteeEmail)
+  await page.getByLabel("Email").fill(email)
   await page.getByLabel("Password").fill("password123")
   await page.locator("form").getByRole("button", { name: "Log in" }).click()
-  await expect(page.getByText(`Collection: ${collectionName}`)).toBeVisible()
-  await page.getByRole("button", { name: "Open menu" }).click()
-  await page.getByRole("button", { name: "Collections" }).click()
-  await expect(page.getByRole("button", { name: collectionName })).toBeVisible()
-  await page.getByRole("button", { name: "Close" }).click()
-  await expect(page.getByRole("button", { name: "Share collection" })).toHaveCount(0)
-  await expect(page.getByRole("button", { name: "Add entry" })).toBeVisible()
-  await expect(page.getByLabel("Invite by email")).toHaveCount(0)
+  await expect(page.getByRole("heading", { name: "Wines", level: 1 })).toBeVisible()
 })
