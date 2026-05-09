@@ -36,6 +36,7 @@ pub struct AuthUser {
     pub id: i64,
     pub email: String,
     pub full_name: Option<String>,
+    pub default_collection_id: i64,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -83,6 +84,7 @@ pub async fn register(database: &PgPool, input: RegisterInput) -> Result<AuthRes
     }
 
     let password_hash = hash_password(&input.password).map_err(|_| AuthError::Password)?;
+    let mut transaction = database.begin().await.map_err(|_| AuthError::Database)?;
     let row = sqlx::query(
         "INSERT INTO users (email, full_name, password_hash)
          VALUES ($1, $2, $3)
@@ -91,15 +93,38 @@ pub async fn register(database: &PgPool, input: RegisterInput) -> Result<AuthRes
     .bind(&email)
     .bind(&full_name)
     .bind(&password_hash)
-    .fetch_one(database)
+    .fetch_one(&mut *transaction)
     .await
     .map_err(|_| AuthError::Database)?;
+    let user_id: i64 = row.try_get("id").map_err(|_| AuthError::Database)?;
+    let user_email: String = row.try_get("email").map_err(|_| AuthError::Database)?;
+    let user_full_name: Option<String> =
+        row.try_get("full_name").map_err(|_| AuthError::Database)?;
+
+    let default_collection_id =
+        crate::collections::insert_with_owner(&mut transaction, user_id, "My wines")
+            .await
+            .map_err(|_| AuthError::Database)?;
+
+    let token = Uuid::new_v4().simple().to_string();
+    sqlx::query("INSERT INTO sessions (user_id, token) VALUES ($1, $2)")
+        .bind(user_id)
+        .bind(&token)
+        .execute(&mut *transaction)
+        .await
+        .map_err(|_| AuthError::Database)?;
+
+    transaction
+        .commit()
+        .await
+        .map_err(|_| AuthError::Database)?;
+
     let user = AuthUser {
-        id: row.try_get("id").map_err(|_| AuthError::Database)?,
-        email: row.try_get("email").map_err(|_| AuthError::Database)?,
-        full_name: row.try_get("full_name").map_err(|_| AuthError::Database)?,
+        id: user_id,
+        email: user_email,
+        full_name: user_full_name,
+        default_collection_id,
     };
-    let token = create_session(database, user.id).await?;
 
     Ok(AuthResponse { token, user })
 }
@@ -126,10 +151,27 @@ pub async fn login(database: &PgPool, input: LoginInput) -> Result<AuthResponse,
         return Err(AuthError::InvalidCredentials);
     }
 
+    let default_collection_id = sqlx::query_scalar::<_, i64>(
+        "SELECT collections.id
+         FROM collections
+         INNER JOIN collection_memberships
+           ON collection_memberships.collection_id = collections.id
+         WHERE collection_memberships.user_id = $1
+           AND collection_memberships.role = 'owner'
+         ORDER BY collections.created_at ASC, collections.id ASC
+         LIMIT 1",
+    )
+    .bind(row.try_get::<i64, _>("id").map_err(|_| AuthError::Database)?)
+    .fetch_optional(database)
+    .await
+    .map_err(|_| AuthError::Database)?
+    .ok_or(AuthError::Database)?;
+
     let user = AuthUser {
         id: row.try_get("id").map_err(|_| AuthError::Database)?,
         email: row.try_get("email").map_err(|_| AuthError::Database)?,
         full_name: row.try_get("full_name").map_err(|_| AuthError::Database)?,
+        default_collection_id,
     };
     let token = create_session(database, user.id).await?;
 
@@ -142,7 +184,15 @@ pub async fn authenticate(database: &PgPool, token: &str) -> Result<AuthUser, Au
     }
 
     let row = sqlx::query(
-        "SELECT users.id, users.email, users.full_name
+        "SELECT users.id, users.email, users.full_name,
+                (SELECT collections.id
+                 FROM collections
+                 INNER JOIN collection_memberships
+                   ON collection_memberships.collection_id = collections.id
+                 WHERE collection_memberships.user_id = users.id
+                   AND collection_memberships.role = 'owner'
+                 ORDER BY collections.created_at ASC, collections.id ASC
+                 LIMIT 1) AS default_collection_id
          FROM sessions
          INNER JOIN users ON users.id = sessions.user_id
          WHERE sessions.token = $1",
@@ -157,6 +207,10 @@ pub async fn authenticate(database: &PgPool, token: &str) -> Result<AuthUser, Au
         id: row.try_get("id").map_err(|_| AuthError::Database)?,
         email: row.try_get("email").map_err(|_| AuthError::Database)?,
         full_name: row.try_get("full_name").map_err(|_| AuthError::Database)?,
+        default_collection_id: row
+            .try_get::<Option<i64>, _>("default_collection_id")
+            .map_err(|_| AuthError::Database)?
+            .ok_or(AuthError::Database)?,
     })
 }
 
@@ -301,6 +355,41 @@ mod tests {
 
         assert_eq!(authenticated_user.email, email);
         assert_eq!(authenticated_user.full_name, Some("Mats".to_string()));
+        assert!(authenticated_user.default_collection_id > 0);
+        assert_eq!(
+            authenticated_user.default_collection_id,
+            login_response.user.default_collection_id
+        );
+        assert_eq!(
+            authenticated_user.default_collection_id,
+            register_response.user.default_collection_id
+        );
+    }
+
+    #[tokio::test]
+    async fn register_creates_default_collection_named_my_wines() {
+        use crate::collections;
+
+        let database = test_database().await;
+        let email = format!("{}@example.com", Uuid::new_v4().simple());
+        let response = register(
+            &database,
+            RegisterInput {
+                email: email.clone(),
+                full_name: None,
+                password: "password123".to_string(),
+            },
+        )
+        .await
+        .expect("registration should succeed");
+
+        let collections = collections::list_for_user(&database, response.user.id)
+            .await
+            .expect("collections should list");
+
+        assert_eq!(collections.len(), 1, "new user should own exactly one collection");
+        assert_eq!(collections[0].name, "My wines");
+        assert_eq!(collections[0].role, collections::CollectionRole::Owner);
     }
 
     #[tokio::test]

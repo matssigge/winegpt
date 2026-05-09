@@ -307,11 +307,12 @@ mod tests {
             .await
             .expect("collections should list");
 
-        assert_eq!(collections.len(), 2);
-        assert_eq!(collections[0].id, first_collection.id);
-        assert_eq!(collections[0].role, CollectionRole::Owner);
-        assert_eq!(collections[1].id, second_collection.id);
-        assert_eq!(collections[1].role, CollectionRole::Member);
+        // first_user has: "My wines" (auto-created on register), "First", and "Second" (shared)
+        assert_eq!(collections.len(), 3);
+        assert_eq!(collections[1].id, first_collection.id);
+        assert_eq!(collections[1].role, CollectionRole::Owner);
+        assert_eq!(collections[2].id, second_collection.id);
+        assert_eq!(collections[2].role, CollectionRole::Member);
     }
 
     #[tokio::test]
