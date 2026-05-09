@@ -196,7 +196,7 @@ function entry(json) {
   var match$1 = intField(object_, "collection_id");
   var match$2 = Belt_Option.flatMap(Js_dict.get(object_, "wine"), wine);
   var match$3 = intField(object_, "created_by_user_id");
-  var match$4 = stringField(object_, "consumed_at");
+  var match$4 = optionalStringField(object_, "consumed_at");
   var match$5 = optionalStringField(object_, "venue_name");
   var match$6 = optionalStringField(object_, "location_text");
   var match$7 = optionalStringField(object_, "pairing_notes");
@@ -208,7 +208,7 @@ function entry(json) {
             collectionId: match$1,
             wine: match$2,
             createdByUserId: match$3,
-            consumedAt: match$4,
+            consumedAt: Caml_option.valFromOption(match$4),
             venueName: Caml_option.valFromOption(match$5),
             locationText: Caml_option.valFromOption(match$6),
             pairingNotes: Caml_option.valFromOption(match$7),

@@ -5,7 +5,6 @@ import * as Belt_Int from "rescript/lib/es6/belt_Int.js";
 import * as EntryApi from "./EntryApi.bs.js";
 import * as ApiClient from "../api/ApiClient.bs.js";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
-import * as Caml_array from "rescript/lib/es6/caml_array.js";
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
 import * as Js_promise2 from "rescript/lib/es6/js_promise2.js";
 import * as ResponseDecoder from "../api/ResponseDecoder.bs.js";
@@ -39,59 +38,39 @@ function errorStatus(message) {
         };
 }
 
+function padTwo(value) {
+  var text = String(value);
+  if (value < 10) {
+    return "0" + text;
+  } else {
+    return text;
+  }
+}
+
+function todayDateString() {
+  var now = new Date();
+  return String(now.getFullYear()) + "-" + padTwo(now.getMonth() + 1 | 0) + "-" + padTwo(now.getDate());
+}
+
+function consumedAtToDateValue(consumedAt) {
+  if (consumedAt === undefined) {
+    return ;
+  }
+  var date = new Date(consumedAt);
+  if (Number.isNaN(date.getTime())) {
+    return ;
+  } else {
+    return String(date.getFullYear()) + "-" + padTwo(date.getMonth() + 1 | 0) + "-" + padTwo(date.getDate());
+  }
+}
+
 function updateForm(form, field, value) {
   switch (field) {
     case "consumedAt" :
+        var tmp = value === "" ? undefined : value;
         return {
-                wineSource: form.wineSource,
-                wineName: form.wineName,
-                producer: form.producer,
-                style: form.style,
-                grape: form.grape,
-                region: form.region,
-                country: form.country,
-                vintage: form.vintage,
-                consumedAt: value,
-                venueName: form.venueName,
-                locationText: form.locationText,
-                pairingNotes: form.pairingNotes,
-                tastingNotes: form.tastingNotes,
-                rating: form.rating,
-                isSubmitting: form.isSubmitting,
-                error: undefined,
-                success: undefined
-              };
-    case "country" :
-        return {
-                wineSource: form.wineSource,
-                wineName: form.wineName,
-                producer: form.producer,
-                style: form.style,
-                grape: form.grape,
-                region: form.region,
-                country: value,
-                vintage: form.vintage,
-                consumedAt: form.consumedAt,
-                venueName: form.venueName,
-                locationText: form.locationText,
-                pairingNotes: form.pairingNotes,
-                tastingNotes: form.tastingNotes,
-                rating: form.rating,
-                isSubmitting: form.isSubmitting,
-                error: undefined,
-                success: undefined
-              };
-    case "grape" :
-        return {
-                wineSource: form.wineSource,
-                wineName: form.wineName,
-                producer: form.producer,
-                style: form.style,
-                grape: value,
-                region: form.region,
-                country: form.country,
-                vintage: form.vintage,
-                consumedAt: form.consumedAt,
+                dateMode: form.dateMode,
+                consumedAt: tmp,
                 venueName: form.venueName,
                 locationText: form.locationText,
                 pairingNotes: form.pairingNotes,
@@ -103,14 +82,7 @@ function updateForm(form, field, value) {
               };
     case "locationText" :
         return {
-                wineSource: form.wineSource,
-                wineName: form.wineName,
-                producer: form.producer,
-                style: form.style,
-                grape: form.grape,
-                region: form.region,
-                country: form.country,
-                vintage: form.vintage,
+                dateMode: form.dateMode,
                 consumedAt: form.consumedAt,
                 venueName: form.venueName,
                 locationText: value,
@@ -123,14 +95,7 @@ function updateForm(form, field, value) {
               };
     case "pairingNotes" :
         return {
-                wineSource: form.wineSource,
-                wineName: form.wineName,
-                producer: form.producer,
-                style: form.style,
-                grape: form.grape,
-                region: form.region,
-                country: form.country,
-                vintage: form.vintage,
+                dateMode: form.dateMode,
                 consumedAt: form.consumedAt,
                 venueName: form.venueName,
                 locationText: form.locationText,
@@ -141,36 +106,9 @@ function updateForm(form, field, value) {
                 error: undefined,
                 success: undefined
               };
-    case "producer" :
-        return {
-                wineSource: form.wineSource,
-                wineName: form.wineName,
-                producer: value,
-                style: form.style,
-                grape: form.grape,
-                region: form.region,
-                country: form.country,
-                vintage: form.vintage,
-                consumedAt: form.consumedAt,
-                venueName: form.venueName,
-                locationText: form.locationText,
-                pairingNotes: form.pairingNotes,
-                tastingNotes: form.tastingNotes,
-                rating: form.rating,
-                isSubmitting: form.isSubmitting,
-                error: undefined,
-                success: undefined
-              };
     case "rating" :
         return {
-                wineSource: form.wineSource,
-                wineName: form.wineName,
-                producer: form.producer,
-                style: form.style,
-                grape: form.grape,
-                region: form.region,
-                country: form.country,
-                vintage: form.vintage,
+                dateMode: form.dateMode,
                 consumedAt: form.consumedAt,
                 venueName: form.venueName,
                 locationText: form.locationText,
@@ -181,56 +119,9 @@ function updateForm(form, field, value) {
                 error: undefined,
                 success: undefined
               };
-    case "region" :
-        return {
-                wineSource: form.wineSource,
-                wineName: form.wineName,
-                producer: form.producer,
-                style: form.style,
-                grape: form.grape,
-                region: value,
-                country: form.country,
-                vintage: form.vintage,
-                consumedAt: form.consumedAt,
-                venueName: form.venueName,
-                locationText: form.locationText,
-                pairingNotes: form.pairingNotes,
-                tastingNotes: form.tastingNotes,
-                rating: form.rating,
-                isSubmitting: form.isSubmitting,
-                error: undefined,
-                success: undefined
-              };
-    case "style" :
-        return {
-                wineSource: form.wineSource,
-                wineName: form.wineName,
-                producer: form.producer,
-                style: value,
-                grape: form.grape,
-                region: form.region,
-                country: form.country,
-                vintage: form.vintage,
-                consumedAt: form.consumedAt,
-                venueName: form.venueName,
-                locationText: form.locationText,
-                pairingNotes: form.pairingNotes,
-                tastingNotes: form.tastingNotes,
-                rating: form.rating,
-                isSubmitting: form.isSubmitting,
-                error: undefined,
-                success: undefined
-              };
     case "tastingNotes" :
         return {
-                wineSource: form.wineSource,
-                wineName: form.wineName,
-                producer: form.producer,
-                style: form.style,
-                grape: form.grape,
-                region: form.region,
-                country: form.country,
-                vintage: form.vintage,
+                dateMode: form.dateMode,
                 consumedAt: form.consumedAt,
                 venueName: form.venueName,
                 locationText: form.locationText,
@@ -243,56 +134,9 @@ function updateForm(form, field, value) {
               };
     case "venueName" :
         return {
-                wineSource: form.wineSource,
-                wineName: form.wineName,
-                producer: form.producer,
-                style: form.style,
-                grape: form.grape,
-                region: form.region,
-                country: form.country,
-                vintage: form.vintage,
+                dateMode: form.dateMode,
                 consumedAt: form.consumedAt,
                 venueName: value,
-                locationText: form.locationText,
-                pairingNotes: form.pairingNotes,
-                tastingNotes: form.tastingNotes,
-                rating: form.rating,
-                isSubmitting: form.isSubmitting,
-                error: undefined,
-                success: undefined
-              };
-    case "vintage" :
-        return {
-                wineSource: form.wineSource,
-                wineName: form.wineName,
-                producer: form.producer,
-                style: form.style,
-                grape: form.grape,
-                region: form.region,
-                country: form.country,
-                vintage: value,
-                consumedAt: form.consumedAt,
-                venueName: form.venueName,
-                locationText: form.locationText,
-                pairingNotes: form.pairingNotes,
-                tastingNotes: form.tastingNotes,
-                rating: form.rating,
-                isSubmitting: form.isSubmitting,
-                error: undefined,
-                success: undefined
-              };
-    case "wineName" :
-        return {
-                wineSource: form.wineSource,
-                wineName: value,
-                producer: form.producer,
-                style: form.style,
-                grape: form.grape,
-                region: form.region,
-                country: form.country,
-                vintage: form.vintage,
-                consumedAt: form.consumedAt,
-                venueName: form.venueName,
                 locationText: form.locationText,
                 pairingNotes: form.pairingNotes,
                 tastingNotes: form.tastingNotes,
@@ -306,16 +150,39 @@ function updateForm(form, field, value) {
   }
 }
 
+function toggleDateMode(form, enabled) {
+  if (!enabled) {
+    return {
+            dateMode: false,
+            consumedAt: undefined,
+            venueName: form.venueName,
+            locationText: form.locationText,
+            pairingNotes: form.pairingNotes,
+            tastingNotes: form.tastingNotes,
+            rating: form.rating,
+            isSubmitting: form.isSubmitting,
+            error: undefined,
+            success: undefined
+          };
+  }
+  var existing = form.consumedAt;
+  return {
+          dateMode: true,
+          consumedAt: existing !== undefined ? existing : todayDateString(),
+          venueName: form.venueName,
+          locationText: form.locationText,
+          pairingNotes: form.pairingNotes,
+          tastingNotes: form.tastingNotes,
+          rating: form.rating,
+          isSubmitting: form.isSubmitting,
+          error: undefined,
+          success: undefined
+        };
+}
+
 function startSubmitting(form) {
   return {
-          wineSource: form.wineSource,
-          wineName: form.wineName,
-          producer: form.producer,
-          style: form.style,
-          grape: form.grape,
-          region: form.region,
-          country: form.country,
-          vintage: form.vintage,
+          dateMode: form.dateMode,
           consumedAt: form.consumedAt,
           venueName: form.venueName,
           locationText: form.locationText,
@@ -330,14 +197,7 @@ function startSubmitting(form) {
 
 function failForm(form, message) {
   return {
-          wineSource: form.wineSource,
-          wineName: form.wineName,
-          producer: form.producer,
-          style: form.style,
-          grape: form.grape,
-          region: form.region,
-          country: form.country,
-          vintage: form.vintage,
+          dateMode: form.dateMode,
           consumedAt: form.consumedAt,
           venueName: form.venueName,
           locationText: form.locationText,
@@ -352,15 +212,8 @@ function failForm(form, message) {
 
 function succeedForm() {
   return {
-          wineSource: "NewWine",
-          wineName: "",
-          producer: "",
-          style: "",
-          grape: "",
-          region: "",
-          country: "",
-          vintage: "",
-          consumedAt: "",
+          dateMode: false,
+          consumedAt: undefined,
           venueName: "",
           locationText: "",
           pairingNotes: "",
@@ -372,37 +225,11 @@ function succeedForm() {
         };
 }
 
-function padTwo(value) {
-  var text = String(value);
-  if (value < 10) {
-    return "0" + text;
-  } else {
-    return text;
-  }
-}
-
-function toDateTimeLocalValue(consumedAt) {
-  var date = new Date(consumedAt);
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  } else {
-    return String(date.getFullYear()) + "-" + padTwo(date.getMonth() + 1 | 0) + "-" + padTwo(date.getDate()) + "T" + padTwo(date.getHours()) + ":" + padTwo(date.getMinutes());
-  }
-}
-
 function formFromEntry(entry) {
+  var dateValue = consumedAtToDateValue(entry.consumedAt);
   return {
-          wineSource: "NewWine",
-          wineName: entry.wine.name,
-          producer: Belt_Option.getWithDefault(entry.wine.producer, ""),
-          style: Belt_Option.getWithDefault(entry.wine.style, ""),
-          grape: Belt_Option.getWithDefault(entry.wine.grape, ""),
-          region: Belt_Option.getWithDefault(entry.wine.region, ""),
-          country: Belt_Option.getWithDefault(entry.wine.country, ""),
-          vintage: Belt_Option.getWithDefault(Belt_Option.map(entry.wine.vintage, (function (prim) {
-                      return String(prim);
-                    })), ""),
-          consumedAt: toDateTimeLocalValue(entry.consumedAt),
+          dateMode: Belt_Option.isSome(dateValue),
+          consumedAt: dateValue,
           venueName: Belt_Option.getWithDefault(entry.venueName, ""),
           locationText: Belt_Option.getWithDefault(entry.locationText, ""),
           pairingNotes: Belt_Option.getWithDefault(entry.pairingNotes, ""),
@@ -416,82 +243,6 @@ function formFromEntry(entry) {
         };
 }
 
-function formFromWineSummary(summary) {
-  return {
-          wineSource: {
-            TAG: "ExistingWine",
-            _0: summary.wine
-          },
-          wineName: summary.wine.name,
-          producer: Belt_Option.getWithDefault(summary.wine.producer, ""),
-          style: Belt_Option.getWithDefault(summary.wine.style, ""),
-          grape: Belt_Option.getWithDefault(summary.wine.grape, ""),
-          region: Belt_Option.getWithDefault(summary.wine.region, ""),
-          country: Belt_Option.getWithDefault(summary.wine.country, ""),
-          vintage: Belt_Option.getWithDefault(Belt_Option.map(summary.wine.vintage, (function (prim) {
-                      return String(prim);
-                    })), ""),
-          consumedAt: "",
-          venueName: "",
-          locationText: "",
-          pairingNotes: "",
-          tastingNotes: "",
-          rating: "",
-          isSubmitting: false,
-          error: undefined,
-          success: undefined
-        };
-}
-
-function useNewWine(form) {
-  return {
-          wineSource: "NewWine",
-          wineName: "",
-          producer: "",
-          style: "",
-          grape: "",
-          region: "",
-          country: "",
-          vintage: "",
-          consumedAt: form.consumedAt,
-          venueName: form.venueName,
-          locationText: form.locationText,
-          pairingNotes: form.pairingNotes,
-          tastingNotes: form.tastingNotes,
-          rating: form.rating,
-          isSubmitting: false,
-          error: undefined,
-          success: undefined
-        };
-}
-
-function useExistingWine(form, wine) {
-  return {
-          wineSource: {
-            TAG: "ExistingWine",
-            _0: wine
-          },
-          wineName: wine.name,
-          producer: Belt_Option.getWithDefault(wine.producer, ""),
-          style: Belt_Option.getWithDefault(wine.style, ""),
-          grape: Belt_Option.getWithDefault(wine.grape, ""),
-          region: Belt_Option.getWithDefault(wine.region, ""),
-          country: Belt_Option.getWithDefault(wine.country, ""),
-          vintage: Belt_Option.getWithDefault(Belt_Option.map(wine.vintage, (function (prim) {
-                      return String(prim);
-                    })), ""),
-          consumedAt: form.consumedAt,
-          venueName: form.venueName,
-          locationText: form.locationText,
-          pairingNotes: form.pairingNotes,
-          tastingNotes: form.tastingNotes,
-          rating: form.rating,
-          isSubmitting: false,
-          error: undefined,
-          success: undefined
-        };
-}
-
 function entries(status) {
   if (typeof status !== "object") {
     return [];
@@ -499,27 +250,6 @@ function entries(status) {
     return status._0;
   } else {
     return [];
-  }
-}
-
-function selectedEntry(entries, selectedEntryId) {
-  if (selectedEntryId !== undefined) {
-    return Belt_Array.getBy(entries, (function (entry) {
-                  return entry.id === selectedEntryId;
-                }));
-  }
-  
-}
-
-function resolveSelectedEntryId(entries, selectedEntryId) {
-  if (entries.length === 0) {
-    return ;
-  }
-  var match = selectedEntry(entries, selectedEntryId);
-  if (match !== undefined) {
-    return selectedEntryId;
-  } else {
-    return Caml_array.get(entries, 0).id;
   }
 }
 
@@ -567,17 +297,15 @@ function intOption(value, errorCode) {
   }
 }
 
-function normalizeConsumedAt(value) {
-  var trimmed = $$String.trim(value);
-  if (trimmed === "") {
-    return Promise.reject(new Error("invalid_consumed_at"));
+function consumedAtForSubmit(form) {
+  if (!form.dateMode) {
+    return ;
   }
-  var date = new Date(trimmed);
-  if (Number.isNaN(date.getTime())) {
-    return Promise.reject(new Error("invalid_consumed_at"));
-  } else {
-    return Promise.resolve(date.toISOString());
+  var date = form.consumedAt;
+  if (date !== undefined && $$String.trim(date) !== "") {
+    return $$String.trim(date) + "T00:00:00";
   }
+  
 }
 
 function listEntries(token, collectionId) {
@@ -591,87 +319,45 @@ function listEntries(token, collectionId) {
               }));
 }
 
-function createEntry(token, collectionId, form) {
-  return Js_promise2.then(normalizeConsumedAt(form.consumedAt), (function (consumedAt) {
-                return Js_promise2.then(intOption(form.vintage, "invalid_wine_vintage"), (function (vintage) {
-                              return Js_promise2.then(intOption(form.rating, "invalid_rating"), (function (rating) {
-                                            var wine = form.wineSource;
-                                            var match;
-                                            if (typeof wine !== "object") {
-                                              match = [
-                                                stringOption(form.producer),
-                                                form.wineName,
-                                                vintage,
-                                                stringOption(form.style),
-                                                stringOption(form.grape),
-                                                stringOption(form.region),
-                                                stringOption(form.country)
-                                              ];
-                                            } else {
-                                              var wine$1 = wine._0;
-                                              match = [
-                                                wine$1.producer,
-                                                wine$1.name,
-                                                wine$1.vintage,
-                                                wine$1.style,
-                                                wine$1.grape,
-                                                wine$1.region,
-                                                wine$1.country
-                                              ];
-                                            }
-                                            var venueName = stringOption(form.venueName);
-                                            var locationText = stringOption(form.locationText);
-                                            var pairingNotes = stringOption(form.pairingNotes);
-                                            var tastingNotes = stringOption(form.tastingNotes);
-                                            return Js_promise2.then(EntryApi.createEntry(token, collectionId, match[0], match[1], match[2], match[3], match[4], match[5], match[6], consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating, undefined), (function (response) {
-                                                          var entry = Belt_Option.flatMap(ResponseDecoder.parse(response), ResponseDecoder.entry);
-                                                          if (entry !== undefined) {
-                                                            return Promise.resolve(entry);
-                                                          } else {
-                                                            return Promise.reject(ApiClient.invalidResponse());
-                                                          }
-                                                        }));
-                                          }));
+function createEntry(token, collectionId, wine, form) {
+  return Js_promise2.then(intOption(form.rating, "invalid_rating"), (function (rating) {
+                var consumedAt = consumedAtForSubmit(form);
+                var venueName = stringOption(form.venueName);
+                var locationText = stringOption(form.locationText);
+                var pairingNotes = stringOption(form.pairingNotes);
+                var tastingNotes = stringOption(form.tastingNotes);
+                return Js_promise2.then(EntryApi.createEntry(token, collectionId, wine.producer, wine.name, wine.vintage, wine.style, wine.grape, wine.region, wine.country, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating, undefined), (function (response) {
+                              var entry = Belt_Option.flatMap(ResponseDecoder.parse(response), ResponseDecoder.entry);
+                              if (entry !== undefined) {
+                                return Promise.resolve(entry);
+                              } else {
+                                return Promise.reject(ApiClient.invalidResponse());
+                              }
                             }));
               }));
 }
 
-function updateEntry(token, collectionId, entryId, form) {
-  return Js_promise2.then(normalizeConsumedAt(form.consumedAt), (function (consumedAt) {
-                return Js_promise2.then(intOption(form.vintage, "invalid_wine_vintage"), (function (vintage) {
-                              return Js_promise2.then(intOption(form.rating, "invalid_rating"), (function (rating) {
-                                            var producer = stringOption(form.producer);
-                                            var style = stringOption(form.style);
-                                            var grape = stringOption(form.grape);
-                                            var region = stringOption(form.region);
-                                            var country = stringOption(form.country);
-                                            var venueName = stringOption(form.venueName);
-                                            var locationText = stringOption(form.locationText);
-                                            var pairingNotes = stringOption(form.pairingNotes);
-                                            var tastingNotes = stringOption(form.tastingNotes);
-                                            return Js_promise2.then(EntryApi.updateEntry(token, collectionId, entryId, producer, form.wineName, vintage, style, grape, region, country, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating, undefined), (function (response) {
-                                                          var entry = Belt_Option.flatMap(ResponseDecoder.parse(response), ResponseDecoder.entry);
-                                                          if (entry !== undefined) {
-                                                            return Promise.resolve(entry);
-                                                          } else {
-                                                            return Promise.reject(ApiClient.invalidResponse());
-                                                          }
-                                                        }));
-                                          }));
+function updateEntry(token, collectionId, entryId, wine, form) {
+  return Js_promise2.then(intOption(form.rating, "invalid_rating"), (function (rating) {
+                var consumedAt = consumedAtForSubmit(form);
+                var venueName = stringOption(form.venueName);
+                var locationText = stringOption(form.locationText);
+                var pairingNotes = stringOption(form.pairingNotes);
+                var tastingNotes = stringOption(form.tastingNotes);
+                return Js_promise2.then(EntryApi.updateEntry(token, collectionId, entryId, wine.producer, wine.name, wine.vintage, wine.style, wine.grape, wine.region, wine.country, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating, undefined), (function (response) {
+                              var entry = Belt_Option.flatMap(ResponseDecoder.parse(response), ResponseDecoder.entry);
+                              if (entry !== undefined) {
+                                return Promise.resolve(entry);
+                              } else {
+                                return Promise.reject(ApiClient.invalidResponse());
+                              }
                             }));
               }));
 }
 
 var initialForm = {
-  wineSource: "NewWine",
-  wineName: "",
-  producer: "",
-  style: "",
-  grape: "",
-  region: "",
-  country: "",
-  vintage: "",
-  consumedAt: "",
+  dateMode: false,
+  consumedAt: undefined,
   venueName: "",
   locationText: "",
   pairingNotes: "",
@@ -689,25 +375,22 @@ export {
   readyStatus ,
   errorStatus ,
   initialForm ,
+  padTwo ,
+  todayDateString ,
+  consumedAtToDateValue ,
   updateForm ,
+  toggleDateMode ,
   startSubmitting ,
   failForm ,
   succeedForm ,
-  padTwo ,
-  toDateTimeLocalValue ,
   formFromEntry ,
-  formFromWineSummary ,
-  useNewWine ,
-  useExistingWine ,
   entries ,
-  selectedEntry ,
-  resolveSelectedEntryId ,
   appendEntry ,
   replaceEntry ,
   isReady ,
   stringOption ,
   intOption ,
-  normalizeConsumedAt ,
+  consumedAtForSubmit ,
   listEntries ,
   createEntry ,
   updateEntry ,

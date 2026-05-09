@@ -1,3 +1,9 @@
+@val external document: 'doc = "document"
+@send external addEventListener: ('doc, string, 'cb) => unit = "addEventListener"
+@send external removeEventListener: ('doc, string, 'cb) => unit = "removeEventListener"
+@get external eventTarget: Dom.event => 'el = "target"
+@send external contains: ('el, 'target) => bool = "contains"
+
 @react.component
 let make = (
   ~user: AuthSession.user,
@@ -10,8 +16,7 @@ let make = (
   ~entryStatus: EntryState.status,
   ~entryForm: EntryState.form,
   ~onEntryFormChange: (. string, string) => unit,
-  ~onUseSelectedWineForEntry: unit => unit,
-  ~onUseNewWineForEntry: unit => unit,
+  ~onToggleDateMode: bool => unit,
   ~onWineFormChange: (. string, string) => unit,
   ~onCreateWine: unit => unit,
   ~onCreateEntry: unit => unit,
@@ -30,6 +35,28 @@ let make = (
     setIsFilterOpen(_ => false)
     None
   }, [route])
+
+  let menuRef = React.useRef(Js.Nullable.null)
+  let menuButtonRef = React.useRef(Js.Nullable.null)
+
+  React.useEffect1(() => {
+    if isMenuOpen {
+      let handler = (event: Dom.event) => {
+        let target = eventTarget(event)
+        let menuNode = menuRef.current->Js.Nullable.toOption
+        let buttonNode = menuButtonRef.current->Js.Nullable.toOption
+        let insideMenu = menuNode->Belt.Option.mapWithDefault(false, n => contains(n, target))
+        let onButton = buttonNode->Belt.Option.mapWithDefault(false, n => contains(n, target))
+        if !insideMenu && !onButton {
+          setIsMenuOpen(_ => false)
+        }
+      }
+      document->addEventListener("mousedown", handler)
+      Some(() => document->removeEventListener("mousedown", handler))
+    } else {
+      None
+    }
+  }, [isMenuOpen])
 
   let t = I18nContext.useT()
   let locale = I18nContext.useLocale()
@@ -71,6 +98,7 @@ let make = (
         <button
           type_="button"
           ariaLabel=t.appMenuAriaOpen
+          ref={ReactDOM.Ref.domRef(menuButtonRef)}
           onClick={_ => setIsMenuOpen(open_ => !open_)}
           className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700">
           {React.string("≡")}
@@ -138,6 +166,7 @@ let make = (
   let menu =
     if isMenuOpen {
       <div
+        ref={ReactDOM.Ref.domRef(menuRef)}
         className="absolute right-6 top-20 z-20 w-64 rounded-2xl border border-stone-200 bg-white p-2 shadow-xl">
         <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3">
           <p className="text-xs font-medium uppercase tracking-widest text-stone-500">
@@ -242,22 +271,18 @@ let make = (
   | NewEntry(wineId) =>
     <EntryComposerScreen
       mode={EntryComposerScreen.New(wineId)}
-      wineStatus
       entryForm
       onEntryFormChange
-      onUseSelectedWineForEntry
-      onUseNewWineForEntry
+      onToggleDateMode
       onSubmit=onCreateEntry
       onClose={() => goWine(wineId)}
     />
   | EditEntry(wineId, entryId) =>
     <EntryComposerScreen
       mode={EntryComposerScreen.Edit(wineId, entryId)}
-      wineStatus
       entryForm
       onEntryFormChange
-      onUseSelectedWineForEntry
-      onUseNewWineForEntry
+      onToggleDateMode
       onSubmit=onCreateEntry
       onClose={() => goWine(wineId)}
     />

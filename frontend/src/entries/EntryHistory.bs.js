@@ -130,6 +130,7 @@ function EntryHistory(props) {
                                 var isSelected = selectedEntryId !== undefined ? entry.id === selectedEntryId : false;
                                 var meta = wineMeta(entry);
                                 var rating = entry.rating;
+                                var value = entry.consumedAt;
                                 var notes = entry.tastingNotes;
                                 var notes$1 = entry.pairingNotes;
                                 return JsxRuntime.jsx("li", {
@@ -156,10 +157,10 @@ function EntryHistory(props) {
                                                           ],
                                                           className: "flex items-start justify-between gap-4"
                                                         }),
-                                                    JsxRuntime.jsx("p", {
-                                                          children: entry.consumedAt,
-                                                          className: isSelected ? "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-300" : "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
-                                                        }),
+                                                    value !== undefined ? JsxRuntime.jsx("p", {
+                                                            children: value.slice(0, 10),
+                                                            className: isSelected ? "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-300" : "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
+                                                          }) : null,
                                                     notes !== undefined ? JsxRuntime.jsx("p", {
                                                             children: notes,
                                                             className: isSelected ? "mt-3 text-sm leading-6 text-stone-100" : "mt-3 text-sm leading-6 text-stone-700"

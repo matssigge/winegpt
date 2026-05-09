@@ -278,31 +278,9 @@ function App(props) {
         });
     Router.navigate("Home");
   };
-  var useSelectedWineForEntry = function () {
-    if (typeof route !== "object") {
-      return ;
-    }
-    switch (route.TAG) {
-      case "NewEntry" :
-      case "EditEntry" :
-          break;
-      default:
-        return ;
-    }
-    var wineId = route._0;
-    var summary = Belt_Array.getBy(WineState.wines(wineStatus), (function (summary) {
-            return summary.wine.id === wineId;
-          }));
-    if (summary !== undefined) {
-      return setEntryForm(function (current) {
-                  return EntryState.useExistingWine(current, summary.wine);
-                });
-    }
-    
-  };
-  var useNewWineForEntry = function () {
+  var handleToggleDateMode = function (enabled) {
     setEntryForm(function (current) {
-          return EntryState.useNewWine(current);
+          return EntryState.toggleDateMode(current, enabled);
         });
   };
   var handleCreateWine = function () {
@@ -336,6 +314,26 @@ function App(props) {
     
   };
   var handleCreateEntry = function () {
+    var wineFromRoute;
+    var exit = 0;
+    if (typeof route !== "object") {
+      wineFromRoute = undefined;
+    } else {
+      switch (route.TAG) {
+        case "NewEntry" :
+        case "EditEntry" :
+            exit = 1;
+            break;
+        default:
+          wineFromRoute = undefined;
+      }
+    }
+    if (exit === 1) {
+      var wineId = route._0;
+      wineFromRoute = Belt_Array.getBy(WineState.wines(wineStatus), (function (summary) {
+              return summary.wine.id === wineId;
+            }));
+    }
     if (sessionToken === undefined) {
       return ;
     }
@@ -347,14 +345,17 @@ function App(props) {
     }
     switch (route.TAG) {
       case "NewEntry" :
+          if (wineFromRoute === undefined) {
+            return ;
+          }
           if (entryForm.isSubmitting) {
             return ;
           }
-          var wineId = route._0;
+          var wineId$1 = route._0;
           setEntryForm(function (current) {
                 return EntryState.startSubmitting(current);
               });
-          Js_promise2.$$catch(Js_promise2.then(EntryState.createEntry(sessionToken, defaultCollectionId, entryForm), (function (entry) {
+          Js_promise2.$$catch(Js_promise2.then(EntryState.createEntry(sessionToken, defaultCollectionId, wineFromRoute.wine, entryForm), (function (entry) {
                       Js_promise2.then(WineState.listWines(sessionToken, defaultCollectionId), (function (wines) {
                               setWineStatus(function (param) {
                                     return WineState.readyStatus(wines);
@@ -373,7 +374,7 @@ function App(props) {
                           });
                       Router.navigate({
                             TAG: "Wine",
-                            _0: wineId
+                            _0: wineId$1
                           });
                       return Promise.resolve();
                     })), (function (reason) {
@@ -384,14 +385,17 @@ function App(props) {
                 }));
           return ;
       case "EditEntry" :
+          if (wineFromRoute === undefined) {
+            return ;
+          }
           if (entryForm.isSubmitting) {
             return ;
           }
-          var wineId$1 = route._0;
+          var wineId$2 = route._0;
           setEntryForm(function (current) {
                 return EntryState.startSubmitting(current);
               });
-          Js_promise2.$$catch(Js_promise2.then(EntryState.updateEntry(sessionToken, defaultCollectionId, route._1, entryForm), (function (entry) {
+          Js_promise2.$$catch(Js_promise2.then(EntryState.updateEntry(sessionToken, defaultCollectionId, route._1, wineFromRoute.wine, entryForm), (function (entry) {
                       Js_promise2.then(WineState.listWines(sessionToken, defaultCollectionId), (function (wines) {
                               setWineStatus(function (param) {
                                     return WineState.readyStatus(wines);
@@ -410,7 +414,7 @@ function App(props) {
                           });
                       Router.navigate({
                             TAG: "Wine",
-                            _0: wineId$1
+                            _0: wineId$2
                           });
                       return Promise.resolve();
                     })), (function (reason) {
@@ -447,8 +451,7 @@ function App(props) {
                                       entryStatus: match$11[0],
                                       entryForm: entryForm,
                                       onEntryFormChange: updateEntryForm,
-                                      onUseSelectedWineForEntry: useSelectedWineForEntry,
-                                      onUseNewWineForEntry: useNewWineForEntry,
+                                      onToggleDateMode: handleToggleDateMode,
                                       onWineFormChange: updateWineForm,
                                       onCreateWine: handleCreateWine,
                                       onCreateEntry: handleCreateEntry,
@@ -474,7 +477,7 @@ function App(props) {
                                       error: Js_null_undefined.fromOption(match$6[0])
                                     })
                             ),
-                          className: "mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center"
+                          className: "mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-start justify-center"
                         })
                   }),
               className: "min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950"

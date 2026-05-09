@@ -1,10 +1,6 @@
 type entry = EntryModel.entry
 type wine = EntryModel.wine
 
-type wineSource =
-  | ExistingWine(wine)
-  | NewWine
-
 type status =
   | Idle
   | Loading
@@ -12,15 +8,8 @@ type status =
   | Error(string)
 
 type form = {
-  wineSource: wineSource,
-  wineName: string,
-  producer: string,
-  style: string,
-  grape: string,
-  region: string,
-  country: string,
-  vintage: string,
-  consumedAt: string,
+  dateMode: bool,
+  consumedAt: option<string>,
   venueName: string,
   locationText: string,
   pairingNotes: string,
@@ -37,6 +26,9 @@ type error
 external makeError: string => error = "Error"
 
 type date
+
+@new
+external makeDateNow: unit => date = "Date"
 
 @new
 external makeDate: string => date = "Date"
@@ -56,12 +48,6 @@ external getMonth: date => int = "getMonth"
 @send
 external getDate: date => int = "getDate"
 
-@send
-external getHours: date => int = "getHours"
-
-@send
-external getMinutes: date => int = "getMinutes"
-
 let initialStatus = () => Idle
 let loadingStatus = () => Loading
 let emptyStatus = () => Ready([])
@@ -69,15 +55,8 @@ let readyStatus = entries => Ready(entries)
 let errorStatus = message => Error(message)
 
 let initialForm = {
-  wineSource: NewWine,
-  wineName: "",
-  producer: "",
-  style: "",
-  grape: "",
-  region: "",
-  country: "",
-  vintage: "",
-  consumedAt: "",
+  dateMode: false,
+  consumedAt: None,
   venueName: "",
   locationText: "",
   pairingNotes: "",
@@ -88,16 +67,49 @@ let initialForm = {
   success: None,
 }
 
+let padTwo = value => {
+  let text = value->Belt.Int.toString
+  if value < 10 {"0" ++ text} else {text}
+}
+
+let todayDateString = () => {
+  let now = makeDateNow()
+  now->getFullYear->Belt.Int.toString ++
+  "-" ++
+  (now->getMonth + 1 |> padTwo) ++
+  "-" ++
+  (now->getDate |> padTwo)
+}
+
+let consumedAtToDateValue = consumedAt =>
+  switch consumedAt {
+  | Some(value) =>
+    let date = makeDate(value)
+    if Js.Float.isNaN(date->getTime) {
+      None
+    } else {
+      Some(
+        date->getFullYear->Belt.Int.toString ++
+        "-" ++
+        (date->getMonth + 1 |> padTwo) ++
+        "-" ++
+        (date->getDate |> padTwo),
+      )
+    }
+  | None => None
+  }
+
 let updateForm = (form, field, value) =>
   switch field {
-  | "wineName" => {...form, wineName: value, error: None, success: None}
-  | "producer" => {...form, producer: value, error: None, success: None}
-  | "style" => {...form, style: value, error: None, success: None}
-  | "grape" => {...form, grape: value, error: None, success: None}
-  | "region" => {...form, region: value, error: None, success: None}
-  | "country" => {...form, country: value, error: None, success: None}
-  | "vintage" => {...form, vintage: value, error: None, success: None}
-  | "consumedAt" => {...form, consumedAt: value, error: None, success: None}
+  | "consumedAt" => {
+      ...form,
+      consumedAt: switch value {
+      | "" => None
+      | text => Some(text)
+      },
+      error: None,
+      success: None,
+    }
   | "venueName" => {...form, venueName: value, error: None, success: None}
   | "locationText" => {...form, locationText: value, error: None, success: None}
   | "pairingNotes" => {...form, pairingNotes: value, error: None, success: None}
@@ -106,133 +118,46 @@ let updateForm = (form, field, value) =>
   | _ => form
   }
 
+let toggleDateMode = (form, enabled) =>
+  if enabled {
+    {
+      ...form,
+      dateMode: true,
+      consumedAt: switch form.consumedAt {
+      | Some(_) as existing => existing
+      | None => Some(todayDateString())
+      },
+      error: None,
+      success: None,
+    }
+  } else {
+    {...form, dateMode: false, consumedAt: None, error: None, success: None}
+  }
+
 let startSubmitting = form => {...form, isSubmitting: true, error: None, success: None}
 let failForm = (form, message) => {...form, isSubmitting: false, error: Some(message), success: None}
 let succeedForm = () => {...initialForm, success: Some("Entry saved.")}
 
-let padTwo = value => {
-  let text = value->Belt.Int.toString
-  if value < 10 {"0" ++ text} else {text}
-}
-
-let toDateTimeLocalValue = consumedAt => {
-  let date = makeDate(consumedAt)
-
-  if Js.Float.isNaN(date->getTime) {
-    ""
-  } else {
-    date->getFullYear->Belt.Int.toString ++
-    "-" ++
-    (date->getMonth + 1 |> padTwo) ++
-    "-" ++
-    (date->getDate |> padTwo) ++
-    "T" ++
-    (date->getHours |> padTwo) ++
-    ":" ++
-    (date->getMinutes |> padTwo)
-  }
-}
-
 let formFromEntry = (entry: entry) => {
-  wineSource: NewWine,
-  wineName: entry.wine.name,
-  producer: entry.wine.producer->Belt.Option.getWithDefault(""),
-  style: entry.wine.style->Belt.Option.getWithDefault(""),
-  grape: entry.wine.grape->Belt.Option.getWithDefault(""),
-  region: entry.wine.region->Belt.Option.getWithDefault(""),
-  country: entry.wine.country->Belt.Option.getWithDefault(""),
-  vintage: entry.wine.vintage->Belt.Option.map(Belt.Int.toString)->Belt.Option.getWithDefault(""),
-  consumedAt: entry.consumedAt->toDateTimeLocalValue,
-  venueName: entry.venueName->Belt.Option.getWithDefault(""),
-  locationText: entry.locationText->Belt.Option.getWithDefault(""),
-  pairingNotes: entry.pairingNotes->Belt.Option.getWithDefault(""),
-  tastingNotes: entry.tastingNotes->Belt.Option.getWithDefault(""),
-  rating: entry.rating->Belt.Option.map(Belt.Int.toString)->Belt.Option.getWithDefault(""),
-  isSubmitting: false,
-  error: None,
-  success: None,
-}
-
-let formFromWineSummary = (summary: WineModel.summary) => {
-  wineSource: ExistingWine(summary.wine),
-  wineName: summary.wine.name,
-  producer: summary.wine.producer->Belt.Option.getWithDefault(""),
-  style: summary.wine.style->Belt.Option.getWithDefault(""),
-  grape: summary.wine.grape->Belt.Option.getWithDefault(""),
-  region: summary.wine.region->Belt.Option.getWithDefault(""),
-  country: summary.wine.country->Belt.Option.getWithDefault(""),
-  vintage: summary.wine.vintage->Belt.Option.map(Belt.Int.toString)->Belt.Option.getWithDefault(""),
-  consumedAt: "",
-  venueName: "",
-  locationText: "",
-  pairingNotes: "",
-  tastingNotes: "",
-  rating: "",
-  isSubmitting: false,
-  error: None,
-  success: None,
-}
-
-let useNewWine = form => {
-  wineSource: NewWine,
-  wineName: "",
-  producer: "",
-  style: "",
-  grape: "",
-  region: "",
-  country: "",
-  vintage: "",
-  consumedAt: form.consumedAt,
-  venueName: form.venueName,
-  locationText: form.locationText,
-  pairingNotes: form.pairingNotes,
-  tastingNotes: form.tastingNotes,
-  rating: form.rating,
-  isSubmitting: false,
-  error: None,
-  success: None,
-}
-
-let useExistingWine = (form, wine: wine) => {
-  wineSource: ExistingWine(wine),
-  wineName: wine.name,
-  producer: wine.producer->Belt.Option.getWithDefault(""),
-  style: wine.style->Belt.Option.getWithDefault(""),
-  grape: wine.grape->Belt.Option.getWithDefault(""),
-  region: wine.region->Belt.Option.getWithDefault(""),
-  country: wine.country->Belt.Option.getWithDefault(""),
-  vintage: wine.vintage->Belt.Option.map(Belt.Int.toString)->Belt.Option.getWithDefault(""),
-  consumedAt: form.consumedAt,
-  venueName: form.venueName,
-  locationText: form.locationText,
-  pairingNotes: form.pairingNotes,
-  tastingNotes: form.tastingNotes,
-  rating: form.rating,
-  isSubmitting: false,
-  error: None,
-  success: None,
+  let dateValue = consumedAtToDateValue(entry.consumedAt)
+  {
+    dateMode: Belt.Option.isSome(dateValue),
+    consumedAt: dateValue,
+    venueName: entry.venueName->Belt.Option.getWithDefault(""),
+    locationText: entry.locationText->Belt.Option.getWithDefault(""),
+    pairingNotes: entry.pairingNotes->Belt.Option.getWithDefault(""),
+    tastingNotes: entry.tastingNotes->Belt.Option.getWithDefault(""),
+    rating: entry.rating->Belt.Option.map(Belt.Int.toString)->Belt.Option.getWithDefault(""),
+    isSubmitting: false,
+    error: None,
+    success: None,
+  }
 }
 
 let entries = status =>
   switch status {
   | Ready(entries) => entries
   | Idle | Loading | Error(_) => []
-  }
-
-let selectedEntry = (entries: array<entry>, selectedEntryId) =>
-  switch selectedEntryId {
-  | Some(selectedId) => entries->Belt.Array.getBy(entry => entry.id == selectedId)
-  | None => None
-  }
-
-let resolveSelectedEntryId = (entries: array<entry>, selectedEntryId) =>
-  if Belt.Array.length(entries) == 0 {
-    None
-  } else {
-    switch selectedEntry(entries, selectedEntryId) {
-    | Some(_) => selectedEntryId
-    | None => Some(entries[0].id)
-    }
   }
 
 let appendEntry = (entries: array<entry>, entry: entry) => Belt.Array.concat([entry], entries)
@@ -262,17 +187,14 @@ let intOption = (value, ~errorCode) =>
     }
   }
 
-let normalizeConsumedAt = value =>
-  switch value->String.trim {
-  | "" => Js.Promise2.reject(makeError("invalid_consumed_at")->Obj.magic)
-  | trimmed =>
-    let date = makeDate(trimmed)
-
-    if Js.Float.isNaN(date->getTime) {
-      Js.Promise2.reject(makeError("invalid_consumed_at")->Obj.magic)
-    } else {
-      Js.Promise2.resolve(date->toISOString)
+let consumedAtForSubmit = form =>
+  if form.dateMode {
+    switch form.consumedAt {
+    | Some(date) when date->String.trim != "" => Some(date->String.trim ++ "T00:00:00")
+    | _ => None
     }
+  } else {
+    None
   }
 
 let listEntries = (token, collectionId) =>
@@ -285,109 +207,73 @@ let listEntries = (token, collectionId) =>
       },
   )
 
-let createEntry = (token, collectionId, form: form) =>
-  Js.Promise2.then(normalizeConsumedAt(form.consumedAt), consumedAt =>
-    Js.Promise2.then(intOption(form.vintage, ~errorCode="invalid_wine_vintage"), vintage =>
-      Js.Promise2.then(intOption(form.rating, ~errorCode="invalid_rating"), rating =>
-        {
-          let (producer, name, vintage, style, grape, region, country) =
-            switch form.wineSource {
-            | ExistingWine(wine) => (
-                wine.producer,
-                wine.name,
-                wine.vintage,
-                wine.style,
-                wine.grape,
-                wine.region,
-                wine.country,
-              )
-            | NewWine => (
-                stringOption(form.producer),
-                form.wineName,
-                vintage,
-                stringOption(form.style),
-                stringOption(form.grape),
-                stringOption(form.region),
-                stringOption(form.country),
-              )
-            }
-          let venueName = stringOption(form.venueName)
-          let locationText = stringOption(form.locationText)
-          let pairingNotes = stringOption(form.pairingNotes)
-          let tastingNotes = stringOption(form.tastingNotes)
+let createEntry = (token, collectionId, wine: wine, form: form) =>
+  Js.Promise2.then(intOption(form.rating, ~errorCode="invalid_rating"), rating => {
+    let consumedAt = consumedAtForSubmit(form)
+    let venueName = stringOption(form.venueName)
+    let locationText = stringOption(form.locationText)
+    let pairingNotes = stringOption(form.pairingNotes)
+    let tastingNotes = stringOption(form.tastingNotes)
 
-          Js.Promise2.then(
-            EntryApi.createEntry(
-              token,
-              collectionId,
-              ~producer,
-              ~name,
-              ~vintage,
-              ~style?,
-              ~grape?,
-              ~region?,
-              ~country?,
-              ~consumedAt,
-              ~venueName,
-              ~locationText,
-              ~pairingNotes,
-              ~tastingNotes,
-              ~rating,
-              (),
-            ),
-            response =>
-              switch response->ResponseDecoder.parse->Belt.Option.flatMap(ResponseDecoder.entry) {
-              | Some(entry) => Js.Promise2.resolve(entry)
-              | None => Js.Promise2.reject(ApiClient.invalidResponse())
-              },
-          )
-        }
-      )
+    Js.Promise2.then(
+      EntryApi.createEntry(
+        token,
+        collectionId,
+        ~producer=wine.producer,
+        ~name=wine.name,
+        ~vintage=wine.vintage,
+        ~style=?wine.style,
+        ~grape=?wine.grape,
+        ~region=?wine.region,
+        ~country=?wine.country,
+        ~consumedAt,
+        ~venueName,
+        ~locationText,
+        ~pairingNotes,
+        ~tastingNotes,
+        ~rating,
+        (),
+      ),
+      response =>
+        switch response->ResponseDecoder.parse->Belt.Option.flatMap(ResponseDecoder.entry) {
+        | Some(entry) => Js.Promise2.resolve(entry)
+        | None => Js.Promise2.reject(ApiClient.invalidResponse())
+        },
     )
-  )
+  })
 
-let updateEntry = (token, collectionId, entryId, form: form) =>
-  Js.Promise2.then(normalizeConsumedAt(form.consumedAt), consumedAt =>
-    Js.Promise2.then(intOption(form.vintage, ~errorCode="invalid_wine_vintage"), vintage =>
-      Js.Promise2.then(intOption(form.rating, ~errorCode="invalid_rating"), rating =>
-        {
-          let producer = stringOption(form.producer)
-          let style = stringOption(form.style)
-          let grape = stringOption(form.grape)
-          let region = stringOption(form.region)
-          let country = stringOption(form.country)
-          let venueName = stringOption(form.venueName)
-          let locationText = stringOption(form.locationText)
-          let pairingNotes = stringOption(form.pairingNotes)
-          let tastingNotes = stringOption(form.tastingNotes)
+let updateEntry = (token, collectionId, entryId, wine: wine, form: form) =>
+  Js.Promise2.then(intOption(form.rating, ~errorCode="invalid_rating"), rating => {
+    let consumedAt = consumedAtForSubmit(form)
+    let venueName = stringOption(form.venueName)
+    let locationText = stringOption(form.locationText)
+    let pairingNotes = stringOption(form.pairingNotes)
+    let tastingNotes = stringOption(form.tastingNotes)
 
-          Js.Promise2.then(
-            EntryApi.updateEntry(
-              token,
-              collectionId,
-              entryId,
-              ~producer,
-              ~name=form.wineName,
-              ~vintage,
-              ~style?,
-              ~grape?,
-              ~region?,
-              ~country?,
-              ~consumedAt,
-              ~venueName,
-              ~locationText,
-              ~pairingNotes,
-              ~tastingNotes,
-              ~rating,
-              (),
-            ),
-            response =>
-              switch response->ResponseDecoder.parse->Belt.Option.flatMap(ResponseDecoder.entry) {
-              | Some(entry) => Js.Promise2.resolve(entry)
-              | None => Js.Promise2.reject(ApiClient.invalidResponse())
-              },
-          )
-        }
-      )
+    Js.Promise2.then(
+      EntryApi.updateEntry(
+        token,
+        collectionId,
+        entryId,
+        ~producer=wine.producer,
+        ~name=wine.name,
+        ~vintage=wine.vintage,
+        ~style=?wine.style,
+        ~grape=?wine.grape,
+        ~region=?wine.region,
+        ~country=?wine.country,
+        ~consumedAt,
+        ~venueName,
+        ~locationText,
+        ~pairingNotes,
+        ~tastingNotes,
+        ~rating,
+        (),
+      ),
+      response =>
+        switch response->ResponseDecoder.parse->Belt.Option.flatMap(ResponseDecoder.entry) {
+        | Some(entry) => Js.Promise2.resolve(entry)
+        | None => Js.Promise2.reject(ApiClient.invalidResponse())
+        },
     )
-  )
+  })

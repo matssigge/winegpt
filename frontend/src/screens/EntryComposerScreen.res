@@ -1,31 +1,22 @@
 type mode =
-  | New(int) // wineId (fixed by route)
-  | Edit(int, int) // wineId, entryId
+  | New(int)
+  | Edit(int, int)
 
 @react.component
 let make = (
   ~mode: mode,
-  ~wineStatus: WineState.status,
   ~entryForm: EntryState.form,
   ~onEntryFormChange: (. string, string) => unit,
-  ~onUseSelectedWineForEntry: unit => unit,
-  ~onUseNewWineForEntry: unit => unit,
+  ~onToggleDateMode: bool => unit,
   ~onSubmit: unit => unit,
   ~onClose: unit => unit,
 ) => {
-  let wineId =
-    switch mode {
-    | New(id) => id
-    | Edit(id, _) => id
-    }
-  let selectedWine =
-    WineState.wines(wineStatus)->Belt.Array.getBy(summary => summary.wine.id == wineId)
+  let t = I18nContext.useT()
   let composerMode =
     switch mode {
     | New(_) => EntryComposer.Create
     | Edit(_, _) => EntryComposer.Edit
     }
-  let t = I18nContext.useT()
   let title =
     switch mode {
     | New(_) => t.entryComposerNewTitle
@@ -48,10 +39,8 @@ let make = (
     <EntryComposer
       mode=composerMode
       entryForm
-      selectedWine
       onEntryFormChange
-      onUseSelectedWine=onUseSelectedWineForEntry
-      onUseNewWine=onUseNewWineForEntry
+      onToggleDateMode
       onSubmit
     />
   </section>

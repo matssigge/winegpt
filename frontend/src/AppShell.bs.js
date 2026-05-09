@@ -4,6 +4,8 @@ import * as React from "react";
 import * as Router from "./router/Router.bs.js";
 import * as Caml_obj from "rescript/lib/es6/caml_obj.js";
 import * as TextField from "./ui/TextField.bs.js";
+import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
+import * as Caml_option from "rescript/lib/es6/caml_option.js";
 import * as I18nContext from "./i18n/I18nContext.bs.js";
 import * as WineListScreen from "./screens/WineListScreen.bs.js";
 import * as WineDetailScreen from "./screens/WineDetailScreen.bs.js";
@@ -15,8 +17,7 @@ function AppShell(props) {
   var onLogout = props.onLogout;
   var onSelectOccasionFilter = props.onSelectOccasionFilter;
   var onCreateEntry = props.onCreateEntry;
-  var onUseNewWineForEntry = props.onUseNewWineForEntry;
-  var onUseSelectedWineForEntry = props.onUseSelectedWineForEntry;
+  var onToggleDateMode = props.onToggleDateMode;
   var onEntryFormChange = props.onEntryFormChange;
   var entryForm = props.entryForm;
   var wineQuery = props.wineQuery;
@@ -27,6 +28,7 @@ function AppShell(props) {
         return false;
       });
   var setIsMenuOpen = match[1];
+  var isMenuOpen = match[0];
   var match$1 = React.useState(function () {
         return false;
       });
@@ -48,6 +50,34 @@ function AppShell(props) {
                 return false;
               });
         }), [route]);
+  var menuRef = React.useRef(null);
+  var menuButtonRef = React.useRef(null);
+  React.useEffect((function () {
+          if (!isMenuOpen) {
+            return ;
+          }
+          var handler = function ($$event) {
+            var target = $$event.target;
+            var menuNode = menuRef.current;
+            var buttonNode = menuButtonRef.current;
+            var insideMenu = Belt_Option.mapWithDefault((menuNode == null) ? undefined : Caml_option.some(menuNode), false, (function (n) {
+                    return n.contains(target);
+                  }));
+            var onButton = Belt_Option.mapWithDefault((buttonNode == null) ? undefined : Caml_option.some(buttonNode), false, (function (n) {
+                    return n.contains(target);
+                  }));
+            if (!insideMenu && !onButton) {
+              return setIsMenuOpen(function (param) {
+                          return false;
+                        });
+            }
+            
+          };
+          document.addEventListener("mousedown", handler);
+          return (function () {
+                    document.removeEventListener("mousedown", handler);
+                  });
+        }), [isMenuOpen]);
   var t = I18nContext.useT();
   var locale = I18nContext.useLocale();
   var override = I18nContext.useOverride();
@@ -97,6 +127,7 @@ function AppShell(props) {
                         }),
                     JsxRuntime.jsx("button", {
                           children: "≡",
+                          ref: Caml_option.some(menuButtonRef),
                           "aria-label": t.appMenuAriaOpen,
                           className: "flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700",
                           type: "button",
@@ -188,7 +219,7 @@ function AppShell(props) {
   } else {
     filterPanel = null;
   }
-  var menu = match[0] ? JsxRuntime.jsxs("div", {
+  var menu = isMenuOpen ? JsxRuntime.jsxs("div", {
           children: [
             JsxRuntime.jsxs("div", {
                   children: [
@@ -275,6 +306,7 @@ function AppShell(props) {
                     })
                 })
           ],
+          ref: Caml_option.some(menuRef),
           className: "absolute right-6 top-20 z-20 w-64 rounded-2xl border border-stone-200 bg-white p-2 shadow-xl"
         }) : null;
   var body;
@@ -336,11 +368,9 @@ function AppShell(props) {
                   TAG: "New",
                   _0: wineId$1
                 },
-                wineStatus: wineStatus,
                 entryForm: entryForm,
                 onEntryFormChange: onEntryFormChange,
-                onUseSelectedWineForEntry: onUseSelectedWineForEntry,
-                onUseNewWineForEntry: onUseNewWineForEntry,
+                onToggleDateMode: onToggleDateMode,
                 onSubmit: onCreateEntry,
                 onClose: (function () {
                     Router.navigate({
@@ -358,11 +388,9 @@ function AppShell(props) {
                   _0: wineId$2,
                   _1: route._1
                 },
-                wineStatus: wineStatus,
                 entryForm: entryForm,
                 onEntryFormChange: onEntryFormChange,
-                onUseSelectedWineForEntry: onUseSelectedWineForEntry,
-                onUseNewWineForEntry: onUseNewWineForEntry,
+                onToggleDateMode: onToggleDateMode,
                 onSubmit: onCreateEntry,
                 onClose: (function () {
                     Router.navigate({

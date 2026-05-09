@@ -14,7 +14,7 @@ type entry = {
   collectionId: int,
   wine: wine,
   createdByUserId: int,
-  consumedAt: string,
+  consumedAt: option<string>,
   venueName: option<string>,
   locationText: option<string>,
   pairingNotes: option<string>,

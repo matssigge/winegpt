@@ -121,9 +121,13 @@ let make = (
                  | None => React.null
                  }}
                </div>
-               <p className={if isSelected { "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-300" } else { "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-500" }}>
-                 {React.string(entry.consumedAt)}
-               </p>
+               {switch entry.consumedAt {
+               | Some(value) =>
+                 <p className={if isSelected { "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-300" } else { "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-500" }}>
+                   {React.string(value->Js.String2.slice(~from=0, ~to_=10))}
+                 </p>
+               | None => React.null
+               }}
                {switch entry.tastingNotes {
                | Some(notes) =>
                  <p className={if isSelected { "mt-3 text-sm leading-6 text-stone-100" } else { "mt-3 text-sm leading-6 text-stone-700" }}>

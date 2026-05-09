@@ -154,18 +154,8 @@ let make = () => {
     Router.navigate(Home)
   }
 
-  let useSelectedWineForEntry = () =>
-    switch route {
-    | Router.NewEntry(wineId) | Router.EditEntry(wineId, _) =>
-      switch WineState.wines(wineStatus)->Belt.Array.getBy(summary => summary.wine.id == wineId) {
-      | Some(summary) => setEntryForm(current => EntryState.useExistingWine(current, summary.wine))
-      | None => ()
-      }
-    | _ => ()
-    }
-
-  let useNewWineForEntry = () =>
-    setEntryForm(current => EntryState.useNewWine(current))
+  let handleToggleDateMode = enabled =>
+    setEntryForm(current => EntryState.toggleDateMode(current, enabled))
 
   let handleCreateWine = () =>
     switch (sessionToken, defaultCollectionId) {
@@ -191,11 +181,18 @@ let make = () => {
     | _ => ()
     }
 
-  let handleCreateEntry = () =>
-    switch (sessionToken, defaultCollectionId, route) {
-    | (Some(token), Some(collectionId), Router.EditEntry(wineId, entryId)) if !entryForm.isSubmitting =>
+  let handleCreateEntry = () => {
+    let wineFromRoute =
+      switch route {
+      | Router.NewEntry(wineId) | Router.EditEntry(wineId, _) =>
+        WineState.wines(wineStatus)->Belt.Array.getBy(summary => summary.wine.id == wineId)
+      | _ => None
+      }
+    switch (sessionToken, defaultCollectionId, route, wineFromRoute) {
+    | (Some(token), Some(collectionId), Router.EditEntry(wineId, entryId), Some(summary))
+      if !entryForm.isSubmitting =>
       setEntryForm(current => EntryState.startSubmitting(current))
-      EntryState.updateEntry(token, collectionId, entryId, entryForm)
+      EntryState.updateEntry(token, collectionId, entryId, summary.wine, entryForm)
       ->Js.Promise2.then(entry => {
         WineState.listWines(token, collectionId)
         ->Js.Promise2.then(wines => {
@@ -219,9 +216,10 @@ let make = () => {
         Js.Promise2.resolve()
       })
       ->ignore
-    | (Some(token), Some(collectionId), Router.NewEntry(wineId)) if !entryForm.isSubmitting =>
+    | (Some(token), Some(collectionId), Router.NewEntry(wineId), Some(summary))
+      if !entryForm.isSubmitting =>
       setEntryForm(current => EntryState.startSubmitting(current))
-      EntryState.createEntry(token, collectionId, entryForm)
+      EntryState.createEntry(token, collectionId, summary.wine, entryForm)
       ->Js.Promise2.then(entry => {
         WineState.listWines(token, collectionId)
         ->Js.Promise2.then(wines => {
@@ -247,6 +245,7 @@ let make = () => {
       ->ignore
     | _ => ()
     }
+  }
 
   // Slice 1 has no UI affordance to edit a specific occasion (deferred to a later slice).
   // The EditEntry route is reachable only by typing the URL; a no-op handler keeps the
@@ -257,7 +256,7 @@ let make = () => {
 
   <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950">
     <I18nContext.Provider value=i18nValue>
-      <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center">
+      <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-start justify-center">
         {if isInitializing {
            <section className="w-full max-w-md rounded-3xl border border-stone-900/10 bg-white/80 p-8 text-sm text-stone-600 shadow-xl backdrop-blur">
              {React.string(t.appCheckingSession)}
@@ -276,8 +275,7 @@ let make = () => {
                entryStatus
                entryForm
                onEntryFormChange=updateEntryForm
-               onUseSelectedWineForEntry=useSelectedWineForEntry
-               onUseNewWineForEntry=useNewWineForEntry
+               onToggleDateMode=handleToggleDateMode
                onWineFormChange=updateWineForm
                onCreateWine=handleCreateWine
                onCreateEntry=handleCreateEntry

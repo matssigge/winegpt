@@ -86,7 +86,11 @@ let make = (~entry: option<EntryModel.entry>, ~onEdit: unit => unit) => {
             {React.string(t.entryDetailOccasionLabel)}
           </h4>
           <dl className="mt-4 grid gap-4">
-            {detailLine(~label=t.entryComposerConsumedAtLabel, ~value=entry.consumedAt)}
+            {switch entry.consumedAt {
+            | Some(value) =>
+              detailLine(~label=t.entryComposerConsumedAtLabel, ~value=value->Js.String2.slice(~from=0, ~to_=10))
+            | None => React.null
+            }}
             {optionalDetailLine(~label=t.entryComposerVenueLabel, ~value=entry.venueName)->Belt.Option.getWithDefault(React.null)}
             {optionalDetailLine(~label=t.entryComposerLocationLabel, ~value=entry.locationText)->Belt.Option.getWithDefault(React.null)}
             {optionalDetailLine(~label=t.entryComposerPairingNotesLabel, ~value=entry.pairingNotes)->Belt.Option.getWithDefault(React.null)}

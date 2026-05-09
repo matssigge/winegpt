@@ -171,7 +171,7 @@ let entry = json =>
       object_->intField("collection_id"),
       object_->field("wine")->Belt.Option.flatMap(wine),
       object_->intField("created_by_user_id"),
-      object_->stringField("consumed_at"),
+      object_->optionalStringField("consumed_at"),
       object_->optionalStringField("venue_name"),
       object_->optionalStringField("location_text"),
       object_->optionalStringField("pairing_notes"),

@@ -7,6 +7,30 @@ function stringify(value) {
   return Belt_Option.getExn(JSON.stringify(value));
 }
 
+function buildEntryBody(wine, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating) {
+  var payload = {};
+  payload["wine"] = wine;
+  payload["consumed_at"] = Belt_Option.mapWithDefault(consumedAt, null, (function (prim) {
+          return prim;
+        }));
+  payload["venue_name"] = Belt_Option.mapWithDefault(venueName, null, (function (prim) {
+          return prim;
+        }));
+  payload["location_text"] = Belt_Option.mapWithDefault(locationText, null, (function (prim) {
+          return prim;
+        }));
+  payload["pairing_notes"] = Belt_Option.mapWithDefault(pairingNotes, null, (function (prim) {
+          return prim;
+        }));
+  payload["tasting_notes"] = Belt_Option.mapWithDefault(tastingNotes, null, (function (prim) {
+          return prim;
+        }));
+  payload["rating"] = Belt_Option.mapWithDefault(rating, null, (function (n) {
+          return n;
+        }));
+  return Belt_Option.getExn(JSON.stringify(payload));
+}
+
 function listEntries(token, collectionId) {
   return ApiClient.request("/api/collections/" + String(collectionId) + "/entries", {
               headers: ApiClient.authHeaders(token, {})
@@ -17,23 +41,15 @@ function createEntry(token, collectionId, producer, name, vintage, style, grape,
   return ApiClient.request("/api/collections/" + String(collectionId) + "/entries", {
               method: "POST",
               headers: ApiClient.authHeaders(token, ApiClient.jsonHeaders),
-              body: Belt_Option.getExn(JSON.stringify({
-                        wine: {
-                          producer: producer,
-                          name: name,
-                          vintage: vintage,
-                          style: style,
-                          grape: grape,
-                          region: region,
-                          country: country
-                        },
-                        consumed_at: consumedAt,
-                        venue_name: venueName,
-                        location_text: locationText,
-                        pairing_notes: pairingNotes,
-                        tasting_notes: tastingNotes,
-                        rating: rating
-                      }))
+              body: buildEntryBody({
+                    producer: producer,
+                    name: name,
+                    vintage: vintage,
+                    style: style,
+                    grape: grape,
+                    region: region,
+                    country: country
+                  }, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating)
             });
 }
 
@@ -41,28 +57,21 @@ function updateEntry(token, collectionId, entryId, producer, name, vintage, styl
   return ApiClient.request("/api/collections/" + String(collectionId) + "/entries/" + String(entryId), {
               method: "PATCH",
               headers: ApiClient.authHeaders(token, ApiClient.jsonHeaders),
-              body: Belt_Option.getExn(JSON.stringify({
-                        wine: {
-                          producer: producer,
-                          name: name,
-                          vintage: vintage,
-                          style: style,
-                          grape: grape,
-                          region: region,
-                          country: country
-                        },
-                        consumed_at: consumedAt,
-                        venue_name: venueName,
-                        location_text: locationText,
-                        pairing_notes: pairingNotes,
-                        tasting_notes: tastingNotes,
-                        rating: rating
-                      }))
+              body: buildEntryBody({
+                    producer: producer,
+                    name: name,
+                    vintage: vintage,
+                    style: style,
+                    grape: grape,
+                    region: region,
+                    country: country
+                  }, consumedAt, venueName, locationText, pairingNotes, tastingNotes, rating)
             });
 }
 
 export {
   stringify ,
+  buildEntryBody ,
   listEntries ,
   createEntry ,
   updateEntry ,

@@ -61,6 +61,7 @@ function EntryDetail(props) {
               });
   }
   var rating = entry.rating;
+  var value = entry.consumedAt;
   return JsxRuntime.jsxs("section", {
               children: [
                 JsxRuntime.jsxs("div", {
@@ -130,7 +131,7 @@ function EntryDetail(props) {
                                     }),
                                 JsxRuntime.jsxs("dl", {
                                       children: [
-                                        detailLine(t.entryComposerConsumedAtLabel, entry.consumedAt),
+                                        value !== undefined ? detailLine(t.entryComposerConsumedAtLabel, value.slice(0, 10)) : null,
                                         Belt_Option.getWithDefault(optionalDetailLine(t.entryComposerVenueLabel, entry.venueName), null),
                                         Belt_Option.getWithDefault(optionalDetailLine(t.entryComposerLocationLabel, entry.locationText), null),
                                         Belt_Option.getWithDefault(optionalDetailLine(t.entryComposerPairingNotesLabel, entry.pairingNotes), null),
