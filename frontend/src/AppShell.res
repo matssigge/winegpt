@@ -289,7 +289,7 @@ let make = (
   }
 
   <section
-    className="relative w-full max-w-3xl bg-white min-h-screen px-4 py-4 md:min-h-0 md:rounded-3xl md:border md:border-stone-900/10 md:bg-white/80 md:p-10 md:shadow-xl md:backdrop-blur">
+    className="relative w-full max-w-3xl px-4 py-4 md:rounded-3xl md:border md:border-stone-900/10 md:bg-white/80 md:p-10 md:shadow-xl md:backdrop-blur">
     {header}
     {menu}
     {body}
