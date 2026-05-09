@@ -62,9 +62,13 @@ let optionalIntField = (object_, key) =>
 let user = json =>
   switch json->asObject {
   | Some(object_) =>
-    switch object_->stringField("email") {
-    | Some(email) => Some({email: email}: AuthSession.user)
-    | None => None
+    switch (
+      object_->stringField("email"),
+      object_->intField("default_collection_id"),
+    ) {
+    | (Some(email), Some(defaultCollectionId)) =>
+      Some({email: email, defaultCollectionId: defaultCollectionId}: AuthSession.user)
+    | _ => None
     }
   | None => None
   }

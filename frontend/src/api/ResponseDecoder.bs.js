@@ -82,10 +82,12 @@ function user(json) {
   if (object_ === undefined) {
     return ;
   }
-  var email = stringField(object_, "email");
-  if (email !== undefined) {
+  var match = stringField(object_, "email");
+  var match$1 = intField(object_, "default_collection_id");
+  if (match !== undefined && match$1 !== undefined) {
     return {
-            email: email
+            email: match,
+            defaultCollectionId: match$1
           };
   }
   

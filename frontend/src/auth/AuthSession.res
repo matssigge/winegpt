@@ -1,4 +1,7 @@
-type user = {email: string}
+type user = {
+  email: string,
+  defaultCollectionId: int,
+}
 
 type authPayload = {
   token: string,
