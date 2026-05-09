@@ -158,7 +158,7 @@ function EntryHistory(props) {
                                                           className: "flex items-start justify-between gap-4"
                                                         }),
                                                     value !== undefined ? JsxRuntime.jsx("p", {
-                                                            children: value.slice(0, 10),
+                                                            children: value,
                                                             className: isSelected ? "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-300" : "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-500"
                                                           }) : null,
                                                     notes !== undefined ? JsxRuntime.jsx("p", {

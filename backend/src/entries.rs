@@ -76,9 +76,9 @@ pub async fn create(
             tasting_notes,
             rating
          )
-         VALUES ($1, $2, $3, $4::timestamptz, $5, $6, $7, $8, $9)
+         VALUES ($1, $2, $3, $4::date, $5, $6, $7, $8, $9)
          RETURNING id, collection_id, created_by_user_id,
-                   to_char(consumed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS consumed_at,
+                   to_char(consumed_at, 'YYYY-MM-DD') AS consumed_at,
                    venue_name, location_text, pairing_notes, tasting_notes, rating",
     )
     .bind(collection_id)
@@ -136,7 +136,7 @@ pub async fn list_for_collection(
             wine_entries.id,
             wine_entries.collection_id,
             wine_entries.created_by_user_id,
-            to_char(wine_entries.consumed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS consumed_at,
+            to_char(wine_entries.consumed_at, 'YYYY-MM-DD') AS consumed_at,
             wine_entries.venue_name,
             wine_entries.location_text,
             wine_entries.pairing_notes,
@@ -192,7 +192,7 @@ pub async fn update(
     let row = sqlx::query(
         "UPDATE wine_entries
          SET wine_id = $1,
-             consumed_at = $2::timestamptz,
+             consumed_at = $2::date,
              venue_name = $3,
              location_text = $4,
              pairing_notes = $5,
@@ -200,7 +200,7 @@ pub async fn update(
              rating = $7
          WHERE id = $8 AND collection_id = $9
          RETURNING id, collection_id, created_by_user_id,
-                   to_char(consumed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS consumed_at,
+                   to_char(consumed_at, 'YYYY-MM-DD') AS consumed_at,
                    venue_name, location_text, pairing_notes, tasting_notes, rating",
     )
     .bind(wine.id)
@@ -353,7 +353,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
+                consumed_at: Some("2025-01-15".to_string()),
                 venue_name: Some("Home".to_string()),
                 location_text: Some("Stockholm".to_string()),
                 pairing_notes: Some("Roast chicken".to_string()),
@@ -401,7 +401,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
+                consumed_at: Some("2025-01-15".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -418,7 +418,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: Some("2025-01-18T19:30:00Z".to_string()),
+                consumed_at: Some("2025-01-18".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -446,7 +446,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
+                consumed_at: Some("2025-01-15".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -471,7 +471,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
+                consumed_at: Some("2025-01-15".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -548,7 +548,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
+                consumed_at: Some("2025-01-15".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -599,7 +599,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
+                consumed_at: Some("2025-01-15".to_string()),
                 venue_name: Some("Home".to_string()),
                 location_text: None,
                 pairing_notes: None,
@@ -616,7 +616,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Benje", Some(2023)),
-                consumed_at: Some("2025-01-20T19:30:00Z".to_string()),
+                consumed_at: Some("2025-01-20".to_string()),
                 venue_name: Some("Restaurant".to_string()),
                 location_text: None,
                 pairing_notes: None,
@@ -659,7 +659,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
+                consumed_at: Some("2025-01-15".to_string()),
                 venue_name: Some("Home".to_string()),
                 location_text: Some("Stockholm".to_string()),
                 pairing_notes: Some("Roast chicken".to_string()),
@@ -677,7 +677,7 @@ mod tests {
             entry.id,
             CreateEntryInput {
                 wine: sample_wine_input("Benje", Some(2023)),
-                consumed_at: Some("2025-01-18T18:15:00Z".to_string()),
+                consumed_at: Some("2025-01-18".to_string()),
                 venue_name: Some("Bar Central".to_string()),
                 location_text: Some("Madrid".to_string()),
                 pairing_notes: Some("Anchovies".to_string()),
@@ -690,7 +690,7 @@ mod tests {
 
         assert_eq!(updated.id, entry.id);
         assert_eq!(updated.wine.name, "Benje");
-        assert_eq!(updated.consumed_at.as_deref(), Some("2025-01-18T18:15:00Z"));
+        assert_eq!(updated.consumed_at.as_deref(), Some("2025-01-18"));
         assert_eq!(updated.venue_name.as_deref(), Some("Bar Central"));
         assert_eq!(updated.rating, Some(5));
         let collection_wine = sqlx::query(
@@ -719,7 +719,7 @@ mod tests {
             collection.id,
             CreateEntryInput {
                 wine: sample_wine_input("Taganan", Some(2022)),
-                consumed_at: Some("2025-01-15T19:30:00Z".to_string()),
+                consumed_at: Some("2025-01-15".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -737,7 +737,7 @@ mod tests {
             entry.id,
             CreateEntryInput {
                 wine: sample_wine_input("Benje", Some(2023)),
-                consumed_at: Some("2025-01-18T18:15:00Z".to_string()),
+                consumed_at: Some("2025-01-18".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,
@@ -763,7 +763,7 @@ mod tests {
             999_999,
             CreateEntryInput {
                 wine: sample_wine_input("Benje", Some(2023)),
-                consumed_at: Some("2025-01-18T18:15:00Z".to_string()),
+                consumed_at: Some("2025-01-18".to_string()),
                 venue_name: None,
                 location_text: None,
                 pairing_notes: None,

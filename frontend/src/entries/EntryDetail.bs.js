@@ -131,7 +131,7 @@ function EntryDetail(props) {
                                     }),
                                 JsxRuntime.jsxs("dl", {
                                       children: [
-                                        value !== undefined ? detailLine(t.entryComposerConsumedAtLabel, value.slice(0, 10)) : null,
+                                        value !== undefined ? detailLine(t.entryComposerConsumedAtLabel, value) : null,
                                         Belt_Option.getWithDefault(optionalDetailLine(t.entryComposerVenueLabel, entry.venueName), null),
                                         Belt_Option.getWithDefault(optionalDetailLine(t.entryComposerLocationLabel, entry.locationText), null),
                                         Belt_Option.getWithDefault(optionalDetailLine(t.entryComposerPairingNotesLabel, entry.pairingNotes), null),

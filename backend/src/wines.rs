@@ -141,10 +141,7 @@ pub async fn list_for_collection(
             wines.country AS wine_country,
             COUNT(wine_entries.id) AS entry_count,
             COALESCE(
-              to_char(
-                MAX(wine_entries.consumed_at) AT TIME ZONE 'UTC',
-                'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"'
-              ),
+              to_char(MAX(wine_entries.consumed_at), 'YYYY-MM-DD'),
               ''
             ) AS last_consumed_at
          FROM collection_wines
@@ -540,7 +537,7 @@ mod tests {
             "Taganan",
             Some("Listan Negro"),
             Some(2022),
-            "2025-01-15T19:30:00Z",
+            "2025-01-15",
         )
         .await;
         create_entry(
@@ -550,7 +547,7 @@ mod tests {
             "Taganan",
             Some("Listan Negro"),
             Some(2022),
-            "2025-01-18T19:30:00Z",
+            "2025-01-18",
         )
         .await;
         create_entry(
@@ -560,7 +557,7 @@ mod tests {
             "Punta de Flechas",
             Some("Malbec"),
             Some(2021),
-            "2025-01-17T19:30:00Z",
+            "2025-01-17",
         )
         .await;
 
@@ -572,7 +569,7 @@ mod tests {
         assert_eq!(wines[0].wine.name, "Taganan");
         assert_eq!(wines[0].wine.grape.as_deref(), Some("Listan Negro"));
         assert_eq!(wines[0].entry_count, 2);
-        assert_eq!(wines[0].last_consumed_at, "2025-01-18T19:30:00Z");
+        assert_eq!(wines[0].last_consumed_at, "2025-01-18");
         assert_eq!(wines[1].wine.name, "Punta de Flechas");
         assert_eq!(wines[1].entry_count, 1);
     }
@@ -602,7 +599,7 @@ mod tests {
             "Alpha",
             None,
             Some(2022),
-            "2025-01-15T19:30:00Z",
+            "2025-01-15",
         )
         .await;
         create_entry(
@@ -612,7 +609,7 @@ mod tests {
             "Bravo",
             None,
             Some(2021),
-            "2025-01-18T19:30:00Z",
+            "2025-01-18",
         )
         .await;
 

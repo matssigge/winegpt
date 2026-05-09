@@ -124,7 +124,7 @@ let make = (
                {switch entry.consumedAt {
                | Some(value) =>
                  <p className={if isSelected { "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-300" } else { "mt-3 text-xs font-medium uppercase tracking-[0.2em] text-stone-500" }}>
-                   {React.string(value->Js.String2.slice(~from=0, ~to_=10))}
+                   {React.string(value)}
                  </p>
                | None => React.null
                }}

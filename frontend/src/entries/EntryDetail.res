@@ -88,7 +88,7 @@ let make = (~entry: option<EntryModel.entry>, ~onEdit: unit => unit) => {
           <dl className="mt-4 grid gap-4">
             {switch entry.consumedAt {
             | Some(value) =>
-              detailLine(~label=t.entryComposerConsumedAtLabel, ~value=value->Js.String2.slice(~from=0, ~to_=10))
+              detailLine(~label=t.entryComposerConsumedAtLabel, ~value)
             | None => React.null
             }}
             {optionalDetailLine(~label=t.entryComposerVenueLabel, ~value=entry.venueName)->Belt.Option.getWithDefault(React.null)}

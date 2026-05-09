@@ -53,15 +53,7 @@ function todayDateString() {
 }
 
 function consumedAtToDateValue(consumedAt) {
-  if (consumedAt === undefined) {
-    return ;
-  }
-  var date = new Date(consumedAt);
-  if (Number.isNaN(date.getTime())) {
-    return ;
-  } else {
-    return String(date.getFullYear()) + "-" + padTwo(date.getMonth() + 1 | 0) + "-" + padTwo(date.getDate());
-  }
+  return consumedAt;
 }
 
 function updateForm(form, field, value) {
@@ -226,7 +218,7 @@ function succeedForm() {
 }
 
 function formFromEntry(entry) {
-  var dateValue = consumedAtToDateValue(entry.consumedAt);
+  var dateValue = entry.consumedAt;
   return {
           dateMode: Belt_Option.isSome(dateValue),
           consumedAt: dateValue,
@@ -303,7 +295,7 @@ function consumedAtForSubmit(form) {
   }
   var date = form.consumedAt;
   if (date !== undefined && $$String.trim(date) !== "") {
-    return $$String.trim(date) + "T00:00:00";
+    return $$String.trim(date);
   }
   
 }

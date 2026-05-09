@@ -30,15 +30,6 @@ type date
 @new
 external makeDateNow: unit => date = "Date"
 
-@new
-external makeDate: string => date = "Date"
-
-@send
-external getTime: date => float = "getTime"
-
-@send
-external toISOString: date => string = "toISOString"
-
 @send
 external getFullYear: date => int = "getFullYear"
 
@@ -81,23 +72,7 @@ let todayDateString = () => {
   (now->getDate |> padTwo)
 }
 
-let consumedAtToDateValue = consumedAt =>
-  switch consumedAt {
-  | Some(value) =>
-    let date = makeDate(value)
-    if Js.Float.isNaN(date->getTime) {
-      None
-    } else {
-      Some(
-        date->getFullYear->Belt.Int.toString ++
-        "-" ++
-        (date->getMonth + 1 |> padTwo) ++
-        "-" ++
-        (date->getDate |> padTwo),
-      )
-    }
-  | None => None
-  }
+let consumedAtToDateValue = consumedAt => consumedAt
 
 let updateForm = (form, field, value) =>
   switch field {
@@ -190,7 +165,7 @@ let intOption = (value, ~errorCode) =>
 let consumedAtForSubmit = form =>
   if form.dateMode {
     switch form.consumedAt {
-    | Some(date) when date->String.trim != "" => Some(date->String.trim ++ "T00:00:00")
+    | Some(date) when date->String.trim != "" => Some(date->String.trim)
     | _ => None
     }
   } else {
