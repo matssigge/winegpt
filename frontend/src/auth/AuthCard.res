@@ -16,18 +16,19 @@ let make = (
   ~error: Js.Nullable.t<string>,
 ) => {
   let isRegister = AuthForm.isRegisterMode(mode)
+  let t = I18nContext.useT()
 
   <section className="w-full max-w-md rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_24px_80px_rgba(81,46,23,0.12)] backdrop-blur">
-    <p className="mb-3 font-mono text-xs uppercase tracking-[0.35em] text-stone-600"> {React.string("Wine")} </p>
+    <p className="mb-3 font-mono text-xs uppercase tracking-[0.35em] text-stone-600"> {React.string(t.authBrand)} </p>
     <h1 className="font-serif text-4xl leading-none tracking-[-0.04em] text-stone-950">
-      {React.string(if isRegister { "Create your account" } else { "Welcome back" })}
+      {React.string(if isRegister { t.authCreateYourAccount } else { t.authWelcomeBack })}
     </h1>
     <p className="mt-4 text-sm leading-6 text-stone-700">
       {React.string(
          if isRegister {
-           "Start your wine journal with a personal account."
+           t.authRegisterIntro
          } else {
-           "Sign in to continue to your wine journal."
+           t.authLoginIntro
          },
        )}
     </p>
@@ -36,19 +37,19 @@ let make = (
         type_="button"
         onClick={_ => onModeChange(AuthForm.loginMode)}
         className={if !isRegister { loginButtonClasses } else { inactiveButtonClasses }}>
-        {React.string("Log in")}
+        {React.string(t.authLogIn)}
       </button>
       <button
         type_="button"
         onClick={_ => onModeChange(AuthForm.registerMode)}
         className={if isRegister { loginButtonClasses } else { inactiveButtonClasses }}>
-        {React.string("Sign up")}
+        {React.string(t.authSignUp)}
       </button>
     </div>
     <form className="mt-6 space-y-4" onSubmit>
       {if isRegister {
          <TextField
-           label="Full name"
+           label=t.authFullName
            value=form.fullName
            onChange={value => onFormChange(. "fullName", value)}
            autoComplete="name"
@@ -57,14 +58,14 @@ let make = (
          React.null
        }}
       <TextField
-        label="Email"
+        label=t.authEmail
         type_="email"
         value=form.email
         onChange={value => onFormChange(. "email", value)}
         autoComplete="email"
       />
       <TextField
-        label="Password"
+        label=t.authPassword
         type_="password"
         value=form.password
         onChange={value => onFormChange(. "password", value)}
@@ -83,11 +84,11 @@ let make = (
         className="w-full rounded-2xl bg-stone-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400">
         {React.string(
            if isSubmitting {
-             "Working..."
+             t.authWorking
            } else if isRegister {
-             "Create account"
+             t.authCreateAccount
            } else {
-             "Log in"
+             t.authLogIn
            },
          )}
       </button>

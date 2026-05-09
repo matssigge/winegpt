@@ -2,6 +2,7 @@
 
 import * as AuthForm from "./AuthForm.bs.js";
 import * as TextField from "../ui/TextField.bs.js";
+import * as I18nContext from "../i18n/I18nContext.bs.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 var loginButtonClasses = "rounded-2xl px-4 py-2 text-sm font-medium transition bg-white text-stone-950 shadow-sm";
@@ -15,24 +16,25 @@ function AuthCard(props) {
   var form = props.form;
   var onModeChange = props.onModeChange;
   var isRegister = AuthForm.isRegisterMode(props.mode);
+  var t = I18nContext.useT();
   return JsxRuntime.jsxs("section", {
               children: [
                 JsxRuntime.jsx("p", {
-                      children: "Wine",
+                      children: t.authBrand,
                       className: "mb-3 font-mono text-xs uppercase tracking-[0.35em] text-stone-600"
                     }),
                 JsxRuntime.jsx("h1", {
-                      children: isRegister ? "Create your account" : "Welcome back",
+                      children: isRegister ? t.authCreateYourAccount : t.authWelcomeBack,
                       className: "font-serif text-4xl leading-none tracking-[-0.04em] text-stone-950"
                     }),
                 JsxRuntime.jsx("p", {
-                      children: isRegister ? "Start your wine journal with a personal account." : "Sign in to continue to your wine journal.",
+                      children: isRegister ? t.authRegisterIntro : t.authLoginIntro,
                       className: "mt-4 text-sm leading-6 text-stone-700"
                     }),
                 JsxRuntime.jsxs("div", {
                       children: [
                         JsxRuntime.jsx("button", {
-                              children: "Log in",
+                              children: t.authLogIn,
                               className: isRegister ? inactiveButtonClasses : loginButtonClasses,
                               type: "button",
                               onClick: (function (param) {
@@ -40,7 +42,7 @@ function AuthCard(props) {
                                 })
                             }),
                         JsxRuntime.jsx("button", {
-                              children: "Sign up",
+                              children: t.authSignUp,
                               className: isRegister ? loginButtonClasses : inactiveButtonClasses,
                               type: "button",
                               onClick: (function (param) {
@@ -53,7 +55,7 @@ function AuthCard(props) {
                 JsxRuntime.jsxs("form", {
                       children: [
                         isRegister ? JsxRuntime.jsx(TextField.make, {
-                                label: "Full name",
+                                label: t.authFullName,
                                 value: form.fullName,
                                 onChange: (function (value) {
                                     onFormChange("fullName", value);
@@ -61,7 +63,7 @@ function AuthCard(props) {
                                 autoComplete: "name"
                               }) : null,
                         JsxRuntime.jsx(TextField.make, {
-                              label: "Email",
+                              label: t.authEmail,
                               value: form.email,
                               onChange: (function (value) {
                                   onFormChange("email", value);
@@ -70,7 +72,7 @@ function AuthCard(props) {
                               type_: "email"
                             }),
                         JsxRuntime.jsx(TextField.make, {
-                              label: "Password",
+                              label: t.authPassword,
                               value: form.password,
                               onChange: (function (value) {
                                   onFormChange("password", value);
@@ -83,8 +85,8 @@ function AuthCard(props) {
                                 className: "rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
                               }),
                         JsxRuntime.jsx("button", {
-                              children: isSubmitting ? "Working..." : (
-                                  isRegister ? "Create account" : "Log in"
+                              children: isSubmitting ? t.authWorking : (
+                                  isRegister ? t.authCreateAccount : t.authLogIn
                                 ),
                               className: "w-full rounded-2xl bg-stone-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-400",
                               disabled: isSubmitting,
