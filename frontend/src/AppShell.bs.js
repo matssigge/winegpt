@@ -35,6 +35,17 @@ function AppShell(props) {
       });
   var setIsFilterOpen = match$2[1];
   var isFilterOpen = match$2[0];
+  React.useEffect((function () {
+          setIsMenuOpen(function (param) {
+                return false;
+              });
+          setIsSearchOpen(function (param) {
+                return false;
+              });
+          setIsFilterOpen(function (param) {
+                return false;
+              });
+        }), [route]);
   var goWine = function (wineId) {
     Router.navigate({
           TAG: "Wine",

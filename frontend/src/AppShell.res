@@ -24,6 +24,13 @@ let make = (
   let (isSearchOpen, setIsSearchOpen) = React.useState(() => false)
   let (isFilterOpen, setIsFilterOpen) = React.useState(() => false)
 
+  React.useEffect1(() => {
+    setIsMenuOpen(_ => false)
+    setIsSearchOpen(_ => false)
+    setIsFilterOpen(_ => false)
+    None
+  }, [route])
+
   let goHome = () => Router.navigate(Home)
   let goNewWine = () => Router.navigate(NewWine)
   let goWine = wineId => Router.navigate(Wine(wineId))
