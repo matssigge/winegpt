@@ -1,6 +1,9 @@
 @send
 external preventDefault: ReactEvent.Form.t => unit = "preventDefault"
 
+@val @scope(("globalThis", "window", "navigator"))
+external navigatorLanguage: Js.Nullable.t<string> = "language"
+
 @react.component
 let make = () => {
   let route = Router.useRoute()
@@ -17,6 +20,30 @@ let make = () => {
   let (wineQuery, setWineQuery) = React.useState(() => "")
   let (entryStatus, setEntryStatus) = React.useState(() => EntryState.initialStatus())
   let (entryForm, setEntryForm) = React.useState(() => EntryState.initialForm)
+
+  let (override, setOverride) = React.useState(() => LocaleStorage.loadOverride())
+
+  let locale = LocaleResolver.resolve(
+    navigatorLanguage->Js.Nullable.toOption,
+    override->Belt.Option.map(AppLocale.toCode),
+  )
+
+  let t = Translations.pick(locale)
+  let _ = t
+
+  let handleSetOverride = next => {
+    setOverride(_ => next)
+    switch next {
+    | Some(locale) => LocaleStorage.saveOverride(locale)
+    | None => LocaleStorage.clearOverride()
+    }
+  }
+
+  let i18nValue: I18nContext.contextValue = {
+    locale,
+    override,
+    setOverride: handleSetOverride,
+  }
 
   let defaultCollectionId =
     currentUser->Belt.Option.map((user: AuthSession.user) => user.defaultCollectionId)
@@ -230,47 +257,49 @@ let make = () => {
   let visibleWineStatus = WineState.filterStatus(wineStatus, wineQuery, wineOccasionFilter)
 
   <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950">
-    <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center">
-      {if isInitializing {
-         <section className="w-full max-w-md rounded-3xl border border-stone-900/10 bg-white/80 p-8 text-sm text-stone-600 shadow-xl backdrop-blur">
-           {React.string("Checking your session...")}
-         </section>
-       } else {
-         switch currentUser {
-         | Some(user) =>
-           <AppShell
-             user
-             route
-             wineStatus=visibleWineStatus
-             wineForm
-             wineOccasionFilter
-             wineQuery
-             totalWineCount={WineState.wines(wineStatus)->Belt.Array.length}
-             entryStatus
-             entryForm
-             onEntryFormChange=updateEntryForm
-             onUseSelectedWineForEntry=useSelectedWineForEntry
-             onUseNewWineForEntry=useNewWineForEntry
-             onWineFormChange=updateWineForm
-             onCreateWine=handleCreateWine
-             onCreateEntry=handleCreateEntry
-             onEditEntry=openEntryEditor
-             onWineQueryChange={query => setWineQuery(_ => query)}
-             onSelectOccasionFilter={filter => setWineOccasionFilter(_ => filter)}
-             onLogout=handleLogout
-           />
-         | None =>
-           <AuthCard
-             mode
-             onModeChange=handleModeChange
-             form
-             onFormChange=updateForm
-             onSubmit=handleSubmit
-             isSubmitting
-             error={error->Js.Nullable.fromOption}
-           />
-         }
-       }}
-    </div>
+    <I18nContext.Provider value=i18nValue>
+      <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center">
+        {if isInitializing {
+           <section className="w-full max-w-md rounded-3xl border border-stone-900/10 bg-white/80 p-8 text-sm text-stone-600 shadow-xl backdrop-blur">
+             {React.string("Checking your session...")}
+           </section>
+         } else {
+           switch currentUser {
+           | Some(user) =>
+             <AppShell
+               user
+               route
+               wineStatus=visibleWineStatus
+               wineForm
+               wineOccasionFilter
+               wineQuery
+               totalWineCount={WineState.wines(wineStatus)->Belt.Array.length}
+               entryStatus
+               entryForm
+               onEntryFormChange=updateEntryForm
+               onUseSelectedWineForEntry=useSelectedWineForEntry
+               onUseNewWineForEntry=useNewWineForEntry
+               onWineFormChange=updateWineForm
+               onCreateWine=handleCreateWine
+               onCreateEntry=handleCreateEntry
+               onEditEntry=openEntryEditor
+               onWineQueryChange={query => setWineQuery(_ => query)}
+               onSelectOccasionFilter={filter => setWineOccasionFilter(_ => filter)}
+               onLogout=handleLogout
+             />
+           | None =>
+             <AuthCard
+               mode
+               onModeChange=handleModeChange
+               form
+               onFormChange=updateForm
+               onSubmit=handleSubmit
+               isSubmitting
+               error={error->Js.Nullable.fromOption}
+             />
+           }
+         }}
+      </div>
+    </I18nContext.Provider>
   </main>
 }

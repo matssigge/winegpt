@@ -5,13 +5,19 @@ import * as Router from "./router/Router.bs.js";
 import * as AppShell from "./AppShell.bs.js";
 import * as AuthCard from "./auth/AuthCard.bs.js";
 import * as AuthForm from "./auth/AuthForm.bs.js";
+import * as AppLocale from "./i18n/AppLocale.bs.js";
 import * as WineState from "./wines/WineState.bs.js";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as EntryState from "./entries/EntryState.bs.js";
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
+import * as Caml_option from "rescript/lib/es6/caml_option.js";
+import * as I18nContext from "./i18n/I18nContext.bs.js";
 import * as Js_promise2 from "rescript/lib/es6/js_promise2.js";
 import * as WineCapture from "./wines/WineCapture.bs.js";
+import * as Translations from "./i18n/Translations.bs.js";
+import * as LocaleStorage from "./i18n/LocaleStorage.bs.js";
 import * as AuthAppSupport from "./auth/AuthAppSupport.bs.js";
+import * as LocaleResolver from "./i18n/LocaleResolver.bs.js";
 import * as SessionStorage from "./auth/SessionStorage.bs.js";
 import * as SessionBootstrap from "./auth/SessionBootstrap.bs.js";
 import * as Js_null_undefined from "rescript/lib/es6/js_null_undefined.js";
@@ -80,6 +86,28 @@ function App(props) {
       });
   var setEntryForm = match$12[1];
   var entryForm = match$12[0];
+  var match$13 = React.useState(function () {
+        return LocaleStorage.loadOverride();
+      });
+  var setOverride = match$13[1];
+  var override = match$13[0];
+  var locale = LocaleResolver.resolve(Caml_option.nullable_to_opt(globalThis.window.navigator.language), Belt_Option.map(override, AppLocale.toCode));
+  Translations.pick(locale);
+  var handleSetOverride = function (next) {
+    setOverride(function (param) {
+          return next;
+        });
+    if (next !== undefined) {
+      return LocaleStorage.saveOverride(next);
+    } else {
+      return LocaleStorage.clearOverride();
+    }
+  };
+  var i18nValue = {
+    locale: locale,
+    override: override,
+    setOverride: handleSetOverride
+  };
   var defaultCollectionId = Belt_Option.map(currentUser, (function (user) {
           return user.defaultCollectionId;
         }));
@@ -401,50 +429,53 @@ function App(props) {
   };
   var visibleWineStatus = WineState.filterStatus(wineStatus, wineQuery, wineOccasionFilter);
   return JsxRuntime.jsx("main", {
-              children: JsxRuntime.jsx("div", {
-                    children: match$4[0] ? JsxRuntime.jsx("section", {
-                            children: "Checking your session...",
-                            className: "w-full max-w-md rounded-3xl border border-stone-900/10 bg-white/80 p-8 text-sm text-stone-600 shadow-xl backdrop-blur"
-                          }) : (
-                        currentUser !== undefined ? JsxRuntime.jsx(AppShell.make, {
-                                user: currentUser,
-                                route: route,
-                                wineStatus: visibleWineStatus,
-                                wineForm: wineForm,
-                                wineOccasionFilter: wineOccasionFilter,
-                                wineQuery: wineQuery,
-                                totalWineCount: WineState.wines(wineStatus).length,
-                                entryStatus: match$11[0],
-                                entryForm: entryForm,
-                                onEntryFormChange: updateEntryForm,
-                                onUseSelectedWineForEntry: useSelectedWineForEntry,
-                                onUseNewWineForEntry: useNewWineForEntry,
-                                onWineFormChange: updateWineForm,
-                                onCreateWine: handleCreateWine,
-                                onCreateEntry: handleCreateEntry,
-                                onEditEntry: openEntryEditor,
-                                onWineQueryChange: (function (query) {
-                                    setWineQuery(function (param) {
-                                          return query;
-                                        });
-                                  }),
-                                onSelectOccasionFilter: (function (filter) {
-                                    setWineOccasionFilter(function (param) {
-                                          return filter;
-                                        });
-                                  }),
-                                onLogout: handleLogout
-                              }) : JsxRuntime.jsx(AuthCard.make, {
-                                mode: mode,
-                                onModeChange: handleModeChange,
-                                form: form,
-                                onFormChange: updateForm,
-                                onSubmit: handleSubmit,
-                                isSubmitting: match$5[0],
-                                error: Js_null_undefined.fromOption(match$6[0])
-                              })
-                      ),
-                    className: "mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center"
+              children: JsxRuntime.jsx(I18nContext.Provider.make, {
+                    value: i18nValue,
+                    children: JsxRuntime.jsx("div", {
+                          children: match$4[0] ? JsxRuntime.jsx("section", {
+                                  children: "Checking your session...",
+                                  className: "w-full max-w-md rounded-3xl border border-stone-900/10 bg-white/80 p-8 text-sm text-stone-600 shadow-xl backdrop-blur"
+                                }) : (
+                              currentUser !== undefined ? JsxRuntime.jsx(AppShell.make, {
+                                      user: currentUser,
+                                      route: route,
+                                      wineStatus: visibleWineStatus,
+                                      wineForm: wineForm,
+                                      wineOccasionFilter: wineOccasionFilter,
+                                      wineQuery: wineQuery,
+                                      totalWineCount: WineState.wines(wineStatus).length,
+                                      entryStatus: match$11[0],
+                                      entryForm: entryForm,
+                                      onEntryFormChange: updateEntryForm,
+                                      onUseSelectedWineForEntry: useSelectedWineForEntry,
+                                      onUseNewWineForEntry: useNewWineForEntry,
+                                      onWineFormChange: updateWineForm,
+                                      onCreateWine: handleCreateWine,
+                                      onCreateEntry: handleCreateEntry,
+                                      onEditEntry: openEntryEditor,
+                                      onWineQueryChange: (function (query) {
+                                          setWineQuery(function (param) {
+                                                return query;
+                                              });
+                                        }),
+                                      onSelectOccasionFilter: (function (filter) {
+                                          setWineOccasionFilter(function (param) {
+                                                return filter;
+                                              });
+                                        }),
+                                      onLogout: handleLogout
+                                    }) : JsxRuntime.jsx(AuthCard.make, {
+                                      mode: mode,
+                                      onModeChange: handleModeChange,
+                                      form: form,
+                                      onFormChange: updateForm,
+                                      onSubmit: handleSubmit,
+                                      isSubmitting: match$5[0],
+                                      error: Js_null_undefined.fromOption(match$6[0])
+                                    })
+                            ),
+                          className: "mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-center justify-center"
+                        })
                   }),
               className: "min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950"
             });
