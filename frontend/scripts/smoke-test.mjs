@@ -8,6 +8,11 @@ const requiredFiles = [
   "scripts/wait-for-url.mjs",
   "src/App.res",
   "src/Main.res",
+  "src/router/Router.res",
+  "src/screens/WineListScreen.res",
+  "src/screens/WineDetailScreen.res",
+  "src/screens/WineComposerScreen.res",
+  "src/screens/EntryComposerScreen.res",
   "vite.config.mjs"
 ]
 
