@@ -53,25 +53,7 @@ pub async fn create(
         .await
         .map_err(|_| CollectionError::Database)?;
 
-    let collection_id = sqlx::query_scalar::<_, i64>(
-        "INSERT INTO collections (name)
-         VALUES ($1)
-         RETURNING id",
-    )
-    .bind(&name)
-    .fetch_one(&mut *transaction)
-    .await
-    .map_err(|_| CollectionError::Database)?;
-
-    sqlx::query(
-        "INSERT INTO collection_memberships (collection_id, user_id, role)
-         VALUES ($1, $2, 'owner')",
-    )
-    .bind(collection_id)
-    .bind(user_id)
-    .execute(&mut *transaction)
-    .await
-    .map_err(|_| CollectionError::Database)?;
+    let collection_id = insert_with_owner(&mut transaction, user_id, &name).await?;
 
     transaction
         .commit()
@@ -83,6 +65,37 @@ pub async fn create(
         name,
         role: CollectionRole::Owner,
     })
+}
+
+/// Inserts a collection row and an owner membership row within the supplied transaction.
+/// The caller is responsible for committing or rolling back the transaction.
+/// `name` must be non-empty and already normalized; this function does not validate it.
+pub async fn insert_with_owner(
+    transaction: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    user_id: i64,
+    name: &str,
+) -> Result<i64, CollectionError> {
+    let collection_id = sqlx::query_scalar::<_, i64>(
+        "INSERT INTO collections (name)
+         VALUES ($1)
+         RETURNING id",
+    )
+    .bind(name)
+    .fetch_one(&mut **transaction)
+    .await
+    .map_err(|_| CollectionError::Database)?;
+
+    sqlx::query(
+        "INSERT INTO collection_memberships (collection_id, user_id, role)
+         VALUES ($1, $2, 'owner')",
+    )
+    .bind(collection_id)
+    .bind(user_id)
+    .execute(&mut **transaction)
+    .await
+    .map_err(|_| CollectionError::Database)?;
+
+    Ok(collection_id)
 }
 
 pub async fn list_for_user(
