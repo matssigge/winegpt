@@ -141,7 +141,7 @@ function AppShell(props) {
                   className: "flex items-center gap-1"
                 })
           ],
-          className: "sticky top-0 z-10 -mx-4 -mt-4 mb-4 flex items-center justify-between gap-2 bg-white px-4 pt-4 md:relative md:top-auto md:mx-0 md:mt-0 md:bg-transparent md:px-0 md:pt-0"
+          className: "sticky top-0 z-10 -mx-4 -mt-4 mb-4 flex items-center justify-between gap-2 bg-white px-4 py-4 md:relative md:top-auto md:mx-0 md:mt-0 md:bg-transparent md:px-0 md:py-0"
         }) : null;
   var searchPanel = isSearchOpen && route === "Home" ? JsxRuntime.jsx("div", {
           children: JsxRuntime.jsx(TextField.make, {

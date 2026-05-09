@@ -70,7 +70,7 @@ let make = (
 
   let header = switch route {
   | Home =>
-    <header className="sticky top-0 z-10 -mx-4 -mt-4 mb-4 flex items-center justify-between gap-2 bg-white px-4 pt-4 md:relative md:top-auto md:mx-0 md:mt-0 md:bg-transparent md:px-0 md:pt-0">
+    <header className="sticky top-0 z-10 -mx-4 -mt-4 mb-4 flex items-center justify-between gap-2 bg-white px-4 py-4 md:relative md:top-auto md:mx-0 md:mt-0 md:bg-transparent md:px-0 md:py-0">
       <h1 className="font-serif text-2xl tracking-tight text-stone-950">
         {React.string(t.appWines)}
       </h1>
