@@ -477,10 +477,10 @@ function App(props) {
                                       error: Js_null_undefined.fromOption(match$6[0])
                                     })
                             ),
-                          className: "mx-auto flex min-h-[calc(100vh-6rem)] max-w-5xl items-start justify-center"
+                          className: "mx-auto flex min-h-screen max-w-5xl items-start justify-center md:min-h-[calc(100vh-6rem)]"
                         })
                   }),
-              className: "min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] px-6 py-12 text-stone-950"
+              className: "min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,214,196,0.9),_transparent_45%),linear-gradient(180deg,_#f7efe7_0%,_#ead9ca_100%)] text-stone-950 md:px-6 md:py-12"
             });
 }
 

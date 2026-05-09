@@ -141,7 +141,7 @@ function AppShell(props) {
                   className: "flex items-center gap-1"
                 })
           ],
-          className: "mb-4 flex items-center justify-between gap-2"
+          className: "sticky top-0 z-10 -mx-4 -mt-4 mb-4 flex items-center justify-between gap-2 bg-white px-4 pt-4 md:relative md:top-auto md:mx-0 md:mt-0 md:bg-transparent md:px-0 md:pt-0"
         }) : null;
   var searchPanel = isSearchOpen && route === "Home" ? JsxRuntime.jsx("div", {
           children: JsxRuntime.jsx(TextField.make, {
@@ -409,7 +409,7 @@ function AppShell(props) {
                 menu,
                 body
               ],
-              className: "relative w-full max-w-3xl rounded-3xl border border-stone-900/10 bg-white/80 p-6 shadow-xl backdrop-blur md:p-10"
+              className: "relative w-full max-w-3xl bg-white min-h-screen px-4 py-4 md:min-h-0 md:rounded-3xl md:border md:border-stone-900/10 md:bg-white/80 md:p-10 md:shadow-xl md:backdrop-blur"
             });
 }
 
