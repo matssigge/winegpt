@@ -3,6 +3,7 @@
 import * as $$String from "rescript/lib/es6/string.js";
 import * as Belt_Array from "rescript/lib/es6/belt_Array.js";
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
+import * as I18nContext from "../i18n/I18nContext.bs.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function wineLabel(summary) {
@@ -14,13 +15,13 @@ function wineLabel(summary) {
   }
 }
 
-function wineMeta(summary) {
+function wineMeta(summary, t) {
   var segments = Belt_Array.keepMap([
         summary.wine.grape,
         Belt_Option.map(summary.wine.vintage, (function (prim) {
                 return String(prim);
               })),
-        String(summary.entryCount) + " entries"
+        t.entryCount(summary.entryCount)
       ], (function (value) {
           return value;
         }));
@@ -38,18 +39,18 @@ function shouldShowFilteredCount(wineQuery, occasionFilter) {
 function WineList(props) {
   var onSelectWine = props.onSelectWine;
   var selectedWineId = props.selectedWineId;
-  var totalWineCount = props.totalWineCount;
   var status = props.status;
+  var t = I18nContext.useT();
   if (typeof status !== "object") {
     if (status === "Idle") {
       return JsxRuntime.jsxs("section", {
                   children: [
                     JsxRuntime.jsx("h3", {
-                          children: "Wines",
+                          children: t.appWines,
                           className: "text-lg font-semibold text-stone-950"
                         }),
                     JsxRuntime.jsx("p", {
-                          children: "Select a collection to browse the wines you have logged there.",
+                          children: t.wineListEmptyBody,
                           className: "mt-2 text-sm leading-6 text-stone-600"
                         })
                   ],
@@ -59,11 +60,11 @@ function WineList(props) {
       return JsxRuntime.jsxs("section", {
                   children: [
                     JsxRuntime.jsx("h3", {
-                          children: "Wines",
+                          children: t.appWines,
                           className: "text-lg font-semibold text-stone-950"
                         }),
                     JsxRuntime.jsx("p", {
-                          children: "Loading collection wines...",
+                          children: t.wineListLoading,
                           className: "mt-2 text-sm text-stone-600"
                         })
                   ],
@@ -75,7 +76,7 @@ function WineList(props) {
     return JsxRuntime.jsxs("section", {
                 children: [
                   JsxRuntime.jsx("h3", {
-                        children: "Wines",
+                        children: t.wineListErrorTitle,
                         className: "text-lg font-semibold text-rose-900"
                       }),
                   JsxRuntime.jsx("p", {
@@ -93,11 +94,11 @@ function WineList(props) {
                       children: JsxRuntime.jsxs("div", {
                             children: [
                               JsxRuntime.jsx("h3", {
-                                    children: "Wines",
+                                    children: t.wineListEmptyTitle,
                                     className: "text-lg font-semibold text-stone-950"
                                   }),
                               JsxRuntime.jsx("p", {
-                                    children: totalWineCount === 0 ? "No wines yet. Add the first bottle you want to remember in this collection." : "No wines match this search yet. Try a different name, producer, grape, or vintage.",
+                                    children: t.wineListEmptyBody,
                                     className: "mt-2 text-sm leading-6 text-stone-600"
                                   })
                             ]
@@ -113,11 +114,11 @@ function WineList(props) {
                         children: JsxRuntime.jsxs("div", {
                               children: [
                                 JsxRuntime.jsx("h3", {
-                                      children: "Wines",
+                                      children: t.appWines,
                                       className: "text-lg font-semibold text-stone-950"
                                     }),
                                 JsxRuntime.jsx("span", {
-                                      children: shouldShowFilteredCount(props.wineQuery, props.occasionFilter) ? String(wines.length) + " of " + String(totalWineCount) + " wines" : String(wines.length) + " wines",
+                                      children: shouldShowFilteredCount(props.wineQuery, props.occasionFilter) ? t.filteredOf(wines.length, props.totalWineCount) : t.entryCount(wines.length),
                                       className: "rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600"
                                     })
                               ],
@@ -139,7 +140,7 @@ function WineList(props) {
                                                                         className: isSelected ? "text-base font-semibold text-white" : "text-base font-semibold text-stone-950"
                                                                       }),
                                                                   JsxRuntime.jsx("p", {
-                                                                        children: wineMeta(summary),
+                                                                        children: wineMeta(summary, t),
                                                                         className: isSelected ? "mt-1 text-sm text-stone-200" : "mt-1 text-sm text-stone-600"
                                                                       })
                                                                 ]
@@ -176,4 +177,4 @@ export {
   shouldShowFilteredCount ,
   make ,
 }
-/* react/jsx-runtime Not a pure module */
+/* I18nContext Not a pure module */

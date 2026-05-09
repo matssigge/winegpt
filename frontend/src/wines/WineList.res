@@ -6,12 +6,12 @@ let wineLabel = (summary: WineModel.summary) =>
   | None => summary.wine.name
   }
 
-let wineMeta = (summary: WineModel.summary) => {
+let wineMeta = (summary: WineModel.summary, t: Translations.t) => {
   let segments = Belt.Array.keepMap(
     [
       summary.wine.grape,
       summary.wine.vintage->Belt.Option.map(Belt.Int.toString),
-      Some(summary.entryCount->Belt.Int.toString ++ " entries"),
+      Some(t.entryCount(summary.entryCount)),
     ],
     value => value,
   )
@@ -30,23 +30,24 @@ let make = (
   ~totalWineCount: int,
   ~selectedWineId: option<int>,
   ~onSelectWine: int => unit,
-) =>
+) => {
+  let t = I18nContext.useT()
   switch status {
   | WineState.Idle =>
     <section className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6">
-      <h3 className="text-lg font-semibold text-stone-950"> {React.string("Wines")} </h3>
+      <h3 className="text-lg font-semibold text-stone-950"> {React.string(t.appWines)} </h3>
       <p className="mt-2 text-sm leading-6 text-stone-600">
-        {React.string("Select a collection to browse the wines you have logged there.")}
+        {React.string(t.wineListEmptyBody)}
       </p>
     </section>
   | WineState.Loading =>
     <section className="rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
-      <h3 className="text-lg font-semibold text-stone-950"> {React.string("Wines")} </h3>
-      <p className="mt-2 text-sm text-stone-600"> {React.string("Loading collection wines...")} </p>
+      <h3 className="text-lg font-semibold text-stone-950"> {React.string(t.appWines)} </h3>
+      <p className="mt-2 text-sm text-stone-600"> {React.string(t.wineListLoading)} </p>
     </section>
   | WineState.Error(message) =>
     <section className="rounded-[1.75rem] border border-rose-200 bg-rose-50 p-6">
-      <h3 className="text-lg font-semibold text-rose-900"> {React.string("Wines")} </h3>
+      <h3 className="text-lg font-semibold text-rose-900"> {React.string(t.wineListErrorTitle)} </h3>
       <p className="mt-2 text-sm text-rose-700"> {React.string(message)} </p>
     </section>
   | WineState.Ready(wines) =>
@@ -54,15 +55,9 @@ let make = (
       <section className="rounded-[1.75rem] border border-dashed border-stone-300 bg-stone-50/80 p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-stone-950"> {React.string("Wines")} </h3>
+            <h3 className="text-lg font-semibold text-stone-950"> {React.string(t.wineListEmptyTitle)} </h3>
             <p className="mt-2 text-sm leading-6 text-stone-600">
-              {React.string(
-                 if totalWineCount == 0 {
-                   "No wines yet. Add the first bottle you want to remember in this collection."
-                 } else {
-                   "No wines match this search yet. Try a different name, producer, grape, or vintage."
-                 },
-               )}
+              {React.string(t.wineListEmptyBody)}
             </p>
           </div>
         </div>
@@ -71,16 +66,13 @@ let make = (
       <section className="rounded-[1.75rem] border border-stone-900/10 bg-stone-50/80 p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="flex items-center gap-4">
-            <h3 className="text-lg font-semibold text-stone-950"> {React.string("Wines")} </h3>
+            <h3 className="text-lg font-semibold text-stone-950"> {React.string(t.appWines)} </h3>
             <span className="rounded-full border border-stone-300 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-600">
               {React.string(
                  if !shouldShowFilteredCount(wineQuery, occasionFilter) {
-                   Belt.Array.length(wines)->Belt.Int.toString ++ " wines"
+                   t.entryCount(Belt.Array.length(wines))
                  } else {
-                   Belt.Array.length(wines)->Belt.Int.toString ++
-                   " of " ++
-                   totalWineCount->Belt.Int.toString ++
-                   " wines"
+                   t.filteredOf(Belt.Array.length(wines), totalWineCount)
                  },
                )}
             </span>
@@ -114,7 +106,7 @@ let make = (
                        {React.string(summary->wineLabel)}
                      </p>
                      <p className={if isSelected { "mt-1 text-sm text-stone-200" } else { "mt-1 text-sm text-stone-600" }}>
-                       {React.string(summary->wineMeta)}
+                       {React.string(summary->wineMeta(t))}
                      </p>
                    </div>
                    <p className={if isSelected { "text-xs font-medium uppercase tracking-[0.2em] text-stone-300" } else { "text-xs font-medium uppercase tracking-[0.2em] text-stone-500" }}>
@@ -129,3 +121,4 @@ let make = (
       </section>
     }
   }
+}
